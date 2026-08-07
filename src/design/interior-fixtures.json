@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "units": "meters",
+  "designLanguage": "Japanese Art Deco gaming salon",
+  "architecturalGrid": {
+    "wallBayWidth": 4,
+    "wainscotHeight": 1.05,
+    "corniceHeight": 5.8,
+    "trimWidth": 0.055,
+    "ceilingCofferDepth": 0.16
+  },
+  "reception": {
+    "size": [5.8, 1.15, 1.05],
+    "worktopThickness": 0.12,
+    "plinthHeight": 0.1,
+    "frontPanelCount": 5,
+    "frontPanelInset": 0.045,
+    "buttonHeight": 1.43
+  },
+  "blackjack": {
+    "overall": [5.4, 0.82, 3.4],
+    "playerEdgeRadius": 2.7,
+    "railWidth": 0.18,
+    "stoolSeatHeight": 0.62
+  },
+  "mahjong": {
+    "overall": [4.8, 0.82, 4.4],
+    "cornerChamfer": 0.28,
+    "railWidth": 0.16,
+    "seatHeight": 0.62
+  },
+  "lighting": {
+    "pendantUnderside": 5.35,
+    "pendantRows": 2,
+    "wallSconceHeight": 3.15,
+    "ambientTargetLux": 280,
+    "tableTargetLux": 520
+  },
+  "materials": {
+    "wallLacquer": "#162235",
+    "wainscot": "#101827",
+    "brass": "#C79A45",
+    "ivoryCeiling": "#F3EBDD",
+    "plumCarpet": "#351F3C",
+    "blackjackFelt": "#6E244F",
+    "mahjongFelt": "#126B72",
+    "stoneWorktop": "#D8D0C2"
+  }
+}

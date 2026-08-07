@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "revision": 8,
+  "title": "Seated Table Session",
+  "persistence": {
+    "coins": "World Storage player key casino.coins.v1",
+    "gameSession": "useInstanceState within the active XRift instance",
+    "principle": "Persistent currency and realtime table state use separate channels"
+  },
+  "seatMode": {
+    "enter": ["pay 2 coins", "reserve first open seat", "teleport to seat", "release pointer lock"],
+    "fixedInput": ["block WASD", "block QE and Space", "block arrow keys", "enable screen UI pointer events"],
+    "exit": ["release seat", "refund only before round start", "teleport to standing point"]
+  },
+  "blackjack": {
+    "capacity": [1, 4],
+    "seatOffsets": [
+      [-2.15, 0, 3.05],
+      [-0.72, 0, 3.25],
+      [0.72, 0, 3.25],
+      [2.15, 0, 3.05]
+    ],
+    "dealer": "NPC",
+    "turnOrder": "seat 0 to 3, occupied human seats only",
+    "worldCardMeshes": "not rendered during play; cards live in the seated UI",
+    "payouts": {
+      "blackjack": 5,
+      "win": 4,
+      "push": 2,
+      "lose": 0,
+      "bust": 0
+    }
+  },
+  "mahjong": {
+    "capacity": [1, 4],
+    "seatOffsets": [
+      [0, 0, 3.35, 180],
+      [-3.35, 0, 0, 90],
+      [0, 0, -3.35, 0],
+      [3.35, 0, 0, 270]
+    ],
+    "emptySeats": "NPC",
+    "ruleScope": "four-player draw-and-discard tutorial; tsumo only; no calls and no ron",
+    "payout": {
+      "humanTsumo": 6,
+      "npcTsumo": 0,
+      "draw": 0
+    }
+  },
+  "sky": {
+    "asset": "public/block-village-twilight-sky.png",
+    "source": "OpenAI image generation",
+    "sourceDimensions": [1774, 887],
+    "projection": "equirectangular scene background",
+    "cameraPositionIndependent": true,
+    "runtimePath": "${baseUrl}block-village-twilight-sky.png",
+    "colorSpace": "sRGB",
+    "finiteGeometry": false
+  }
+}

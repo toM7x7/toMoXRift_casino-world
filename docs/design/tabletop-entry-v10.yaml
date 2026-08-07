@@ -1,0 +1,89 @@
+project:
+  name: "BLOCK RIICHI SKY PARK"
+  revision: 10
+  objective: "ESC不要の椅子ENTRYと卓上3D操作へ移行する"
+
+spawn_map:
+  world_position: [4.2, 0, 9.5]
+  yaw_radians: -0.46
+  uniform_scale: 0.82
+  spawn_position: [0, 0, 18]
+  measured_distance_m: 9.49
+  collision: "none"
+  design_source: "実ワールドの配置JSONから構築するため、生成画像の推測地図は使わない"
+  contents:
+    - "現在地"
+    - "BJ"
+    - "麻雀"
+    - "交換所"
+    - "建設予定地 A"
+    - "建設予定地 B"
+
+chair_entry:
+  capacity: 4
+  interaction: "各椅子を中心レイでクリック"
+  lobby_board: "卓上ENTRY枠へユーザー名を反映"
+  host: "最初に座ったユーザー"
+  start_timing: "ホストが任意のタイミングで卓上STARTをクリック"
+  empty_mahjong_seats: "開始後NPCへ切り替える"
+
+seat_lock:
+  keep_pointer_lock: true
+  esc_required: false
+  blocked_keys: ["W", "A", "S", "D", "Q", "E", "Space", "Arrow keys"]
+  horizontal_radius_m: 0.15
+  vertical_tolerance_m: 0.4
+  correction_interval_ms: 80
+  correction: "範囲外へ移動した場合、椅子座標と正しいyawへteleport"
+  blackjack_yaw_degrees: [325, 347, 13, 35]
+  mahjong_yaw_degrees: [0, 270, 180, 90]
+
+blackjack_tabletop:
+  public:
+    - "GMディーラー"
+    - "GMの表カード"
+    - "精算までは伏せるホールカード"
+    - "手番と結果"
+  owner_only_render:
+    - "自分のカード"
+    - "HIT"
+    - "STAND"
+    - "NEXT"
+    - "離席"
+
+mahjong_tabletop:
+  public:
+    - "山牌"
+    - "直近の捨て牌"
+    - "NPC"
+    - "手番"
+  owner_only_render:
+    - "自分の14牌"
+    - "HINT"
+    - "ツモ"
+    - "NEXT"
+    - "離席"
+
+privacy_boundary:
+  visual: "本人クライアントだけが私有手札メッシュを描画"
+  shared_state: "useInstanceStateには卓進行用の全手牌が含まれる"
+  note: "現行XRift公開API内では視覚プライバシー。暗号学的な秘匿にはサーバー権威型の個別配信が必要"
+
+acceptance:
+  - "スポーン地点から地図が読め、古い左端看板がない"
+  - "椅子をクリックすると選択したENTRY枠が埋まる"
+  - "BJ各席は325/347/13/35度で卓中央へ収束し、開始直後に反転しない"
+  - "着席中に移動キーを押しても15cm以上離れない"
+  - "ESCでマウスカーソルを出さずに卓上3Dボタンを操作できる"
+  - "BJのGMカードは公開、自分のカードは本人クライアントだけに描画"
+  - "麻雀の私有14牌と操作ボタンが着席視点で読める"
+
+release:
+  version: 10
+  status: "ACTIVE"
+  content_hash: "4676a3b2d29c"
+  uploaded_at_utc: "2026-08-05T02:17:39.910Z"
+  cdn_assets_verified: true
+  thumbnail_sha256_match: true
+  sky_sha256_match: true
+  live_instance_verified: true

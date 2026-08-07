@@ -1,0 +1,41 @@
+project:
+  name: "BLOCK RIICHI SKY PARK"
+  revision: 11
+  objective: "椅子の前後修正とブラックジャック操作の日本語単純化"
+
+chair_model:
+  seat_local_forward: "-Z"
+  backrest_local_position: [0, 1.02, 0.3]
+  facing_rule: "着席者は卓中央を向き、背もたれは卓の外側に置く"
+  applies_to:
+    - "blackjack"
+    - "mahjong"
+
+blackjack_controls:
+  start: "ゲーム開始"
+  draw: "1枚引く"
+  stand: "止める"
+  next: "次のゲーム"
+  leave: "離席（開始前・結果画面のみ）"
+  pointer_lock: "維持"
+  esc_required: false
+
+acceptance:
+  - "ENTRY画面で椅子の背もたれが卓側にない"
+  - "着席画面の中央で1枚引く・止めるの2択と合計値が明瞭"
+  - "ゲーム中に離席ボタンを表示しない"
+  - "盤面とGMカードを隠すHTML UIがない"
+  - "QAブラウザセッションを検証後に必ずcloseする"
+
+release:
+  version: 11
+  status: "ACTIVE"
+  content_hash: "7e3fe3c72c54"
+  uploaded_at_utc: "2026-08-05T02:36:06.473Z"
+  cdn_assets_verified: true
+  thumbnail_sha256_match: true
+  live_instance_verified: true
+  qa_sessions_closed:
+    - "casino-live-v9"
+    - "casino-live-v10"
+    - "casino-live-v11"

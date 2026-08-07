@@ -1,0 +1,73 @@
+version: 13
+title: "海賊サンドボックス・カジノ / Table-First UX"
+date: "2026-08-07"
+
+design_principles:
+  - "盤面を主役にし、共有3D表示を盤の外へ退避する"
+  - "手牌と操作は着席者専用の低いパーソナルドックに集約する"
+  - "NPCの顔・手元・ゲーム駒を、名前札やENTRY表示で隠さない"
+  - "着席中も離席操作を常設し、Xキーでも即時解除できる"
+
+industrial_three_view:
+  plan:
+    world_footprint_m: [56, 42]
+    blackjack_center_m: [-15, 0, 2]
+    mahjong_center_m: [15, 0, 2]
+    reception_center_m: [0, 0, -13]
+    circulation:
+      main_aisle_width_m: 6
+      game_zone_clearance_m: 8
+  front_elevation:
+    blackjack_table_top_m: 1.0
+    mahjong_table_top_m: 0.94
+    personal_dock_center_m:
+      blackjack: 0.85
+      mahjong: 0.80
+    reception_coin_center_m: 3.45
+  side_elevation:
+    blackjack_dock_offset_from_table_center_m: 1.86
+    mahjong_dock_offset_from_table_center_m: 2.35
+    mahjong_seated_camera:
+      local_position_m: [0, 1.72, 3.40]
+      local_target_m: [0, 1.02, 1.70]
+
+blackjack:
+  occupancy: {minimum: 1, maximum: 4}
+  controls: ["1枚引く", "止める", "離席 X"]
+  shared_surface:
+    shows: ["GMの実カード", "テーブル", "GM"]
+    hides: ["ENTRY枠", "共有ステータス板", "大型説明UI"]
+  personal_dock:
+    size_m: [1.92, 0.66]
+    scale: 0.82
+    shows: ["自分のカード", "合計", "行動", "離席"]
+
+mahjong:
+  occupancy: {minimum: 1, maximum: 4}
+  ruleset: "簡易四人麻雀。NPCが空席を補完し、推奨牌・ツモ操作を提供"
+  shared_surface:
+    shows: ["河", "山", "卓", "対面NPC"]
+    hides: ["14個の大型牌ボタン", "ENTRY枠", "共有ステータス板"]
+  personal_dock:
+    size_m: [2.68, 0.78]
+    scale: 0.78
+    shows: ["13牌", "分離したツモ牌", "おすすめ", "ツモ", "離席 X"]
+
+motion:
+  npc_forward_correction_rad: -1.5707963267948966
+  clips:
+    idle: "02_Idle_2"
+    wave: "15_Waving_Right"
+    deal: "08_Action_One-Handed_Low"
+  environment:
+    palms: "More Movement / Subtle Movement"
+    lanterns: "phase-offset sway + light flicker"
+    reception_coin: "continuous rotation"
+
+economy:
+  persistence: "useWorldStorage"
+  relief:
+    trigger: "coin balance equals 0"
+    method: "受付GMミラの3Dボタンを押す"
+    amount: 10
+  player_transfer: "既存のプレイヤー間送金UIを維持"

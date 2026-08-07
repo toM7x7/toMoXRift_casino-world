@@ -1,0 +1,100 @@
+project:
+  name: "BLOCK RIICHI FRONTIER"
+  japanese_name: "ブロック遊技村"
+  revision: 8
+  scope: "生成スカイドーム、着席操作、1〜4人卓、NPC補完を統合する"
+  status: "implementation complete; release verification pending"
+
+source_of_truth:
+  architecture_and_triview: "docs/design/sandbox-blueprint-v6.svg"
+  spatial_spec: "docs/design/sandbox-world-v6.yaml"
+  responsive_interface: "src/design/responsive-ui-v8.json"
+  seated_session: "src/design/seated-multiplayer-v8.json"
+  generated_sky_source: "docs/design/generated/block-village-twilight-sky-v8.png"
+  runtime_sky_asset: "public/block-village-twilight-sky.png"
+
+experience_loop:
+  - "ワールドを歩いてBJ酒場または麻雀工房へ行く"
+  - "卓の3Dボタンで2コインを支払い着席する"
+  - "席位置へ移動し、ポインターロックを解除する"
+  - "移動キーを固定し、右側ゲームUIだけを操作する"
+  - "同一インスタンス内の1〜4人で共有ラウンドを進める"
+  - "配当を各本人のWorld Storage残高へ精算する"
+  - "席を立つボタンでワールド探索へ戻る"
+
+state_channels:
+  persistent:
+    mechanism: "useWorldStorage"
+    scope: "各プレイヤーのコイン"
+    key: "casino.coins.v1"
+  realtime:
+    mechanism: "useInstanceState"
+    scope: "席、手番、山札、手札、結果"
+    keys:
+      blackjack: "casino.blackjack.table.v8"
+      mahjong: "casino.mahjong.table.v8"
+  separation_reason: "World Storageは節目の永続化、useInstanceStateは低遅延のインスタンス共有に使う"
+
+seated_camera_and_input:
+  camera:
+    method: "useTeleportで卓ごとの席位置へ移動"
+    pointer_lock: "document.exitPointerLock"
+    desktop_ui: "右側パネル。中央〜左側の3D卓視界を残す"
+    compact_ui: "下部シート。XRift下部予約領域から88px上げる"
+  blocked_keys: ["W", "A", "S", "D", "Q", "E", "Space", "Arrow keys"]
+  exit: "席を立つボタンで席を解放し、卓前の立ち位置へ戻す"
+
+blackjack:
+  human_players:
+    minimum: 1
+    maximum: 4
+  dealer: "ジャックNPC"
+  turn_order: "着席番号順"
+  3d_board_policy: "手札カードは画面UIのみ。卓上は靴とチップの環境演出に限定する"
+  payout:
+    blackjack: 5
+    win: 4
+    push: 2
+    lose: 0
+    bust: 0
+
+mahjong:
+  human_players:
+    minimum: 1
+    maximum: 4
+  empty_seats: "NPCが担当"
+  tutorial_rules:
+    - "東家から順に1枚引いて1枚捨てる"
+    - "4面子1雀頭の完成でツモ"
+    - "鳴き・ロン・点数計算は今回の入門卓では扱わない"
+    - "おすすめボタンで捨て牌候補を黄色表示する"
+  human_tsumo_payout: 6
+
+skybox:
+  concept: "ブロック遊技村と連続する夕暮れの浮島群"
+  generated_asset:
+    dimensions: [1774, 887]
+    wrap_ratio: "2:1"
+    text: "none"
+    watermark: "none"
+  render:
+    type: "inside sphere"
+    radius_m: 56
+    color_space: "sRGB"
+    fog: false
+    depth_write: false
+  visual_intent:
+    - "上空は星のある深い紺"
+    - "地平線は紫から抑えた琥珀"
+    - "遠景浮島でサンドボックス世界を拡張して見せる"
+    - "中央の建物とUIに強い発光を競合させない"
+
+acceptance:
+  - "ゲーム開始後にマウスポインターが解放され、HTMLボタンをクリックできる"
+  - "着席中は移動キーで席からずれない"
+  - "BJの3Dカードと画面カードが二重表示されない"
+  - "BJ・麻雀とも人間1〜4人で着席できる"
+  - "麻雀の空席はNPCが進行する"
+  - "デスクトップでは右側UIが卓の中央を覆わない"
+  - "生成スカイ画像はbaseUrl経由でCDNから読み込める"
+  - "実インスタンスでスカイ・着席・クリック・配信チャンクを確認する"

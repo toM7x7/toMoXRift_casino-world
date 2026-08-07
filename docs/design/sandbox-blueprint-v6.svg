@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120">
+  <defs>
+    <style>
+      .paper{fill:#f6f1df}.sheet{fill:#fffdf5;stroke:#28313a;stroke-width:2}.ink{fill:#28313a}.muted{fill:#69717d}
+      .line{fill:none;stroke:#28313a;stroke-width:2}.grid{fill:none;stroke:#d8d1bc;stroke-width:1}.dim{fill:none;stroke:#a36e1e;stroke-width:1.5}
+      .grass{fill:#668f46}.dirt{fill:#805a3b}.stone{fill:#69717d}.wood{fill:#493526}.amber{fill:#f6c453}.pink{fill:#c955a5}.cyan{fill:#3dbfbc}.sky{fill:#86b9d7}
+      .dark{fill:#162033}.ui{fill:#111827;stroke:#8994a4;stroke-width:2}.slot{fill:#243247;stroke:#fff7e6;stroke-width:2}
+      text{font-family:'Noto Sans JP','Yu Gothic UI',sans-serif}.t11{font-size:11px}.t13{font-size:13px}.t15{font-size:15px}.t18{font-size:18px;font-weight:700}.t22{font-size:22px;font-weight:800}.t28{font-size:28px;font-weight:900}
+      .white{fill:#fff7e6}
+    </style>
+    <pattern id="meterGrid" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M18 0H0V18" class="grid"/></pattern>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#a36e1e"/></marker>
+  </defs>
+  <rect class="paper" width="1600" height="1120"/><rect class="sheet" x="18" y="18" width="1564" height="1084"/>
+  <text class="ink t28" x="42" y="58">BLOCK RIICHI FRONTIER — ボクセル遊技村・建築＋WebゲームUI設計図</text>
+  <text class="muted t13" x="42" y="82">REV.6 / 1mグリッド / 32m × 26m × 高さ上限7m / サンドボックス風だがブロック編集機能は含まない</text>
+
+  <!-- PLAN -->
+  <rect class="sheet" x="38" y="104" width="940" height="576"/>
+  <rect class="ink" x="52" y="118" width="30" height="30"/><text class="white t18" x="62" y="140">1</text>
+  <text class="ink t22" x="96" y="142">配置平面図 / ブロック遊技村</text>
+  <g transform="translate(188,174)">
+    <rect x="0" y="0" width="576" height="468" class="dirt" stroke="#28313a" stroke-width="4"/>
+    <rect x="18" y="18" width="540" height="432" class="grass"/>
+    <rect x="18" y="18" width="540" height="432" fill="url(#meterGrid)"/>
+
+    <!-- roads -->
+    <rect x="252" y="18" width="72" height="414" class="stone"/>
+    <rect x="246" y="18" width="6" height="414" fill="#4e5660"/><rect x="324" y="18" width="6" height="414" fill="#4e5660"/>
+    <polyline points="288,306 144,306 144,270" fill="none" stroke="#c955a5" stroke-width="7"/>
+    <polyline points="288,306 432,306 432,270" fill="none" stroke="#3dbfbc" stroke-width="7"/>
+
+    <!-- buildings -->
+    <rect x="54" y="126" width="180" height="144" class="wood" stroke="#c955a5" stroke-width="6"/>
+    <rect x="72" y="144" width="144" height="108" class="dark"/>
+    <path d="M72 144L108 108H180L216 144" class="pink" stroke="#493526" stroke-width="5"/>
+    <text class="white t22" x="115" y="137">BJ</text>
+    <path d="M92 220H196V244H92Z" class="pink"/><circle cx="112" cy="258" r="8" class="amber"/><circle cx="144" cy="264" r="8" class="amber"/><circle cx="176" cy="258" r="8" class="amber"/>
+
+    <rect x="342" y="126" width="180" height="144" class="stone" stroke="#3dbfbc" stroke-width="6"/>
+    <rect x="360" y="144" width="144" height="108" class="dark"/>
+    <rect x="372" y="108" width="120" height="36" class="cyan"/>
+    <text class="ink t22" x="414" y="135">MJ</text>
+    <polygon points="400,204 464,204 480,220 480,248 464,264 400,264 384,248 384,220" class="cyan"/>
+
+    <rect x="234" y="306" width="108" height="72" class="wood" stroke="#f6c453" stroke-width="6"/>
+    <rect x="252" y="324" width="72" height="42" class="dark"/>
+    <circle cx="288" cy="306" r="30" class="amber" stroke="#805a3b" stroke-width="6"/>
+    <rect x="279" y="282" width="18" height="48" class="amber"/>
+    <text class="white t13" x="258" y="350">交換所</text>
+
+    <!-- square -->
+    <rect x="198" y="18" width="180" height="90" fill="#fffdf5" fill-opacity=".16" stroke="#f6c453" stroke-width="3" stroke-dasharray="7 4"/>
+    <rect x="208" y="38" width="44" height="32" class="wood"/><rect x="324" y="38" width="44" height="32" class="wood"/>
+    <g class="amber"><rect x="214" y="73" width="6" height="24"/><rect x="356" y="73" width="6" height="24"/></g>
+    <path d="M288 420l-13 20h26z" class="amber"/><text class="white t13" x="307" y="439">SPAWN</text>
+    <text class="white t18" x="76" y="188">カード酒場</text><text class="white t18" x="373" y="188">牌工房</text>
+  </g>
+  <line class="dim" x1="188" y1="654" x2="764" y2="654" marker-start="url(#arrow)" marker-end="url(#arrow)"/><text class="ink t15" x="453" y="649">32.00m</text>
+  <line class="dim" x1="174" y1="174" x2="174" y2="642" marker-start="url(#arrow)" marker-end="url(#arrow)"/><text class="ink t15" transform="translate(166,432) rotate(-90)">26.00m</text>
+  <text class="ink t18" x="792" y="190">建物の役割</text>
+  <rect class="pink" x="792" y="210" width="18" height="18"/><text class="ink t13" x="820" y="224">カード酒場 / BJ</text>
+  <rect class="cyan" x="792" y="242" width="18" height="18"/><text class="ink t13" x="820" y="256">牌工房 / 麻雀</text>
+  <rect class="amber" x="792" y="274" width="18" height="18"/><text class="ink t13" x="820" y="288">交換所 / 0枚救済</text>
+  <text class="ink t18" x="792" y="342">ボクセル規則</text>
+  <text class="muted t13" x="792" y="370">・建築：1mグリッド</text><text class="muted t13" x="792" y="394">・小物：0.25m刻み</text>
+  <text class="muted t13" x="792" y="418">・NPC：箱6個を基本</text><text class="muted t13" x="792" y="442">・曲線：段付きブロック</text>
+  <text class="ink t18" x="792" y="496">実装しないもの</text>
+  <text class="muted t13" x="792" y="524">破壊 / 設置 / クラフト</text><text class="muted t13" x="792" y="548">地形編集 / 既存意匠コピー</text>
+
+  <!-- UI -->
+  <rect class="sheet" x="998" y="104" width="564" height="576"/>
+  <rect class="ink" x="1012" y="118" width="30" height="30"/><text class="white t18" x="1022" y="140">2</text>
+  <text class="ink t22" x="1056" y="142">サンドボックス型Web HUD</text>
+  <rect x="1028" y="172" width="504" height="324" rx="6" class="sky"/>
+  <path d="M1028 390L1150 300H1410L1532 390V496H1028Z" class="grass"/>
+  <rect x="1042" y="186" width="110" height="48" rx="5" class="ui"/><rect x="1052" y="197" width="22" height="22" class="amber"/>
+  <text class="white t11" x="1082" y="205">コイン</text><text class="amber t18" x="1082" y="225">10</text>
+  <rect x="1182" y="186" width="208" height="27" rx="4" class="ui"/><text class="white t11" x="1194" y="204">← カード酒場　交換所　牌工房 →</text>
+  <rect x="1107" y="428" width="346" height="54" rx="5" class="ui"/>
+  <g transform="translate(1120,437)">
+    <rect class="slot" x="0" y="0" width="36" height="36"/><rect class="slot" x="44" y="0" width="36" height="36"/>
+    <rect class="slot" x="88" y="0" width="36" height="36"/><rect class="slot" x="132" y="0" width="36" height="36"/>
+    <rect class="slot" x="176" y="0" width="36" height="36"/><rect class="slot" x="220" y="0" width="36" height="36"/>
+    <rect class="slot" x="264" y="0" width="36" height="36"/>
+    <rect x="7" y="7" width="22" height="22" class="amber"/><text class="white t11" x="52" y="23">?</text><text class="white t11" x="95" y="23">人</text><text class="white t11" x="139" y="23">受付</text>
+  </g>
+  <text class="ink t18" x="1028" y="530">ゲーム中はホットバーが専用インベントリへ変化</text>
+  <rect x="1028" y="548" width="504" height="98" rx="6" class="ui"/>
+  <text class="cyan t13" x="1044" y="568">牌ならべ入門　待ち：三萬　おすすめ：九筒</text>
+  <g transform="translate(1044,578)">
+    <g fill="#fff7e6" stroke="#3dbfbc" stroke-width="1.5">
+      <rect x="0" y="0" width="24" height="34"/><rect x="28" y="0" width="24" height="34"/><rect x="56" y="0" width="24" height="34"/>
+      <rect x="84" y="0" width="24" height="34"/><rect x="112" y="0" width="24" height="34"/><rect x="140" y="0" width="24" height="34"/>
+      <rect x="168" y="0" width="24" height="34"/><rect x="196" y="0" width="24" height="34"/><rect x="224" y="0" width="24" height="34"/>
+      <rect x="252" y="0" width="24" height="34"/><rect x="280" y="0" width="24" height="34"/><rect x="308" y="0" width="24" height="34"/>
+    </g>
+    <rect x="348" y="0" width="62" height="34" rx="4" class="cyan"/><text class="ink t11" x="360" y="22">捨てる</text>
+    <rect x="416" y="0" width="44" height="34" rx="4" class="amber"/><text class="ink t11" x="426" y="22">ツモ</text>
+  </g>
+
+  <!-- FRONT -->
+  <rect class="sheet" x="38" y="700" width="900" height="264"/>
+  <rect class="ink" x="52" y="714" width="30" height="30"/><text class="white t18" x="62" y="736">3</text>
+  <text class="ink t22" x="96" y="738">正面立面図 / 32m × 高さ上限7m</text>
+  <g transform="translate(92,774)">
+    <rect x="0" y="112" width="792" height="36" class="dirt"/><rect x="0" y="100" width="792" height="16" class="grass"/>
+    <!-- saloon -->
+    <rect x="48" y="34" width="236" height="66" class="wood"/><rect x="70" y="54" width="192" height="46" class="dark"/>
+    <path d="M48 34L92 0H240L284 34Z" class="pink"/><text class="white t28" x="142" y="31">BJ</text>
+    <g class="amber"><rect x="76" y="65" width="10" height="18"/><rect x="246" y="65" width="10" height="18"/></g>
+    <!-- exchange -->
+    <rect x="330" y="52" width="132" height="48" class="wood"/><rect x="352" y="68" width="88" height="32" class="dark"/>
+    <circle cx="396" cy="42" r="34" class="amber"/><text class="ink t18" x="379" y="49">10</text>
+    <!-- workshop -->
+    <rect x="508" y="34" width="236" height="66" class="stone"/><rect x="530" y="54" width="192" height="46" class="dark"/>
+    <rect x="548" y="0" width="156" height="34" class="cyan"/><text class="ink t28" x="604" y="29">MJ</text>
+    <g class="amber"><rect x="536" y="65" width="10" height="18"/><rect x="706" y="65" width="10" height="18"/></g>
+  </g>
+  <line class="dim" x1="92" y1="940" x2="884" y2="940" marker-start="url(#arrow)" marker-end="url(#arrow)"/><text class="ink t13" x="465" y="935">32.00m</text>
+  <line class="dim" x1="78" y1="774" x2="78" y2="922" marker-start="url(#arrow)" marker-end="url(#arrow)"/><text class="ink t13" transform="translate(70,866) rotate(-90)">最大7.00m</text>
+
+  <!-- RIGHT + PROP -->
+  <rect class="sheet" x="958" y="700" width="604" height="264"/>
+  <rect class="ink" x="972" y="714" width="30" height="30"/><text class="white t18" x="982" y="736">4</text>
+  <text class="ink t22" x="1016" y="738">右側面図＋共通小物キット</text>
+  <g transform="translate(988,778)">
+    <rect x="0" y="96" width="286" height="28" class="dirt"/><rect x="0" y="86" width="286" height="12" class="grass"/>
+    <rect x="62" y="28" width="162" height="58" class="stone"/><rect x="82" y="48" width="122" height="38" class="dark"/>
+    <rect x="90" y="0" width="106" height="28" class="cyan"/><text class="ink t18" x="129" y="21">MJ</text>
+    <line class="dim" x1="0" y1="142" x2="286" y2="142" marker-start="url(#arrow)" marker-end="url(#arrow)"/><text class="ink t11" x="126" y="138">26m</text>
+  </g>
+  <g transform="translate(1310,776)">
+    <!-- lantern -->
+    <rect x="12" y="30" width="12" height="76" class="wood"/><rect x="0" y="16" width="36" height="28" class="amber"/>
+    <text class="muted t11" x="0" y="124">ランタン</text>
+    <!-- ore -->
+    <rect x="88" y="54" width="54" height="54" class="stone"/><rect x="98" y="64" width="13" height="13" class="amber"/><rect x="121" y="83" width="12" height="12" class="amber"/>
+    <text class="muted t11" x="89" y="124">コイン鉱石</text>
+    <!-- npc -->
+    <rect x="194" y="24" width="44" height="44" class="amber"/><rect x="198" y="70" width="36" height="46" class="pink"/>
+    <rect x="182" y="74" width="14" height="40" class="wood"/><rect x="236" y="74" width="14" height="40" class="wood"/>
+    <text class="muted t11" x="188" y="136">ブロック住民</text>
+  </g>
+
+  <!-- TITLE BLOCK -->
+  <rect class="sheet" x="38" y="984" width="1524" height="98"/>
+  <text class="ink t18" x="58" y="1016">設計判断</text>
+  <text class="muted t13" x="58" y="1042">「豪華な室内の簡略版」ではなく「ブロックで作られた遊技村」を完成形とする。3Dは探索、2Dは正確なゲーム判断を担う。</text>
+  <text class="muted t13" x="58" y="1066">正本：sandbox-world-v6.yaml / sandbox-layout-v6.json　　SHEET：V6-A1　　DATE：2026-08-04</text>
+  <text class="ink t18" x="1390" y="1028">GRID</text><text class="muted t13" x="1390" y="1052">1m / 0.25m</text>
+</svg>

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "revision": 7,
+  "title": "XRift Host-Safe Interface",
+  "spatialReference": "sandbox-layout-v6.json",
+  "rootProjection": {
+    "strategy": "forced-screen-center",
+    "reason": "Drei Html fullscreen projected the world origin and shifted the XRift-hosted overlay downward by about 141px at 1440x900"
+  },
+  "breakpoints": {
+    "narrowMaxWidth": 559,
+    "compactMaxWidth": 899,
+    "shortMaxHeight": 649
+  },
+  "safeAreas": {
+    "desktop": {
+      "top": 84,
+      "right": 18,
+      "bottom": 18,
+      "left": 18,
+      "hostBottomCenterWidth": 260
+    },
+    "compact": {
+      "top": 76,
+      "right": 12,
+      "bottom": 88,
+      "left": 12
+    }
+  },
+  "hud": {
+    "desktopWidth": 224,
+    "compactWidth": 210,
+    "minimumPrimaryTextPx": 12,
+    "minimumSecondaryTextPx": 11,
+    "hotbarDesktopAnchor": "bottom-left",
+    "hotbarCompactVisibility": "hidden"
+  },
+  "gameDock": {
+    "desktopBottom": 112,
+    "compactBottom": 88,
+    "horizontalMargin": 12,
+    "maximumViewportHeightRatio": 0.58,
+    "overflow": "auto"
+  },
+  "collisionAudit": {
+    "spawn": [0, 0, 11],
+    "spawnClearRadius": 2,
+    "mainRouteWidth": 4,
+    "buildingEntranceClearWidth": 5.5,
+    "exchangeApproachWidth": 4,
+    "majorColliderPolicy": "fixed cuboids for floor, boundary, buildings, exchange and tables",
+    "minorPropPolicy": "non-blocking unless the prop defines traversal"
+  }
+}

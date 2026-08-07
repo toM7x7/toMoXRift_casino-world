@@ -1,0 +1,35 @@
+{
+  "world": {
+    "distDir": "./dist",
+    "title": "ブロック遊技村｜ブラックジャック＆麻雀入門",
+    "description": "夕暮れの開放型ブロック遊技公園。正面を向く動くGM、揺れるヤシと灯籠、盤面を隠さない手元操作、常時離席、1〜4人＋NPCのBJ／麻雀、World Storageコインに対応",
+    "thumbnailPath": "thumbnail.png",
+    "buildCommand": "npm run build",
+    "ignore": [
+      "**/.DS_Store",
+      "**/Thumbs.db",
+      "**/*.js.map",
+      "**/.gitkeep",
+      "**/index.html",
+      "**/__federation_shared_@react-three/drei-*.js",
+      "**/__federation_shared_@react-three/fiber-*.js",
+      "**/__federation_shared_@react-three/rapier-*.js",
+      "**/__federation_shared_@xrift/world-components-*.js",
+      "**/__federation_shared_three-*.js",
+      "**/__federation_shared_three/addons/**",
+      "**/__federation_shared_react-*.js",
+      "**/__federation_shared_react-dom-*.js",
+      "**/__federation_shared_react/jsx-runtime-*.js",
+      "**/rapier.es-*.js",
+      "**/hls-*.js"
+    ],
+    "physics": {
+      "gravity": 9.81,
+      "allowInfiniteJump": false
+    },
+    "camera": {
+      "near": 0.1,
+      "far": 80
+    }
+  }
+}

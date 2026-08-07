@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "revision": 6,
+  "units": "meters",
+  "concept": "BLOCK RIICHI FRONTIER",
+  "implementationStatus": "released-active-v4",
+  "release": {
+    "verifiedAt": "2026-08-04T21:48:00+09:00",
+    "worldId": "04f41fd3-3e59-45ee-9133-fd905a899ef3",
+    "version": 4,
+    "status": "ACTIVE",
+    "instanceId": "32612b7f-3511-47be-b606-cf2402a5fb83"
+  },
+  "palette": {
+    "sky": "#86B9D7",
+    "fog": "#B6D3D8",
+    "grass": "#668F46",
+    "dirt": "#805A3B",
+    "stone": "#69717D",
+    "wood": "#493526",
+    "dark": "#162033",
+    "ivory": "#FFF7E6",
+    "amber": "#F6C453",
+    "blackjack": "#C955A5",
+    "mahjong": "#3DBFBC"
+  },
+  "buildPlate": {
+    "size": [32, 0.3, 26],
+    "position": [0, -0.15, 0],
+    "gridSize": 1,
+    "detailGridSize": 0.25,
+    "heightLimit": 7,
+    "collider": {
+      "type": "cuboid",
+      "halfExtents": [16, 0.15, 13],
+      "position": [0, -0.15, 0]
+    }
+  },
+  "spawn": {
+    "position": [0, 0, 11],
+    "yaw": 0,
+    "clearRadius": 2
+  },
+  "routes": [
+    {
+      "id": "main-stone-road",
+      "from": [0, 0.02, 11],
+      "to": [0, 0.02, -7],
+      "width": 4,
+      "material": "stone"
+    },
+    {
+      "id": "blackjack-inlay",
+      "points": [[0, 0.04, 5.5], [-7, 0.04, 5.5], [-7, 0.04, 2.8]],
+      "width": 0.25,
+      "color": "#C955A5"
+    },
+    {
+      "id": "mahjong-inlay",
+      "points": [[0, 0.04, 5.5], [7, 0.04, 5.5], [7, 0.04, 2.8]],
+      "width": 0.25,
+      "color": "#3DBFBC"
+    }
+  ],
+  "buildings": [
+    {
+      "id": "blackjack-saloon",
+      "label": "BJ / カード酒場",
+      "center": [-7, 0, 0.5],
+      "footprint": [10, 8],
+      "height": 5,
+      "accent": "#C955A5",
+      "facadeDirection": "+z",
+      "tableAnchor": [-7, 0, 0.5]
+    },
+    {
+      "id": "mahjong-workshop",
+      "label": "MJ / 牌工房",
+      "center": [7, 0, 0.5],
+      "footprint": [10, 8],
+      "height": 5,
+      "accent": "#3DBFBC",
+      "facadeDirection": "+z",
+      "tableAnchor": [7, 0, 0.5]
+    },
+    {
+      "id": "coin-exchange",
+      "label": "交換所 / COIN",
+      "center": [0, 0, -7],
+      "footprint": [6, 4],
+      "height": 4,
+      "accent": "#F6C453",
+      "facadeDirection": "+z",
+      "interactionAnchor": [0, 1.2, -4.9]
+    }
+  ],
+  "villageSquare": {
+    "center": [0, 0, 5.5],
+    "footprint": [12, 6],
+    "noticeBoard": [-11.8, 0, 7.5],
+    "rosterBoard": [2.6, 0, 7],
+    "lanternPosts": [
+      [-2, 0, 9],
+      [2, 0, 9],
+      [-2, 0, 4],
+      [2, 0, 4]
+    ]
+  },
+  "screenUi": {
+    "referenceViewport": [1440, 900],
+    "status": {
+      "anchor": "top-left",
+      "offset": [18, 18],
+      "collapsedSize": [214, 58],
+      "expandedRosterSize": [260, 210]
+    },
+    "compass": {
+      "anchor": "top-center",
+      "offset": [0, 18],
+      "size": [500, 40],
+      "copy": "← カード酒場　交換所　牌工房 →"
+    },
+    "hotbar": {
+      "anchor": "bottom-center",
+      "offset": [0, 18],
+      "slotSize": 54,
+      "slotGap": 6,
+      "idleSlots": ["コイン", "遊び方", "参加者", "受付"]
+    },
+    "gameInventory": {
+      "anchor": "bottom-center",
+      "offset": [0, 18],
+      "maxWidth": 760,
+      "maxHeight": 306
+    },
+    "toast": {
+      "anchor": "bottom-center",
+      "offset": [0, 92],
+      "durationMs": 4000
+    }
+  },
+  "gameUi": {
+    "blackjack": {
+      "title": "ブラックジャック",
+      "sections": ["dealerInventory", "score", "playerInventory"],
+      "actions": ["カードを引く", "この数字で勝負"]
+    },
+    "mahjong": {
+      "title": "牌ならべ入門",
+      "sections": ["waitingTile", "gmHint", "fourteenTileInventory", "selection"],
+      "actions": ["おすすめを見る", "捨てる", "ツモ"]
+    }
+  },
+  "propModules": {
+    "unit": 0.25,
+    "types": ["lantern-post", "coin-ore", "chest", "notice-board", "block-npc"]
+  },
+  "budgets": {
+    "visibleBlockInstances": 320,
+    "decorativeMeshes": 160,
+    "dynamicLights": 8,
+    "alwaysVisibleWorldPanels": 5,
+    "blockNpcs": 5
+  },
+  "cameraPresets": {
+    "thumbnail": {
+      "position": [0, 5.4, 16],
+      "target": [0, 1.7, -1.5],
+      "fov": 58
+    },
+    "mahjongReview": {
+      "position": [7, 3.4, 6.3],
+      "target": [7, 1.1, 0.5],
+      "fov": 58
+    },
+    "blackjackReview": {
+      "position": [-7, 3.4, 6.3],
+      "target": [-7, 1.1, 0.5],
+      "fov": 58
+    },
+    "gmReview": {
+      "position": [0, 3.5, 0.8],
+      "target": [0, 1.6, -7],
+      "fov": 52
+    }
+  },
+  "drawingViews": {
+    "plan": {
+      "axes": ["x", "z"],
+      "dimensions": [32, 26]
+    },
+    "front": {
+      "axes": ["x", "y"],
+      "dimensions": [32, 7]
+    },
+    "right": {
+      "axes": ["z", "y"],
+      "dimensions": [26, 7]
+    }
+  }
+}

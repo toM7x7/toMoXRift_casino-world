@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "units": "meters",
+  "room": {
+    "width": 32,
+    "depth": 26,
+    "height": 7,
+    "floorThickness": 0.3,
+    "wallThickness": 0.3
+  },
+  "spawn": {
+    "position": [0, 0, 11],
+    "yaw": 0,
+    "clearRadius": 2.2
+  },
+  "circulation": {
+    "centralAisleWidth": 4,
+    "tableClearance": 2.2,
+    "sideWalkwayWidth": 2.4
+  },
+  "zones": {
+    "entrance": {
+      "center": [0, 0, 9],
+      "size": [10, 0.02, 6],
+      "floorColor": "#2A235E"
+    },
+    "blackjack": {
+      "center": [-7, 0, 0.5],
+      "size": [10, 0.02, 10],
+      "tableTop": [5.4, 0.24, 3.4],
+      "tableTopY": 0.82,
+      "signPosition": [-7, 3.8, -3.9],
+      "accentColor": "#D96CCB"
+    },
+    "mahjong": {
+      "center": [7, 0, 0.5],
+      "size": [9, 0.02, 9],
+      "tableTop": [4.8, 0.24, 4.4],
+      "tableTopY": 0.82,
+      "signPosition": [7, 3.8, -4.2],
+      "accentColor": "#52D6D3"
+    },
+    "gmDesk": {
+      "center": [0, 0, -6.8],
+      "counterSize": [5.8, 1.15, 1.05],
+      "accentColor": "#F6C453"
+    },
+    "backWall": {
+      "center": [0, 3.5, -13],
+      "headlinePosition": [0, 5.35, -12.78]
+    }
+  },
+  "furniture": {
+    "blackjackStools": [
+      [-8.7, 0, 3.2],
+      [-7, 0, 3.4],
+      [-5.3, 0, 3.2]
+    ],
+    "mahjongSeats": [
+      [7, 0, 3.3],
+      [4.1, 0, 0.5],
+      [7, 0, -2.3],
+      [9.9, 0, 0.5]
+    ],
+    "queuePosts": [
+      [-2.1, 0, 7.2],
+      [2.1, 0, 7.2],
+      [-2.1, 0, 4.8],
+      [2.1, 0, 4.8]
+    ]
+  },
+  "props": {
+    "blackjack": [
+      "カードシュー",
+      "捨て札トレイ",
+      "コインチップ3色",
+      "配当ルールボード"
+    ],
+    "mahjong": [
+      "牌山4辺",
+      "点棒トレイ",
+      "サイコロ2個",
+      "プレイヤー別捨て牌河",
+      "GMヒントボード"
+    ],
+    "shared": [
+      "天井ペンダントライト",
+      "フロア誘導ライン",
+      "ベルベットロープ",
+      "壁面ルールパネル",
+      "鉢植え"
+    ]
+  },
+  "palette": {
+    "background": "#111827",
+    "wall": "#243247",
+    "floor": "#172033",
+    "ivory": "#FFF7E6",
+    "amber": "#F6C453",
+    "cyan": "#52D6D3",
+    "magenta": "#D96CCB",
+    "blackjackFelt": "#176B58",
+    "mahjongFelt": "#205C88"
+  },
+  "cameraPresets": {
+    "thumbnail": {
+      "position": [0, 4.8, 12],
+      "target": [0, 1.6, -1.5],
+      "fov": 64
+    },
+    "mahjongReview": {
+      "position": [7, 4.4, 8.2],
+      "target": [7, 1.65, -1.2],
+      "fov": 55
+    },
+    "gmReview": {
+      "position": [0, 3.6, 1],
+      "target": [0, 1.8, -7],
+      "fov": 52
+    }
+  },
+  "drawingViews": {
+    "plan": {
+      "projection": "orthographic",
+      "axes": ["x", "z"],
+      "overallDimensions": [32, 26]
+    },
+    "frontElevation": {
+      "projection": "orthographic",
+      "axes": ["x", "y"],
+      "overallDimensions": [32, 7]
+    },
+    "rightElevation": {
+      "projection": "orthographic",
+      "axes": ["z", "y"],
+      "overallDimensions": [26, 7]
+    },
+    "dimensionCallouts": {
+      "tableTopHeight": 0.82,
+      "centralAisleWidth": 4,
+      "minimumClearance": 2.2
+    }
+  }
+}

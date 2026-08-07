@@ -1,0 +1,51 @@
+revision: 4
+concept: "日本の端正さを持つアールデコ遊技サロン"
+design_objective: "箱と看板の集合から、建築・家具・照明が一体化した室内へ改修する"
+
+composition:
+  primary_axis: "入口から受付まで4m幅の濃紫カーペット軸"
+  left_zone: "マゼンタ、曲線、ブラックジャック"
+  right_zone: "シアン、八角形、マージャン"
+  focal_point: "5.8m幅のGM受付と背面装飾壁"
+
+scale_rules:
+  room: [32, 26, 7]
+  wall_module: 4
+  wainscot_height: 1.05
+  table_height: 0.82
+  stool_seat_height: 0.62
+  central_aisle_width: 4
+
+material_hierarchy:
+  base: "濃紺ラッカー壁・アイボリー天井・濃紫カーペット"
+  structure: "真鍮の巾木・見切り・ピラスター"
+  game_accents: "左マゼンタ、右シアン"
+  touch_surfaces: "石材受付天板、木質卓縁、布張り椅子"
+
+lighting_hierarchy:
+  ambient: "天井コーブの暖色間接光"
+  architectural: "壁面ブラケットとピラスター照明"
+  task: "各卓上520lx相当のペンダント"
+  accent: "看板輪郭のみ低輝度ネオン"
+
+fixture_requirements:
+  reception:
+    - "正面を5枚のリブ付きパネルに分節"
+    - "高さ1.15m、奥行1.05m、幅5.8m"
+    - "石材天板と真鍮見切りを設ける"
+  blackjack:
+    - "プレイヤー側を円弧とし、矩形箱形を避ける"
+    - "カードシュー、チップ、捨て札トレイを定位置化"
+  mahjong:
+    - "四方対称、角を面取り、各席の中心線を合わせる"
+    - "牌山・河・ボタンが同一視野に入る"
+
+screenshot_review:
+  viewpoints: ["入口全景", "GM受付", "ブラックジャック卓", "マージャン卓"]
+  scoring:
+    composition: 20
+    circulation: 20
+    scale: 20
+    material_readability: 20
+    japanese_ui: 20
+  pass_threshold: 80

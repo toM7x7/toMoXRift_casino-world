@@ -1,0 +1,26 @@
+# Dependencies
+node_modules
+
+# Build
+dist
+
+# Environment
+.env
+.env.local
+
+# Editor
+.vscode
+.idea
+
+# OS
+.DS_Store
+
+# XRift
+.xrift
+
+# Local QA artifacts
+.playwright-cli
+output
+
+# Skills
+.agents

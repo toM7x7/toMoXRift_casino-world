@@ -1,0 +1,151 @@
+project:
+  name: "BLOCK RIICHI FRONTIER"
+  japanese_name: "ブロック遊技村"
+  revision: 7
+  scope: "XRiftホストUI、WebゲームUI、3D空間、コライダーを一体として扱う体験設計"
+  status: "released and verified on XRift"
+  release:
+    verified_at: "2026-08-04T23:10:00+09:00"
+    world_id: "04f41fd3-3e59-45ee-9133-fd905a899ef3"
+    version: 5
+    status: "ACTIVE"
+    content_hash: "1127c49e9f91"
+    instance_id: "32612b7f-3511-47be-b606-cf2402a5fb83"
+
+source_of_truth:
+  spatial_plan: "docs/design/sandbox-blueprint-v6.svg"
+  spatial_spec: "docs/design/sandbox-world-v6.yaml"
+  runtime_layout: "src/design/sandbox-layout-v6.json"
+  interface_plan: "docs/design/sandbox-interface-blueprint-v7.svg"
+  interface_spec: "src/design/responsive-ui-v7.json"
+  rule: "建築三面図と空間寸法はv6を維持し、v7でホストUI安全域と画面遷移を追加する"
+
+measured_problem:
+  environment: "XRift production instance at 1440x900"
+  html_fullscreen_offset:
+    x: 0
+    y: 140.682
+  observed_hotbar_rect:
+    x: 595.5
+    y: 958.7
+    width: 249
+    height: 66
+  viewport_bottom: 900
+  root_cause: "Drei Html fullscreenが画面中央ではなく3Dワールド原点の投影位置を基準にしていた"
+
+layer_model:
+  - layer: "L0"
+    name: "3D world"
+    contents: ["建物", "卓", "NPC", "交換所", "床誘導線"]
+  - layer: "L1"
+    name: "world interaction"
+    contents: ["近接ボタン", "受付救済", "ゲーム開始"]
+  - layer: "L2"
+    name: "world HUD"
+    contents: ["コイン", "保存状態", "参加者", "目的地"]
+  - layer: "L3"
+    name: "game dock"
+    contents: ["ブラックジャック手札", "麻雀14牌", "操作ボタン"]
+  - layer: "L4"
+    name: "XRift host chrome"
+    contents: ["戻る", "マウスロック", "撮影", "メニュー", "接続状態"]
+  z_order_rule: "L4を侵食せず、L2とL3はホスト予約領域の外側へ置く"
+
+host_safe_areas:
+  desktop_1440x900:
+    top_reserved: 72
+    internal_top: 84
+    side_margin: 18
+    bottom_center_reserved:
+      width: 260
+      height: 96
+    coin_hud: "top-left"
+    compass: "top-center"
+    hotbar: "bottom-left"
+    game_dock: "bottom-center, bottom 112"
+  compact_560_to_899:
+    top_reserved: 68
+    internal_top: 76
+    side_margin: 12
+    hotbar: "hidden"
+    game_dock: "bottom-center, bottom 88"
+  narrow_under_560:
+    compass: "first row, abbreviated BJ / 受付 / MJ"
+    coin_hud: "second row"
+    hotbar: "hidden"
+    game_dock: "width viewport minus 24, scrollable"
+
+typography:
+  family: ["Noto Sans JP", "Yu Gothic UI", "Segoe UI", "sans-serif"]
+  coin_value_px: 24
+  primary_min_px: 12
+  secondary_min_px: 11
+  microcopy_policy: "9px以下を使わない"
+  contrast:
+    base_background: "rgba(17,24,39,.94)"
+    main_text: "#FFF7E6"
+    secondary_text: "#CBD5E1"
+    blackjack: "#C955A5"
+    mahjong: "#3DBFBC"
+    coin: "#F6C453"
+
+spatial_interference:
+  build_plate:
+    visible_size: [32, 0.3, 26]
+    collider_half_extents: [16, 0.15, 13]
+    alignment: "exact"
+  spawn:
+    position: [0, 0, 11]
+    yaw: 0
+    clear_radius: 2
+  main_route:
+    width: 4
+    blocking_props: 0
+  building_entrance:
+    clear_width: 5.5
+    collider_type: "fixed cuboids"
+  exchange_approach:
+    width: 4
+    interaction_height: 1.25
+  tables:
+    collider_type: "fixed cuboids"
+  minor_props:
+    policy: "装飾小物とNPCは通行の引っ掛かりを避けるため原則ノンブロッキング"
+
+game_docks:
+  blackjack:
+    max_width: 720
+    max_height_desktop: "64vh"
+    max_height_compact: "58vh"
+    overflow_y: "auto"
+  mahjong:
+    max_width: 760
+    max_height_desktop: "64vh"
+    max_height_compact: "58vh"
+    tile_desktop: [42, 56]
+    tile_narrow: [36, 50]
+    wrap: true
+    overflow_y: "auto"
+
+acceptance:
+  desktop:
+    - "XRift上部操作とコインHUD・コンパスが重ならない"
+    - "ホットバーが画面内かつ接続表示の左側に収まる"
+    - "ゲームドック下端が接続表示より上にある"
+  narrow:
+    - "コンパスとコインHUDが縦に分離する"
+    - "麻雀14牌が折り返され、横スクロールを発生させない"
+    - "非操作のホットバーを表示しない"
+  runtime:
+    - "Html fullscreenのルート矩形がx=0,y=0に一致する"
+    - "主要配信チャンクがHTTP 200"
+    - "実インスタンスのスポーンと両ゲーム開始画面をスクリーンショット確認する"
+  release_result:
+    desktop_hud_rect: [18, 84, 224, 178]
+    desktop_compass_rect: [598.3, 84, 243.5, 40]
+    desktop_hotbar_rect: [18, 816, 249, 66]
+    narrow_compass_rect: [12, 76, 366, 38.5]
+    narrow_hud_rect: [12, 124, 210, 178]
+    narrow_hotbar: "hidden"
+    cdn_failures: 0
+    world_console_errors: 0

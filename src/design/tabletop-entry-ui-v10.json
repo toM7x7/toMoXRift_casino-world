@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "revision": 10,
+  "title": "Chair Entry and Tabletop 3D Interface",
+  "spawnMap": {
+    "position": [4.2, 0, 9.5],
+    "rotationYRadians": -0.46,
+    "uniformScale": 0.82,
+    "distanceFromSpawnMeters": 9.49,
+    "collider": "none",
+    "source": "procedural plan generated from sandbox-layout-v9.json",
+    "zones": ["BJ", "麻雀", "交換所", "建設予定地A", "建設予定地B", "現在地"]
+  },
+  "interaction": {
+    "input": "XRift center-ray Interactable",
+    "pointerLock": "kept active",
+    "escRequired": false,
+    "screenHtmlGamePanel": false,
+    "seatInteraction": "click one of four physical chairs",
+    "seatCostCoins": 2
+  },
+  "seatLock": {
+    "horizontalRadiusMeters": 0.15,
+    "verticalToleranceMeters": 0.4,
+    "correctionIntervalMilliseconds": 80,
+    "mechanism": "block movement keys in capture phase and teleport back after displacement"
+  },
+  "blackjack": {
+    "sessionKey": "casino.blackjack.table.v10",
+    "seatYawDegrees": [325, 347, 13, 35],
+    "lobby": "four public ENTRY slots fill when their chairs are occupied",
+    "start": "first occupied seat receives a local 3D START button",
+    "public": ["GM model", "GM cards", "turn and result status"],
+    "privateVisuals": ["local player cards", "HIT", "STAND", "NEXT", "leave seat"],
+    "dealerHoleCard": "card back until settlement"
+  },
+  "mahjong": {
+    "sessionKey": "casino.mahjong.table.v10",
+    "seatYawDegrees": [0, 270, 180, 90],
+    "lobby": "four directional ENTRY slots fill from chair interaction",
+    "start": "first occupied seat receives a local 3D START button",
+    "public": ["tile wall", "recent discards", "NPC seats", "turn status"],
+    "privateVisuals": ["local 14-tile hand", "HINT", "ツモ", "NEXT", "leave seat"]
+  },
+  "privacyBoundary": {
+    "rendering": "private hand meshes are conditionally rendered only on the owning client",
+    "transport": "table state remains shared useInstanceState",
+    "securityLevel": "visual privacy, not cryptographic secrecy"
+  }
+}

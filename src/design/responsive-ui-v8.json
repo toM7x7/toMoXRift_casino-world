@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "revision": 8,
+  "title": "XRift Seated Multiplayer Interface",
+  "spatialReference": "sandbox-layout-v9.json",
+  "previousInterfaceReference": "responsive-ui-v7.json",
+  "rootProjection": {
+    "strategy": "forced-screen-center",
+    "reason": "Keep Drei Html fullscreen aligned to the XRift viewport instead of the projected world origin"
+  },
+  "breakpoints": {
+    "narrowMaxWidth": 559,
+    "compactMaxWidth": 899,
+    "shortMaxHeight": 649
+  },
+  "safeAreas": {
+    "desktop": {
+      "top": 84,
+      "right": 18,
+      "bottom": 18,
+      "left": 18,
+      "hostBottomCenterWidth": 260
+    },
+    "compact": {
+      "top": 76,
+      "right": 12,
+      "bottom": 88,
+      "left": 12
+    }
+  },
+  "hud": {
+    "desktopWidth": 224,
+    "compactWidth": 210,
+    "minimumPrimaryTextPx": 12,
+    "minimumSecondaryTextPx": 11,
+    "hotbarDesktopAnchor": "bottom-left",
+    "hotbarCompactVisibility": "hidden"
+  },
+  "gameDock": {
+    "desktopBottom": 112,
+    "compactBottom": 88,
+    "horizontalMargin": 12,
+    "maximumViewportHeightRatio": 0.58,
+    "overflow": "auto"
+  },
+  "seatedPanel": {
+    "desktop": {
+      "anchor": "right",
+      "top": 126,
+      "right": 18,
+      "bottom": 84,
+      "blackjackWidth": 480,
+      "mahjongWidth": 560
+    },
+    "compact": {
+      "anchor": "bottom-sheet",
+      "left": 12,
+      "right": 12,
+      "bottom": 88,
+      "maximumViewportHeightRatio": 0.58
+    },
+    "zIndex": 2147482000,
+    "worldViewPolicy": "Keep the center and left side of the 3D table visible on desktop",
+    "inputPolicy": "Release pointer lock, suppress movement keys, and route interaction to HTML controls until leave-seat"
+  },
+  "tableCapacity": {
+    "minimumHumans": 1,
+    "maximumHumans": 4,
+    "emptyMahjongSeats": "NPC controlled",
+    "blackjackDealer": "NPC controlled"
+  },
+  "collisionAudit": {
+    "spawn": [0, 0, 18],
+    "spawnClearRadius": 3,
+    "mainRouteWidth": 6,
+    "buildingEntranceClearWidth": 12,
+    "exchangeApproachWidth": 6,
+    "majorColliderPolicy": "fixed cuboids for floor, boundary and tables; open-air deck markers and vacant plots are non-blocking",
+    "minorPropPolicy": "non-blocking unless the prop defines traversal"
+  }
+}

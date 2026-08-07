@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "revision": 9,
+  "units": "meters",
+  "concept": "BLOCK RIICHI SKY PARK",
+  "implementationStatus": "local-implementation",
+  "palette": {
+    "sky": "#6F62A8",
+    "fog": "#8C78A8",
+    "grass": "#668F46",
+    "dirt": "#805A3B",
+    "stone": "#69717D",
+    "wood": "#493526",
+    "dark": "#162033",
+    "ivory": "#FFF7E6",
+    "amber": "#F6C453",
+    "blackjack": "#C955A5",
+    "mahjong": "#3DBFBC"
+  },
+  "buildPlate": {
+    "size": [56, 0.3, 42],
+    "position": [0, -0.15, 0],
+    "gridSize": 1,
+    "detailGridSize": 0.25,
+    "heightLimit": 7,
+    "collider": {
+      "type": "cuboid",
+      "halfExtents": [28, 0.15, 21],
+      "position": [0, -0.15, 0]
+    }
+  },
+  "spawn": {
+    "position": [0, 0, 18],
+    "yaw": 0,
+    "clearRadius": 3
+  },
+  "routes": [
+    {
+      "id": "main-stone-road",
+      "from": [0, 0.02, 18],
+      "to": [0, 0.02, -10],
+      "width": 6,
+      "material": "stone"
+    },
+    {
+      "id": "cross-plaza-road",
+      "from": [-21, 0.02, 6],
+      "to": [21, 0.02, 6],
+      "width": 4,
+      "material": "stone"
+    },
+    {
+      "id": "blackjack-inlay",
+      "points": [[0, 0.04, 6], [-15, 0.04, 6], [-15, 0.04, 3]],
+      "width": 0.3,
+      "color": "#C955A5"
+    },
+    {
+      "id": "mahjong-inlay",
+      "points": [[0, 0.04, 6], [15, 0.04, 6], [15, 0.04, 3]],
+      "width": 0.3,
+      "color": "#3DBFBC"
+    }
+  ],
+  "buildings": [
+    {
+      "id": "blackjack-open-deck",
+      "label": "BJ / カード広場",
+      "center": [-15, 0, 2],
+      "footprint": [12, 11],
+      "height": 4.5,
+      "accent": "#C955A5",
+      "facadeDirection": "+z",
+      "tableAnchor": [-15, 0, 2],
+      "enclosure": "none"
+    },
+    {
+      "id": "mahjong-open-deck",
+      "label": "MJ / 牌広場",
+      "center": [15, 0, 2],
+      "footprint": [12, 11],
+      "height": 4.5,
+      "accent": "#3DBFBC",
+      "facadeDirection": "+z",
+      "tableAnchor": [15, 0, 2],
+      "enclosure": "none"
+    },
+    {
+      "id": "coin-exchange-open-counter",
+      "label": "交換所 / COIN",
+      "center": [0, 0, -13],
+      "footprint": [8, 5],
+      "height": 3.8,
+      "accent": "#F6C453",
+      "facadeDirection": "+z",
+      "interactionAnchor": [0, 1.2, -10.2],
+      "enclosure": "none"
+    }
+  ],
+  "futurePlots": [
+    {
+      "id": "future-plot-a",
+      "label": "建設予定地 A",
+      "center": [-17, 0, -13],
+      "size": [12, 10],
+      "accent": "#F6C453"
+    },
+    {
+      "id": "future-plot-b",
+      "label": "建設予定地 B",
+      "center": [17, 0, -13],
+      "size": [12, 10],
+      "accent": "#A98A4C"
+    }
+  ],
+  "villageSquare": {
+    "center": [0, 0, 7],
+    "footprint": [18, 8],
+    "noticeBoard": [-24, 0, 15],
+    "rosterBoard": [4, 0, 14],
+    "lanternPosts": [
+      [-3.8, 0, 12.5],
+      [7.8, 0, 12.5],
+      [-3.8, 0, 9],
+      [3.8, 0, 9],
+      [-12, 0, 6],
+      [12, 0, 6],
+      [-3.8, 0, -7],
+      [3.8, 0, -7]
+    ]
+  },
+  "cameraPresets": {
+    "thumbnail": {
+      "position": [0, 10.5, 31],
+      "target": [0, 1.2, -4],
+      "fov": 60
+    },
+    "mahjongReview": {
+      "position": [15, 4.3, 9.2],
+      "target": [15, 1.1, 2],
+      "fov": 58
+    },
+    "blackjackReview": {
+      "position": [-15, 4.3, 9.2],
+      "target": [-15, 1.1, 2],
+      "fov": 58
+    },
+    "blackjackSeatReview": {
+      "position": [-17.15, 1.65, 5.05],
+      "target": [-15, 1.35, 2],
+      "fov": 62
+    },
+    "gmReview": {
+      "position": [0, 4.4, -4],
+      "target": [0, 1.5, -13],
+      "fov": 54
+    },
+    "mahjongSeatReview": {
+      "position": [15, 1.72, 5.4],
+      "target": [15, 1.02, 3.7],
+      "fov": 62
+    },
+    "mapReview": {
+      "position": [0, 1.65, 18],
+      "target": [0, 1.65, 0],
+      "fov": 62
+    }
+  },
+  "drawingViews": {
+    "plan": {
+      "axes": ["x", "z"],
+      "dimensions": [56, 42]
+    },
+    "front": {
+      "axes": ["x", "y"],
+      "dimensions": [56, 7]
+    },
+    "right": {
+      "axes": ["z", "y"],
+      "dimensions": [42, 7]
+    }
+  },
+  "measuredClearances": {
+    "mainRouteWidth": 6,
+    "crossRouteWidth": 4,
+    "betweenGamingCenters": 30,
+    "gamingDeckToMainRoute": 9,
+    "futurePlotToExchange": 11,
+    "spawnClearRadius": 3
+  }
+}

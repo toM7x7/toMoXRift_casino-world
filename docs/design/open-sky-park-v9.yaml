@@ -1,0 +1,100 @@
+project:
+  name: "BLOCK RIICHI SKY PARK"
+  japanese_name: "ブロック遊技公園"
+  revision: 9
+  date: "2026-08-05"
+  status: "XRift ACTIVE version 8"
+  intent: "生成スカイ画像の広がりを、歩ける開放型サンドボックス遊技公園として実体化する"
+
+source_of_truth:
+  spatial_json: "src/design/sandbox-layout-v9.json"
+  responsive_ui: "src/design/responsive-ui-v8.json"
+  seated_session: "src/design/seated-multiplayer-v8.json"
+  generated_sky: "public/block-village-twilight-sky.png"
+  runtime_scene: "src/World.tsx"
+
+release:
+  world_id: "04f41fd3-3e59-45ee-9133-fd905a899ef3"
+  version: 8
+  content_hash: "635dd021bc81"
+  updated_at: "2026-08-05T01:20:29.395Z"
+  is_public: false
+  live_instance: "https://app.xrift.net/instance/32612b7f-3511-47be-b606-cf2402a5fb83"
+
+industrial_dimensions_m:
+  overall:
+    plan_x: 56
+    plan_z: 42
+    maximum_design_height: 7
+    floor_thickness: 0.3
+  orthographic_views:
+    plan:
+      axes: ["x", "z"]
+      dimensions: [56, 42]
+    front:
+      axes: ["x", "y"]
+      dimensions: [56, 7]
+    right:
+      axes: ["z", "y"]
+      dimensions: [42, 7]
+  circulation:
+    main_road_width: 6
+    cross_road_width: 4
+    spawn_clear_radius: 3
+  separations:
+    blackjack_to_mahjong_center: 30
+    gaming_deck_to_main_road: 9
+    future_plot_to_exchange: 11
+
+zones:
+  blackjack:
+    center: [-15, 0, 2]
+    footprint: [12, 11]
+    enclosure: "none"
+    overhead_structure: "none"
+    wayfinding: "magenta floor outline and floor lettering"
+  mahjong:
+    center: [15, 0, 2]
+    footprint: [12, 11]
+    enclosure: "none"
+    overhead_structure: "none"
+    wayfinding: "cyan floor outline and floor lettering"
+  exchange:
+    center: [0, 0, -13]
+    footprint: [8, 5]
+    enclosure: "none"
+    function: "残高0枚のプレイヤーが受付操作で10枚を受け取る"
+  future_plot_a:
+    center: [-17, 0, -13]
+    footprint: [12, 10]
+    finish: "dirt grid with low non-blocking boundary"
+  future_plot_b:
+    center: [17, 0, -13]
+    footprint: [12, 10]
+    finish: "dirt grid with low non-blocking boundary"
+
+spatial_rules:
+  - "遊技広場に壁、天井、横断ゲートを設けない"
+  - "広場サインは床面に配置し、着席視線を遮らない"
+  - "木、ランタン、掲示板は主要動線6mと交差動線4mの外へ置く"
+  - "建設予定地は将来の遊技追加に使える矩形グリッドとして残す"
+  - "生成パノラマは有限半径メッシュではなくequirectangular scene.backgroundへ設定する"
+  - "XRiftの撮影モードやカメラ位置が変わっても黒い球体境界を出さない"
+
+game_and_ui:
+  seated_camera: "卓ごとの席位置へteleportし、移動キーを固定"
+  pointer: "着席時にpointer lockを解除"
+  desktop_ui: "右側固定。中央から左の3D卓を可視にする"
+  compact_ui: "下部シート。XRift固定UIの上に88px安全域を確保"
+  players:
+    minimum_humans: 1
+    maximum_humans: 4
+    blackjack_dealer: "NPC"
+    mahjong_empty_seats: "NPC"
+
+acceptance:
+  - "サムネイル視点で両遊技広場、中央道路、交換所、2つの建設予定地が同時に読める"
+  - "着席視点で床サインや構造物が卓を遮らない"
+  - "デスクトップUIが画面右側に留まり、ゲーム操作をクリックできる"
+  - "主要通路上に固定コライダーの干渉がない"
+  - "実インスタンスで最新sceneUrl、スカイ画像、サムネイルがHTTP 200になる"

@@ -1,0 +1,65 @@
+revision: 12
+title: "BLOCK RIICHI SKY PARK - Pirate Market Motion Pass"
+units: meters
+
+design_goal:
+  spatial:
+    - "広さは維持し、動くランドマークで目的地を読めるようにする"
+    - "壁・天井を追加しない"
+    - "主通路6m、交差通路4mを小物で狭めない"
+  play:
+    - "NPCの動きで受付・ゲーム開始・勝敗を伝える"
+    - "ブラックジャックは「1枚引く」「止める」を維持する"
+    - "麻雀は牌選択に加え「おすすめで捨てる」を用意する"
+
+plan_view:
+  world_plate: [56, 42]
+  spawn: [0, 0, 18]
+  blackjack_center: [-15, 0, 2]
+  mahjong_center: [15, 0, 2]
+  reception_center: [0, 0, -13]
+  animated_palm_markers:
+    - [-24, 0, 16]
+    - [24, 0, 16]
+    - [-24, 0, -17]
+    - [24, 0, -17]
+
+front_elevation:
+  max_existing_height: 7
+  npc_height: 1.9
+  palm_height_approx: 3.9
+  reception_coin_center_y: 3.72
+
+right_elevation:
+  open_sky: true
+  obstruction_policy: "1.3mを超える新規物体を主通路端から2m以内に置かない"
+
+animation_directing:
+  reception_gm:
+    idle: "02_Idle_2"
+    relief_available: "15_Waving_Right"
+  blackjack_dealer:
+    lobby: "02_Idle_2"
+    action: "08_Action_One-Handed_Mid"
+    settled: "18_Success_Celebration"
+  mahjong_npc:
+    waiting: "01_Idle_1"
+    own_turn: "08_Action_One-Handed_Mid"
+    winner: "18_Success_Celebration"
+  palms:
+    clip: "Single Fronds Moving"
+    duration_seconds: 21.042
+    phase_offsets: [0, 5.2, 10.4, 15.6]
+
+qa_gates:
+  technical:
+    - "typecheck"
+    - "unit tests"
+    - "production build"
+    - "all five CC0 glTF files copied into dist"
+  visual:
+    - "NPCがTポーズにならない"
+    - "ヤシが地面から浮かない"
+    - "樽が椅子・ENTRY・通路を塞がない"
+    - "交換所の回転コインがスポーンから識別できる"
+    - "麻雀の進行操作に英語ラベルが残らない"

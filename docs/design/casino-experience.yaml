@@ -1,0 +1,134 @@
+project:
+  name: "NEON RIICHI CASINO"
+  japanese_name: "ネオン遊技場"
+  revision: 4
+  design_intent: "初見でも30秒以内に遊び方が分かる、明るく上品な一人対応カジノ"
+
+experience_principles:
+  - id: readable_first
+    rule: "暗さより可読性を優先し、文字と操作面には常時十分な照度を与える"
+  - id: one_action_one_label
+    rule: "ボタンは日本語の動詞で表し、補足を1行添える"
+  - id: explain_before_bet
+    rule: "賭ける前に目的・賭け金・配当を読める"
+  - id: solo_complete
+    rule: "NPCとGMだけで全ゲームループが成立する"
+  - id: storage_at_milestones
+    rule: "コイン保存は開始・精算・受付受取の節目だけで行う"
+
+arrival:
+  first_view:
+    headline: "ネオン遊技場"
+    subline: "一人でも遊べます"
+    visible_destinations:
+      left: "ブラックジャック"
+      right: "麻雀入門卓"
+      center: "GM案内所"
+  onboarding:
+    - "画面左上で自分と参加者のコインを確認"
+    - "床の色分けと頭上看板でゲームを選ぶ"
+    - "卓上の黄色い開始ボタンを押す"
+    - "残高0枚になったらGM受付で10枚を受け取る"
+
+coin_economy:
+  storage_key: "casino.coins.v1"
+  initial_coins: 10
+  relief_rule: "残高0枚のプレイヤーがGM受付を操作すると10枚受け取れる"
+  relief_trigger: "自動配布は行わない"
+  hud_labels:
+    title: "コイン残高"
+    saved: "ワールドに保存済み"
+    session: "このセッションのみ"
+    players: "参加プレイヤー"
+
+blackjack:
+  title: "ブラックジャック"
+  objective: "21を超えず、ディーラーより大きい数字を目指す"
+  bet: 2
+  dealer_rule: "ディーラーは17以上で止まる"
+  actions:
+    start: "2コインで開始"
+    hit: "カードを引く"
+    stand: "この数字で勝負"
+  payouts:
+    normal_win: 4
+    natural_blackjack: 5
+    push: 2
+  table_instruction:
+    - "1. 2枚の合計を確認"
+    - "2. 引く、または勝負"
+    - "3. 21を超えると負け"
+
+mahjong:
+  title: "麻雀入門卓"
+  mode: "テンパイスタート・ツモ練習"
+  audience: "麻雀を知らないプレイヤー"
+  objective: "同じ牌3枚または数字の並び3枚を4組と、同じ牌2枚の頭を作る"
+  bet: 2
+  win_payout: 6
+  calls: false
+  flow:
+    - state: ready
+      instruction: "2コインで開始"
+    - state: draw
+      instruction: "牌は自動で1枚引かれる"
+    - state: discard
+      instruction: "14枚から不要な牌を1枚選ぶ"
+    - state: npc_turn
+      instruction: "NPC3人が順番に引いて捨てる"
+    - state: win
+      instruction: "完成したら「ツモ！」を押す"
+  gm_support:
+    always_show_goal: true
+    show_waiting_tiles: true
+    show_recommended_discard: true
+    recommended_copy: "おすすめ: {tile}を捨てると形を保てます"
+  beginner_deal:
+    rule: "プレイヤーは必ずテンパイの13枚から開始する"
+    purpose: "待ち牌を見ながら、引く・捨てる・ツモを短時間で理解する"
+  npc_names:
+    - "アカリ"
+    - "レン"
+    - "ユイ"
+
+visual_language:
+  mood: "和モダンとネオンを組み合わせた明るい夜の遊技場"
+  palette:
+    background: "#111827"
+    wall: "#243247"
+    floor: "#172033"
+    ivory: "#FFF7E6"
+    amber: "#F6C453"
+    cyan: "#52D6D3"
+    magenta: "#D96CCB"
+    green_felt: "#176B58"
+    blue_felt: "#205C88"
+  typography:
+    primary: "日本語ゴシック"
+    minimum_world_label_height_m: 0.18
+    minimum_button_text_height_m: 0.12
+  lighting:
+    ambient: "顔と卓上が読める基礎照明"
+    accents: "シアン・マゼンタは輪郭と誘導線だけに使用"
+    avoid: "黒つぶれ、過剰なブルーム、文字面への色かぶり"
+
+acceptance:
+  design_drawings:
+    - "建築平面図: 上面からゾーン・導線・家具配置・寸法を確認できる"
+    - "工業三面図: 上面図・正面立面図・右側面立面図を同一スケールで示す"
+    - "三面図には室内32m×26m×7m、卓高0.82m、中央通路4m、周囲2.2mを明記する"
+    - "画像は概念補助、JSON座標を実装上の正本とする"
+  visual:
+    - "スポーン位置から3つの目的地名が読める"
+    - "両卓の開始ボタンが黄色で識別できる"
+    - "麻雀の手牌14枚と待ち牌説明が同時に読める"
+    - "NPCとGMの役割が日本語で分かる"
+  gameplay:
+    - "ブラックジャックを開始から精算まで完走できる"
+    - "麻雀はテンパイ配牌から開始し、推奨捨て牌と待ち牌を表示する"
+    - "0コイン到達時は残高0のまま維持され、GM受付の操作で10コイン受け取れる"
+    - "残高が1枚以上のとき受付ボタンは無効になる"
+  technical:
+    - "typecheck・unit test・production buildが成功する"
+    - "表示床とコライダー寸法が一致する"
+    - "ローカルプレビューがHTTP 200で応答する"

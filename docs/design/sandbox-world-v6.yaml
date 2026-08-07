@@ -1,0 +1,238 @@
+project:
+  name: "BLOCK RIICHI FRONTIER"
+  japanese_name: "ブロック遊技村"
+  revision: 6
+  design_intent: "コードプリミティブをボクセル世界の正規表現として扱い、WebゲームUIをサンドボックス系HUDとして統合する"
+  status: "released and verified on XRift"
+  inspiration_boundary:
+    reference: "ボクセル型サンドボックスゲームの読みやすさ"
+    original_rule: "既存ゲーム固有のブロックテクスチャ、キャラクター造形、ロゴ、UI配置は複製しない"
+
+world_fantasy:
+  premise: "旅人がコイン鉱山の村に立ち寄り、カード酒場と牌工房で遊ぶ"
+  player_role: "流れ者の遊技師"
+  gm_role: "村長兼コイン交換所の番人"
+  npc_style: "四角い頭と胴体を持つ、役割色のブロック住民"
+  sandbox_scope:
+    included:
+      - "ボクセル地形と建築"
+      - "自由に歩いて卓を選ぶハブ体験"
+      - "チェスト、掲示板、鉱石、ランタンを思わせる小物"
+      - "ホットバー型ゲーム操作UI"
+    excluded_for_this_revision:
+      - "ブロック破壊"
+      - "ブロック設置"
+      - "クラフト"
+      - "地形の永続編集"
+    reason: "見た目と探索感を先に完成し、未実装のサンドボックス機能を誤認させない"
+
+constraint_contract:
+  geometry:
+    primary: ["boxGeometry", "cylinderGeometry", "sphereGeometry", "capsuleGeometry"]
+    grid: "1m"
+    rule: "斜め曲面や写実家具を避け、1m・0.5m・0.25mのブロック寸法で統一"
+  materials:
+    rule: "単色、低金属、粗めの面。色面と陰影だけで素材カテゴリを分ける"
+    categories:
+      grass: "#668F46"
+      dirt: "#805A3B"
+      stone: "#69717D"
+      dark_wood: "#493526"
+      lantern: "#F6C453"
+      blackjack: "#C955A5"
+      mahjong: "#3DBFBC"
+      sky: "#86B9D7"
+  interface:
+    rule: "3D世界は探索と役割表示、2D画面は正確なカード・牌・コイン・操作を担当"
+    world_sign_limit: "1看板につき大見出しと1行説明"
+  design_budget:
+    note: "XRiftの上限値ではなく本ワールドの設計予算"
+    visible_block_instances_max: 320
+    decorative_meshes_max: 160
+    simultaneous_dynamic_lights_max: 8
+    always_visible_world_panels_max: 5
+    block_npcs_max: 5
+
+site_plan:
+  units: "meters"
+  build_plate:
+    size: [32, 26]
+    top_y: 0
+    edge: "2段の土・石ブロックで島の断面を見せる"
+    collider: "床面は32×26mの単一CuboidColliderを維持"
+  height_limit: 7
+  spawn:
+    position: [0, 0, 11]
+    first_view: "中央広場、左のカード酒場、右の牌工房、奥のコイン交換所"
+  routes:
+    main: "幅4mの石ブロック道を入口から交換所へ"
+    left: "マゼンタの埋め込みブロックでカード酒場へ"
+    right: "シアンの埋め込みブロックで牌工房へ"
+
+buildings:
+  blackjack_saloon:
+    japanese_name: "カード酒場"
+    center: [-7, 0, 0.5]
+    footprint: [10, 8]
+    height: 5
+    facade: "正面開放、柱4本、段状の切妻、BJの大型ブロック文字"
+    palette: ["dark_wood", "blackjack", "lantern"]
+    interior_anchor: "半円を段付きブロックで表すカード卓"
+    sign:
+      headline: "BJ"
+      detail: "2コイン / 21をこえない"
+  mahjong_workshop:
+    japanese_name: "牌工房"
+    center: [7, 0, 0.5]
+    footprint: [10, 8]
+    height: 5
+    facade: "正面開放、四角い庇、MJの大型ブロック文字"
+    palette: ["stone", "mahjong", "lantern"]
+    interior_anchor: "八角形に見える段付きブロック卓"
+    sign:
+      headline: "MJ"
+      detail: "2コイン / 1枚えらんで捨てる"
+  coin_exchange:
+    japanese_name: "コイン交換所"
+    center: [0, 0, -7]
+    footprint: [6, 4]
+    height: 4
+    facade: "アンバーのコイン鉱石塔と窓口"
+    interaction_landmark: "0枚時だけ点灯する大型コインブロック"
+    sign:
+      headline: "交換所"
+      detail: "残高0枚で10枚"
+public_spaces:
+  village_square:
+    center: [0, 0, 5.5]
+    footprint: [12, 6]
+    props:
+      - "遊び方掲示板"
+      - "参加者コイン掲示板"
+      - "座れる石ブロック"
+      - "ランタン柱"
+
+prop_kit:
+  dimensions: "すべて0.25m刻み"
+  items:
+    lantern_post:
+      primitives: ["box", "box", "emissive box"]
+      purpose: "道とゾーン色の誘導"
+    coin_ore:
+      primitives: ["stone box", "small amber boxes"]
+      purpose: "コイン世界観と受付目印"
+    chest:
+      primitives: ["two boxes", "small latch box"]
+      purpose: "説明やランキングの台座。収納機能は持たせない"
+    notice_board:
+      primitives: ["box panel", "two box posts"]
+      purpose: "日本語ルールの大見出し"
+    block_npc:
+      primitives: ["head box", "torso box", "four limb boxes"]
+      purpose: "未完成の人型ではなく、意図的なボクセル住民"
+
+screen_ui:
+  visual_metaphor: "サンドボックスゲームのホットバーとインベントリ。ただし独自配色・独自寸法"
+  persistent_status:
+    placement: "画面左上"
+    contents:
+      - "コイン鉱石アイコン"
+      - "自分の残高"
+      - "保存状態"
+    collapsed_size_css_px: [214, 58]
+    roster_behavior: "参加者一覧はTab相当の開閉式パネル"
+  location_compass:
+    placement: "画面上中央"
+    idle_copy: "← カード酒場　交換所　牌工房 →"
+    hide_during_game: true
+  hotbar:
+    placement: "画面下中央"
+    idle_slots:
+      - "1: コイン残高"
+      - "2: 遊び方"
+      - "3: 参加者"
+      - "4: 受付案内"
+    interaction_behavior: "卓の近くではゲーム専用スロットへ入れ替える"
+  toast:
+    placement: "画面中央下、ホットバーの上"
+    duration_seconds: 4
+
+game_ui:
+  blackjack:
+    presentation: "カードをインベントリスロットとして表示"
+    dock:
+      top: "ディーラー：カードと合計"
+      middle: "結果またはGMの一文"
+      bottom: "自分：カード、合計、引く、勝負"
+    actions:
+      - "カードを引く"
+      - "この数字で勝負"
+    physical_table_role: "ゲーム開始位置、NPCの場所、勝敗色の表示だけを担う"
+  mahjong:
+    mode_name: "牌ならべ入門"
+    presentation: "14枚を横長インベントリとして画面下に表示"
+    dock:
+      top: "待ち牌とおすすめ"
+      middle: "14枚の手牌"
+      bottom: "選択中の牌、捨てる、ツモ"
+    actions:
+      - "おすすめを見る"
+      - "捨てる"
+      - "ツモ"
+    physical_table_role: "牌山のシルエット、NPCの席、現在手番色だけを担う"
+    simplification:
+      - "テンパイ13枚から開始"
+      - "鳴きなし"
+      - "複雑な点数計算なし"
+      - "正確な牌文字は2D UIだけで判断可能"
+
+economy_ui:
+  starting_coins: 10
+  storage_key: "casino.coins.v1"
+  relief:
+    automatic: false
+    location: "コイン交換所"
+    eligibility: "残高0枚"
+    grant: 10
+    visual_state:
+      eligible: "鉱石塔と受付ボタンがアンバー点灯"
+      ineligible: "消灯し、看板に『0枚で利用』"
+  player_transfer:
+    design_status: "not included in this blueprint"
+    reason: "World Storageは永続KVであり、リアルタイム取引の整合性設計を別途必要とする"
+
+responsive_and_xr:
+  desktop:
+    hotbar: "横一列"
+    game_inventory: "最大760px"
+  narrow:
+    breakpoint_css_px: 820
+    hotbar: "主要4枠のみ"
+    game_inventory: "牌を2段表示"
+  xr:
+    rule: "画面HUDだけに操作を閉じず、卓上の大型Interactableでも同じ操作を実行可能にする"
+
+acceptance:
+  blueprint:
+    - "平面図・正面図・右側面図で32×26×7m、各建物のブロック寸法が読める"
+    - "カード酒場、牌工房、交換所がシルエットだけで区別できる"
+    - "ホットバー、ブラックジャック画面、麻雀画面の責務が図示されている"
+  visual:
+    - "箱形であることが簡略化ではなくボクセル意匠に見える"
+    - "NPCがブロック住民として統一されている"
+    - "小物が0.25m刻みの共通キットで揃っている"
+    - "固定4視点のスクリーンショットで設計図との一致を確認する"
+  usability:
+    - "3D卓の小さな牌を読まずに麻雀を完走できる"
+    - "0枚時に交換所まで床ラインとHUDが同時に誘導する"
+    - "日本語操作は動詞で始まり、1操作1ラベルになっている"
+  release_gate:
+    - "技術テスト合格とビジュアル合格を別々に記録する"
+    - "ビジュアル合格前は再アップロードしない"
+  release:
+    verified_at: "2026-08-04T21:48:00+09:00"
+    world_id: "04f41fd3-3e59-45ee-9133-fd905a899ef3"
+    version: 4
+    status: "ACTIVE"
+    instance_id: "32612b7f-3511-47be-b606-cf2402a5fb83"
+    instance_name: "テストルーム02"

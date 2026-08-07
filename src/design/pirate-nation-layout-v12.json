@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "revision": 12,
+  "source": {
+    "repository": "https://github.com/proofofplay/piratenation-art",
+    "license": "CC0-1.0",
+    "intakePolicy": "selected assets only; XRift CDN-compatible pn-* copies at public root"
+  },
+  "experienceIntent": {
+    "theme": "open voxel game village with pirate-market warmth",
+    "motionRule": "concentrate animation at entrances and game hosts; keep distant plots calm",
+    "readabilityRule": "props may frame routes but must not narrow the measured walkable clearances"
+  },
+  "assets": {
+    "starterPirate": {
+      "file": "pn-starter-pirate.gltf",
+      "scale": 2.72,
+      "roles": ["coin reception GM", "blackjack dealer", "mahjong NPC"],
+      "clips": {
+        "idle": "02_Idle_2",
+        "wave": "15_Waving_Right",
+        "dealAction": "08_Action_One-Handed_Low",
+        "gestureAction": "09_Action_One-Handed_Mid",
+        "success": "18_Success_Celebration"
+      }
+    },
+    "animatedPalm": {
+      "file": "pn-palm-tree-animated.gltf",
+      "scale": 0.43,
+      "count": 4,
+      "clip": "mixed: More Movement at entrance; Single Fronds Moving in the distance"
+    },
+    "goldCoin": {
+      "file": "pn-gold-coin.gltf",
+      "scale": 0.068,
+      "role": "coin reception landmark"
+    },
+    "barrel": {
+      "file": "pn-barrel.gltf",
+      "scale": 0.035,
+      "role": "low-height district edge marker"
+    },
+    "fadedMap": {
+      "file": "pn-faded-map.gltf",
+      "scale": 0.04,
+      "role": "reception counter prop"
+    }
+  },
+  "placements": {
+    "animatedPalms": [
+      [-24, 0, 16],
+      [24, 0, 16],
+      [-24, 0, -17],
+      [24, 0, -17]
+    ],
+    "blackjackBarrels": [
+      [-20.1, 0.63, 6.15],
+      [-9.9, 0.63, -2.2]
+    ],
+    "mahjongBarrels": [
+      [20.1, 0.63, 6.15],
+      [9.9, 0.63, -2.2]
+    ]
+  },
+  "interactionChanges": {
+    "sessionKeys": "v12 keys reset stale QA/table seats",
+    "blackjack": "Japanese draw/stand controls remain the only in-round actions",
+    "mahjong": "Japanese controls and one-press recommended discard for beginners",
+    "seating": "v13 immediate local unlock, always-visible leave control, pointer release, and X-key fallback"
+  }
+}
