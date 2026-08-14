@@ -1,0 +1,51 @@
+version: 19
+status: planning
+public_name: 海賊じゃら
+reference_style: ドンジャラ風の3枚セット収集ゲーム
+migration:
+  strategy: parallel-build-then-swap
+  keep_legacy_until_acceptance: true
+  runtime_component: DonjaraTable
+  rules_module: game/donjara.ts
+rules:
+  players: { min: 1, max: 4, empty_seats: npc }
+  tile_types: 12
+  copies_per_type: 4
+  wall_tiles: 48
+  starting_hand: 8
+  drawn_hand: 9
+  target_sets: 3
+  set_size: 3
+  win_types: [tsumo, ron]
+  excluded_actions: [pon, chi, kan]
+  ron_window_ms: 3000
+  maximum_draws_after_deal: 16
+economy:
+  human_entry: 2
+  npc_house_stake: 2
+  fixed_round_pot: 8
+  human_win_return: 8
+  draw: refund_human_entry
+  ron_extra_transfer: false
+  settlement_key: casino.donjara.settled.v1
+state:
+  instance_key: casino.donjara.table.v1
+  phases: [lobby, dealing, drawing, discard, ron-window, settled]
+ux:
+  private_rack: true
+  opponent_tile_faces_hidden: true
+  tile_encoding: [color, number, illustration]
+  latest_discard_highlight: true
+  discard_limit_per_seat: 12
+  persistent_table_indicators: [wall_remaining, current_turn, pot, ron_timer]
+qa:
+  required_player_counts: [1, 2, 3, 4]
+  gates:
+    - exact_tile_accounting
+    - finite_draw_loop
+    - valid_set_decomposition
+    - discard_scoped_ron
+    - private_hand_visibility
+    - single_settlement
+    - leave_and_npc_takeover
+

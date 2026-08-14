@@ -1,0 +1,34 @@
+{
+  "version": 19,
+  "status": "planned-not-implemented",
+  "game": {
+    "publicName": "海賊じゃら",
+    "players": { "min": 1, "max": 4 },
+    "tileTypeCount": 12,
+    "copiesPerType": 4,
+    "wallSize": 48,
+    "startingHandSize": 8,
+    "winningHandSize": 9,
+    "setCount": 3,
+    "setSize": 3,
+    "actions": ["draw", "discard", "tsumo", "ron"],
+    "excludedActions": ["pon", "chi", "kan"],
+    "ronWindowMs": 3000
+  },
+  "economy": {
+    "entryCoinsPerSeat": 2,
+    "roundPot": 8,
+    "drawRefund": true,
+    "directPlayerTransfer": false,
+    "settlementMarker": "casino.donjara.settled.v1"
+  },
+  "state": {
+    "instanceKey": "casino.donjara.table.v1",
+    "phases": ["lobby", "dealing", "drawing", "discard", "ron-window", "settled"]
+  },
+  "migration": {
+    "legacyComponent": "MahjongTable",
+    "newComponent": "DonjaraTable",
+    "swapWorldReferenceAfterAcceptance": true
+  }
+}
