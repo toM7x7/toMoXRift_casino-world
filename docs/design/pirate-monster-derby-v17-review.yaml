@@ -1,0 +1,100 @@
+project:
+  id: "pirate-monster-derby"
+  revision: 17
+  date: "2026-08-09"
+  status: "観覧方式再検討"
+  implementation_authorized: false
+  replaces_derby_layout: "world-expansion-masterplan-v16 area_b"
+
+current_constraint:
+  camera_far_m: 80
+  v16_finish_distance_from_b_center_m: 91
+  finding: "v16奥行き直線はゴール側がfarを超えるため不採用"
+
+voting_plaza:
+  center_m: [17, 0, -13]
+  size_m: [12, 10]
+  capacity: 8
+  central_console:
+    shape: "octagon"
+    diameter_m: 4.2
+    entry_pad_radius_m: 3.0
+    entry_pads: 8
+  circulation:
+    ring_clear_width_m: 1.2
+    entry: "south"
+    exit_to_observation: "east"
+  interaction:
+    posture: "standing"
+    controls: ["号数1-4", "賭け金1/3/5", "この内容で投票"]
+    selection_persists_after_leaving_pad: true
+
+observation_deck:
+  center_m: [30, 0.6, -13]
+  size_m: [8, 18]
+  bounds_m:
+    x: [26, 34]
+    z: [-22, -4]
+  capacity: 8
+  view_markers: 8
+  marker_spacing_m: 1.8
+  camera_lock: false
+  pointer_lock: false
+  connector:
+    bounds_m:
+      x: [23, 26]
+      z: [-15, -11]
+    width_m: 4
+    length_m: 3
+    rise_m: 0.6
+    slope: "1:5"
+  guardrail_height_m: 1.1
+
+option_parallel:
+  status: "recommended"
+  course_orientation: "north-south, parallel to observation deck"
+  center_x_m: 56
+  start_z_m: -43
+  finish_z_m: 17
+  length_m: 60
+  width_m: 11.2
+  lane_count: 4
+  walkable: false
+  collider: false
+  distance_from_deck_rail_to_center_m: 22
+  distance_from_primary_viewpoint_to_each_endpoint_m: 37.2
+  max_distance_from_edge_marker_to_opposite_endpoint_m: 42.5
+  half_view_angle_deg: 53.7
+  course_base_height_m: 0.2
+  primary_eye_height_m: 2.2
+  center_down_angle_deg: 5.2
+  race_duration_s: [16, 21]
+  camera_far_change_required: false
+
+option_loop:
+  status: "reserved-alternative"
+  centerline_size_m: [68, 54]
+  corner_radius_m: 9
+  lap_length_m: 228.5
+  width_m: 11.2
+  lane_count: 4
+  start_finish: "same line on east straight"
+  course_height_m: 0.4
+  deck_height_m: 1.8
+  race_duration_s: [30, 38]
+  camera_far_required_m: [100, 110]
+  hidden_segment_s: [8, 12]
+  risks: ["core occlusion", "far clip", "full-perimeter collider QA", "higher render load"]
+
+state:
+  instance_key: "casino.derby.session.v3"
+  wallet_key: "casino.coins.v1"
+  max_players: 8
+  realtime_scope: "same-instance"
+  racer_motion: "seed plus authoritative start time"
+  per_frame_position_sync: false
+
+decision:
+  first_implementation: "option_parallel"
+  future_event_mode: "option_loop"
+  reason: "発走と決着を等距離で見せながら、現行far=80と継続視認を守る"

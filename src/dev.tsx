@@ -37,8 +37,20 @@ const isReviewMode = previewMode === 'thumbnail'
   || previewMode === 'blackjack-seat'
   || previewMode === 'blackjack-hud'
   || previewMode === 'gm'
+  || previewMode === 'expansion'
+  || previewMode === 'fate-wheel'
+  || previewMode === 'derby-vote'
+  || previewMode === 'derby-deck'
 const reviewCamera = previewMode === 'map'
   ? layout.cameraPresets.mapReview
+  : previewMode === 'expansion'
+    ? { position: [0, 24, 38], target: [12, 1.2, -10], fov: 62 }
+  : previewMode === 'fate-wheel'
+    ? { position: [-17, 7.8, 0.6], target: [-17, 2.8, -13.5], fov: 54 }
+  : previewMode === 'derby-vote'
+    ? { position: [17, 8.5, -1.5], target: [17, 0.8, -13], fov: 48 }
+  : previewMode === 'derby-deck'
+    ? { position: [27.4, 2.05, -13], target: [50, -0.4, -13], fov: 75 }
   : previewMode === 'mahjong-seat'
     ? layout.cameraPresets.mahjongSeatReview
   : previewMode === 'mahjong'

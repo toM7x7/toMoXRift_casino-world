@@ -1,0 +1,442 @@
+project:
+  id: "block-casino-world-expansion"
+  title: "ブロック遊技村 A/B増築・全体更新マスタープラン"
+  revision: 15
+  date: "2026-08-09"
+  status: "設計・更新方針レビュー"
+  target_release_candidate: 15
+  released: false
+  implementation_authorized: false
+  intent: "A運命盤とB海賊魔獣ダービーを追加しながら、既存ゲーム、交換所、スポーン、案内、HUDを一つの回遊体験として再構成する"
+
+source_of_truth:
+  current_runtime_scene: "src/World.tsx"
+  current_spatial_json: "src/design/sandbox-layout-v9.json"
+  proposed_spatial_json: "src/design/world-expansion-masterplan-v15.json"
+  responsive_ui: "src/design/responsive-ui-v8.json"
+  pirate_asset_layout: "src/design/pirate-nation-layout-v12.json"
+  derby_spec: "docs/design/pirate-monster-derby-v1.yaml"
+  masterplan_drawing: "docs/design/world-expansion-masterplan-v15-map.svg"
+  uiux_drawing: "docs/design/world-expansion-uiux-v15.svg"
+  concept_image: "docs/design/world-expansion-masterplan-v15-concept.png"
+  image_prompt_log: "docs/design/world-expansion-masterplan-v15-image-prompts.md"
+
+audit_snapshot:
+  current_world_size_m: [56, 42]
+  current_height_limit_m: 7
+  floor_collider_half_extents_m: [28, 0.15, 21]
+  current_spawn_m: [0, 0, 18]
+  verified_skybox: "public/block-village-twilight-sky.png"
+  design_runtime_mismatches:
+    - id: "main-road-length"
+      json: "z=18から-10、幅6m"
+      runtime: "中心z=3、長さ32mのためz=19から-13、幅6m"
+      policy: "v15 JSONを実表示へ合わせ、以後はJSONから描画値を読む"
+    - id: "gaming-deck-depth"
+      json: "BJ/MJとも12m×11m"
+      runtime: "BJ/MJとも12m×10m"
+      policy: "12m×10mへ統一"
+    - id: "spawn-map-location"
+      json: "専用定義なし。旧noticeBoard/rosterBoard座標だけ存在"
+      runtime: "[4.2,0,9.5]、回転-0.46、実幅約4.39m、上端約3.32m"
+      policy: "スポーン直後へ移設し、寸法と向きをJSON化"
+    - id: "navigation-copy"
+      json: "BJ・麻雀・交換所・建設予定地"
+      runtime: "上部HUDはBJ・交換所・麻雀のみ。地図は椅子クリック前提"
+      policy: "5遊技エリア対応へ更新し、着席前提の文言を廃止"
+
+experience_strategy:
+  concept: "OPEN-AIR PIRATE GAME LOOP"
+  japanese_concept: "空の下を一周できる海賊遊技村"
+  hierarchy:
+    - "遠景: Aの巨大運命盤、中央の回転コイン、Bの順位塔で方角を判断"
+    - "中景: 色と記号の床ライン、入口旗、低い地区看板で目的地を判断"
+    - "近景: 3D操作台と個人HUDで参加状態を判断"
+  principles:
+    - "壁と屋根を追加しない"
+    - "スポーンから全遊技を一度に見せすぎず、三つの遠景ランドマークで奥行きを作る"
+    - "行き止まりを作らず、BJ/MJの奥からA/Bへ抜けられる周回路を作る"
+    - "既存アセットは入口、GM、境界、報酬の意味を持つ場所へ限定し、装飾の水増しに使わない"
+    - "画面UIは個人状態、3D UIは場所と操作を担当する"
+
+overall_geometry:
+  build_plate:
+    center_m: [0, -0.15, 0]
+    size_xyz_m: [56, 0.3, 42]
+    bounds_m:
+      x: [-28, 28]
+      z: [-21, 21]
+  edge_collider_inner_bounds_m:
+    x: [-27.5, 27.5]
+    z: [-20.5, 20.5]
+  design_height_limit_m: 7
+  new_landmark_height_limit_m: 4.6
+
+zones:
+  welcome:
+    id: "welcome-spawn"
+    label: "入口・全体地図"
+    center_m: [0, 0, 17]
+    footprint_m: [14, 8]
+    symbol: "⌂"
+    color: "#FFF7E6"
+    function: "スポーン、地図、初回方向理解"
+  blackjack:
+    id: "blackjack-open-deck"
+    label: "カード酒場"
+    center_m: [-15, 0, 2]
+    footprint_m: [12, 10]
+    symbol: "♠"
+    color: "#C955A5"
+    change: "卓と既存NPCは維持。北側にAへ抜ける2.4mリンクを追加"
+  mahjong:
+    id: "mahjong-open-deck"
+    label: "牌工房"
+    center_m: [15, 0, 2]
+    footprint_m: [12, 10]
+    symbol: "▦"
+    color: "#3DBFBC"
+    change: "卓と既存NPCは維持。北側にBへ抜ける2.4mリンクを追加"
+  exchange:
+    id: "coin-exchange-open-counter"
+    label: "GM受付・交換所"
+    center_m: [0, 0, -13]
+    footprint_m: [8, 5]
+    symbol: "◆"
+    color: "#F6C453"
+    change: "位置と10枚救済を維持。北側三地区の中心ランドマークとして強化"
+  area_a:
+    id: "captains-fate-wheel"
+    label: "船長の運命盤"
+    center_m: [-17, 0, -13]
+    footprint_m: [12, 10]
+    bounds_m:
+      x: [-23, -11]
+      z: [-18, -8]
+    symbol: "◎"
+    color: "#E4A641"
+    enclosure: "none"
+    roof: "none"
+    visual_core:
+      spinning_deck_center_m: [-17, 0.46, -14.2]
+      spinning_deck_diameter_m: 6.2
+      spinning_deck_thickness_m: 0.32
+      helm_center_m: [-17, 0.78, -14.2]
+      maximum_height_m: 3.2
+    participation:
+      humans: [1, 4]
+      wager_options_coins: [1, 3, 5]
+      voting_positions: 4
+      seat_intent: "投票席を選ぶと結果色を選択。実装は既存着席制御を再利用するが、pointer lock不要、常時離席、Xキー離席を必須にする"
+      result_model: "4色のうち1色を同期seedで抽選"
+      economy_warning: "総取り・NPC種銭・端数処理は別途ゲーム仕様承認が必要。マスタープランでは空間とUXだけを確定する"
+  area_b:
+    id: "pirate-monster-derby"
+    label: "海賊魔獣ダービー"
+    center_m: [17, 0, -13]
+    footprint_m: [12, 10]
+    bounds_m:
+      x: [11, 23]
+      z: [-18, -8]
+    symbol: "⚑"
+    color: "#4D7CFE"
+    enclosure: "none"
+    roof: "none"
+    source_spec: "docs/design/pirate-monster-derby-v1.yaml"
+    visual_core: "4レーン、同一Hippogriffの4属性、右側順位塔"
+
+routes:
+  main_spine:
+    id: "main-stone-road"
+    bounds_m:
+      x: [-3, 3]
+      z: [-13, 19]
+    width_m: 6
+    role: "スポーン、交差広場、受付を結ぶ主軸"
+  cross_plaza:
+    id: "cross-plaza-road"
+    bounds_m:
+      x: [-21, 21]
+      z: [4, 8]
+    width_m: 4
+    role: "BJと麻雀を結ぶ中央横断路"
+  north_promenade:
+    id: "north-game-promenade"
+    bounds_m:
+      x: [-23, 23]
+      z: [-8, -5.5]
+    width_m: 2.5
+    role: "A・受付・Bを横につなぐ北側回遊路"
+  west_game_link:
+    id: "blackjack-to-fate-link"
+    bounds_m:
+      x: [-16.2, -13.8]
+      z: [-8, -3]
+    width_m: 2.4
+    role: "BJからAへ抜ける短絡路"
+  east_game_link:
+    id: "mahjong-to-derby-link"
+    bounds_m:
+      x: [13.8, 16.2]
+      z: [-8, -3]
+    width_m: 2.4
+    role: "麻雀からBへ抜ける短絡路"
+  circulation_loop: "入口→中央交差→BJまたは麻雀→同側リンク→AまたはB→北側回遊路→受付→主軸"
+
+measured_clearances:
+  spawn_clear_radius_m: 3
+  main_spine_width_m: 6
+  cross_plaza_width_m: 4
+  north_promenade_width_m: 2.5
+  game_link_width_m: 2.4
+  minimum_prop_to_route_edge_m: 0.45
+  minimum_interaction_stand_depth_m: 1.4
+  minimum_between_interactables_m: 0.65
+
+spawn_map:
+  position_m: [4.8, 0, 15.2]
+  rotation_y_rad: -0.32
+  overall_size_m: [4.6, 2.55, 0.32]
+  spawn_distance_m: 5.56
+  copy:
+    title: "遊技村 全体地図"
+    subtitle: "色の道を歩いて遊技台へ"
+  zones: ["船長の運命盤", "カード酒場", "GM受付", "牌工房", "海賊魔獣ダービー"]
+  live_information: "同一インスタンス内の各エリア人数だけを小さく表示。コイン数や個人名は表示しない"
+  visibility_policy: "スポーン直後に読めるが、主軸道路と交換所の正面視線を遮らない"
+
+wayfinding:
+  redundant_coding:
+    area_a: ["橙金", "◎", "A", "運命盤"]
+    blackjack: ["マゼンタ", "♠", "BJ", "カード"]
+    exchange: ["金", "◆", "受付", "10枚"]
+    mahjong: ["シアン", "▦", "MJ", "牌"]
+    area_b: ["青", "⚑", "B", "ダービー"]
+  floor_lines:
+    maximum_width_m: 0.3
+    material: "emissive低強度、影なし"
+    rule: "主動線の端をなぞり、中央を横切らない"
+  entrance_signs:
+    maximum_height_m: 1.35
+    minimum_text_height_m: 0.16
+    placement: "各区画の接近側角。ゲーム盤面の中央線上へ置かない"
+  distant_landmarks:
+    west: "Aの運命盤マストと橙旗"
+    center: "交換所の回転コイン"
+    east: "Bの順位塔と青旗"
+
+uiux:
+  information_ownership:
+    world_geometry: ["場所", "方向", "ゲーム種別", "入口"]
+    world_space_ui: ["参加", "賭け金", "レーンまたは投票先", "開始", "取消", "結果"]
+    screen_hud: ["自分のコイン", "保存状態", "参加中ゲーム", "自分の投票・席", "短い通知"]
+  persistent_hud:
+    keep: ["左上コインカード", "折り畳み参加者一覧"]
+    change:
+      - "通知パネルを常駐させず、3.5秒のトーストへ変更"
+      - "上中央の固定3地区ナビを廃止し、エリア進入時だけ文脈バーを表示"
+      - "左下の疑似ホットバーを削除。機能を持たないアイコンを置かない"
+    maximum_width_px:
+      desktop: 208
+      compact: 196
+  contextual_hud:
+    desktop_anchor: "right"
+    compact_anchor: "bottom-sheet above XRift 88px safe area"
+    hidden_when: "ゲーム未参加、かつ操作台から3m以上"
+    world_view_policy: "ゲーム対象の中央60%を空ける"
+  seated_interaction:
+    pointer_lock: "never required"
+    leave_controls: ["常時表示の離席", "Xキー", "席を再クリック"]
+    camera: "着席時は対象を見るが、マウス視点を完全固定しない"
+    movement: "着席中だけ移動キー抑制。離席完了後に即時解除"
+  accessibility:
+    primary_language: "日本語"
+    secondary_language: "BJ、MJなど4文字以内の補助記号のみ"
+    color_only_identification: false
+    minimum_screen_text_px: 12
+    minimum_world_text_height_m: 0.12
+
+asset_reuse:
+  already_imported:
+    - asset: "pn-starter-pirate.gltf"
+      reuse: "既存BJディーラー、麻雀NPC、受付GMを維持。A/B追加GMは同時表示数を見て最大2体"
+      change: "距離が遠いNPCはアニメーション停止または低頻度化"
+    - asset: "pn-palm-tree-animated.gltf"
+      reuse: "既存4本を外周ランドマークとして維持"
+      change: "A/B区画内へ追加せず、視界と負荷を守る"
+    - asset: "pn-gold-coin.gltf"
+      reuse: "受付の中心ランドマークを維持"
+    - asset: "pn-barrel.gltf"
+      reuse: "BJ/MJ/受付の低い境界マーカーを維持。A/B追加は合計4個まで"
+    - asset: "pn-faded-map.gltf"
+      reuse: "受付小物として維持。スポーン地図そのものには拡大流用しない"
+  proposed_intake:
+    - asset: "Wooden Helm/VE/item_woodenhelm.gltf"
+      lfs_gltf_bytes: 147795
+      animation_clips: []
+      use: "A運命盤の回転中心。モデル自体ではなく親groupを回転"
+      priority: "must"
+    - asset: "deco_flag_skull_animated.gltf"
+      lfs_gltf_bytes: 280674
+      animation_clips: ["idle01", "idle02"]
+      use: "A/B入口に各1本。同じURLを再利用"
+      priority: "must"
+    - asset: "crate_brown.gltf"
+      lfs_gltf_bytes: 5516
+      animation_clips: []
+      use: "操作台の脚、スタート付近の低い小物。最大4個"
+      priority: "should"
+    - asset: "Item_Anchor.gltf"
+      lfs_gltf_bytes: 43077
+      animation_clips: []
+      use: "Aのポット表示または結果マーカー。1個"
+      priority: "could"
+    - asset: "Basic Rope/model.gltf"
+      lfs_gltf_bytes: 68964
+      animation_clips: []
+      use: "繰返し配置は避ける。必要箇所だけ4本以下"
+      priority: "could"
+    - asset: "Hippogriff Neutral/model.gltf"
+      lfs_gltf_bytes: 1960295
+      animation_clips: ["idle", "hit", "attack"]
+      use: "Bレーサー。まず1モデルclone＋色調整を測定し、必要なら公式4属性へ切替"
+      priority: "must"
+  explicitly_deferred:
+    - "Iron Cannon: 見た目は合うが、号砲演出と衝突範囲を増やすためv15初回から外す"
+    - "raffle ticket類: 3D UIを細かくしすぎるため外す"
+    - "大量のrope/crate: 既存資産流用を装飾密度の言い訳にしない"
+
+performance_budget:
+  new_unique_gltf_first_pass: 4
+  new_unique_gltf_after_profile_max: 7
+  animated_palms: 4
+  simultaneous_racers: 4
+  additional_animated_flags: 2
+  additional_dynamic_lights: 0
+  maximum_simultaneous_particles: 96
+  shadow_policy:
+    new_racers: "castShadow false、receiveShadow false"
+    new_small_props: "castShadow false"
+    existing_gm: "近距離だけ影"
+  load_policy:
+    - "スポーン時は既存共通資産と案内だけ優先"
+    - "A/B新規モデルは最初の描画後にプリロード"
+    - "4属性別モデルは実機計測でロード時間とGPU負荷を通過した場合だけ採用"
+
+collider_policy:
+  keep: "56m×42m床面と外周固定CuboidCollider"
+  routes: "床面Colliderを共有し、装飾道路へ追加Colliderを置かない"
+  area_a: "回転盤の土台と投票席だけ固定cuboid。回転する装飾モデルを物理Colliderにしない"
+  area_b: "競走盤土台、観戦レール、順位塔だけ固定cuboid。レーサーはColliderなし"
+  props: "樽、旗、ロープ、木箱は原則非衝突。主要動線から0.45m以上離す"
+
+implementation_architecture:
+  proposed_components:
+    - file: "src/components/WorldNavigation.tsx"
+      responsibility: "主軸・横断路・北側回遊路・床ライン・スポーン地図。v15 JSONだけから位置を読む"
+    - file: "src/components/CaptainsFateWheel.tsx"
+      responsibility: "Aの空間、投票席、同期状態、結果。配当仕様承認まで精算処理を接続しない"
+    - file: "src/components/MonsterDerby.tsx"
+      responsibility: "Bの競走盤、ENTRY、同期着順、手続き移動、精算"
+    - file: "src/components/PirateNationExpansionAssets.tsx"
+      responsibility: "Wooden Helm、旗、木箱、Hippogriffを選択的に読み込む"
+    - file: "src/components/CasinoHud.tsx"
+      responsibility: "CasinoEconomy.tsxから表示だけ分離し、コインデータ経路を変えずにHUDを整理"
+  state_keys:
+    area_a: "casino.fateWheel.session.v1"
+    area_b: "casino.derby.session.v1"
+    wallet: "casino.coins.v1"
+  feature_gates:
+    area_a_enabled_default: false
+    area_b_enabled_default: false
+    fallback: "無効時は現在のFuturePlotを表示"
+    review_modes: ["?mode=masterplan", "?mode=fate-wheel", "?mode=derby"]
+    production_rule: "個別QAを通過した区画だけ有効化できる。A/B同時公開を必須にしない"
+  rollback_units:
+    - "navigation-and-hud"
+    - "north-routes-and-grayboxes"
+    - "area-b-gameplay"
+    - "area-a-gameplay"
+    - "asset-integration"
+  economy_boundary: "CasinoEconomyProviderとcasino.coins.v1を維持し、HUD整理とゲーム追加を同じ変更で書き換えない"
+
+update_strategy:
+  - phase: 0
+    name: "設計承認"
+    writes_runtime: false
+    deliverables: ["マスタープラン", "UIUX図", "アセット流用表", "A/B個別仕様"]
+    exit_gate: "地図、回遊路、A/B役割、HUD整理を承認"
+  - phase: 1
+    name: "基準統合と案内更新"
+    scope: ["v15 JSONを唯一の寸法原本へ", "道路とデッキの数値ずれ解消", "スポーン地図移設", "HUD重複削除"]
+    risk: "low"
+    exit_gate: "既存BJ/MJ/受付を壊さず、スポーンから5地区を理解できる"
+  - phase: 2
+    name: "全体回遊路とA/B灰色箱"
+    scope: ["北側回遊路", "左右リンク", "A回転盤灰色箱", "B競走盤灰色箱", "固定Collider"]
+    risk: "medium"
+    exit_gate: "全周歩行、段差、視線、通路幅、外周落下を実機確認"
+  - phase: 3
+    name: "Bダービー同期PoC"
+    scope: ["1〜4人ENTRY", "seed着順", "手続き移動", "1/3/5枚", "払戻"]
+    risk: "high"
+    exit_gate: "同一インスタンス全員の着順一致と二重精算QA"
+  - phase: 4
+    name: "A運命盤ゲーム仕様・同期PoC"
+    scope: ["投票席", "1/3/5枚", "抽選", "総取りまたは固定配当の最終選定"]
+    risk: "high"
+    exit_gate: "ソロ時の面白さ、複数人端数、切断精算を承認"
+  - phase: 5
+    name: "既存資産統合と演出"
+    scope: ["Wooden Helm", "旗", "木箱", "Hippogriff", "音", "低負荷粒子"]
+    risk: "medium"
+    exit_gate: "PC/モバイルのロード、FPS、視認性を通過"
+  - phase: 6
+    name: "総合QA・撮影・リリース"
+    scope: ["実インスタンス1〜4人", "全ゲーム離席", "HUDクリック", "World Storage", "サムネイル", "CDN"]
+    risk: "high"
+    exit_gate: "技術PASSとビジュアルPASSを別々に記録後、GitHub同期とXRift upload"
+
+change_management:
+  branch_policy: "設計ファイルを先に確定し、実装はnavigation、graybox、B、A、assetsの小さな差分へ分ける"
+  commit_policy:
+    - "1コミットで既存ゲームロジックと新ゲームロジックを同時変更しない"
+    - "地図・HUDの変更とWorld Storage残高処理を同じコミットで変更しない"
+    - "アセット取込コミットには出典、CC0、元パス、変換内容、ファイルサイズを記録"
+  screenshot_matrix:
+    - "spawn-desktop"
+    - "spawn-compact"
+    - "blackjack-entry-and-leave"
+    - "mahjong-entry-discard-call-win-leave"
+    - "fate-wheel-entry-spin-result-leave"
+    - "derby-entry-race-result-leave"
+    - "overview-thumbnail"
+  release_policy: "A/B、既存ゲーム、受付、HUDの実インスタンス確認が揃うまでuploadしない。片側だけ合格した場合はfeature gateで片側公開を選べる"
+
+acceptance:
+  map_and_space:
+    - "スポーン5秒以内に地図、主軸、三つの遠景ランドマークを認識できる"
+    - "A/Bを含む全地区へ幅2.4m以上のルートで到達できる"
+    - "BJ/MJの北側からA/Bへ抜けられ、行き止まりにならない"
+    - "新規看板、旗、小物が主動線またはゲーム視線を塞がない"
+  uiux:
+    - "固定HUDはコインと参加者だけを主役にする"
+    - "場所案内、参加操作、個人状態が同じUI上で競合しない"
+    - "A/Bともカメラ固定やESC操作を要求しない"
+    - "日本語、番号、記号、色のうち最低3要素で選択対象を識別できる"
+  assets:
+    - "既存5資産の役割を維持し、追加資産はゲーム意味を持つ場所だけに使う"
+    - "新規ユニークGLTFは初回4種以内"
+    - "4属性Hippogriffは実機計測前に確定しない"
+  regression:
+    - "BJのENTRY、引く、止める、離席が維持される"
+    - "麻雀の山、捨て牌、鳴き、ロン、精算の既知課題を増やさない"
+    - "受付10枚は残高0枚時の手動受取を維持する"
+
+non_goals:
+  - "ワールド床面56m×42mの拡張"
+  - "壁、天井、大型建築の追加"
+  - "クロスインスタンス同期"
+  - "実通貨または換金"
+  - "既存BJ/MJルールの同時全面改修"
+  - "設計承認前のアップロード"

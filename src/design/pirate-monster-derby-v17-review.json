@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "revision": 17,
+  "status": "design-review",
+  "implementationAuthorized": false,
+  "cameraFar": 80,
+  "votingPlaza": {
+    "center": [17, 0, -13],
+    "size": [12, 10],
+    "capacity": 8,
+    "console": {
+      "shape": "octagon",
+      "diameter": 4.2,
+      "entryPadRadius": 3,
+      "entryPads": 8
+    },
+    "ringClearWidth": 1.2,
+    "entry": "south",
+    "exit": "east"
+  },
+  "observationDeck": {
+    "center": [30, 0.6, -13],
+    "size": [8, 18],
+    "bounds": { "x": [26, 34], "z": [-22, -4] },
+    "capacity": 8,
+    "viewMarkers": 8,
+    "markerSpacing": 1.8,
+    "cameraLock": false,
+    "pointerLock": false,
+    "connector": {
+      "bounds": { "x": [23, 26], "z": [-15, -11] },
+      "rise": 0.6,
+      "slope": 0.2
+    }
+  },
+  "options": {
+    "parallel": {
+      "recommended": true,
+      "courseBounds": { "x": [50.4, 61.6], "z": [-43, 17] },
+      "courseCenterX": 56,
+      "length": 60,
+      "width": 11.2,
+      "laneCount": 4,
+      "walkable": false,
+      "collider": false,
+      "deckRailToCourseCenter": 22,
+      "primaryViewpointToStart": 37.2,
+      "primaryViewpointToFinish": 37.2,
+      "edgeMarkerToOppositeEndpointMax": 42.5,
+      "halfViewAngleDegrees": 53.7,
+      "courseBaseHeight": 0.2,
+      "primaryEyeHeight": 2.2,
+      "centerDownAngleDegrees": 5.2,
+      "raceDurationSeconds": [16, 21],
+      "cameraFarChangeRequired": false
+    },
+    "loop": {
+      "recommended": false,
+      "centerlineBounds": { "x": [-34, 34], "z": [-27, 27] },
+      "cornerRadius": 9,
+      "lapLength": 228.5,
+      "width": 11.2,
+      "laneCount": 4,
+      "startFinish": "east-straight-same-line",
+      "raceDurationSeconds": [30, 38],
+      "cameraFarRequired": [100, 110],
+      "hiddenSegmentSeconds": [8, 12]
+    }
+  },
+  "state": {
+    "instanceKey": "casino.derby.session.v3",
+    "walletKey": "casino.coins.v1",
+    "maxPlayers": 8,
+    "scope": "same-instance",
+    "motionModel": "seed-and-authoritative-start-time",
+    "perFramePositionSync": false
+  }
+}

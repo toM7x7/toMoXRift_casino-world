@@ -3,10 +3,12 @@ import { useFrame } from '@react-three/fiber'
 import { useXRift } from '@xrift/world-components'
 import { useEffect, useMemo, useRef } from 'react'
 import {
+  Color,
   Group,
   LoopOnce,
   LoopRepeat,
   Mesh,
+  MeshStandardMaterial,
   type Object3D,
 } from 'three'
 import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js'
@@ -228,6 +230,66 @@ export function RotatingGoldCoin({
 
   return (
     <group ref={rootRef} position={position} scale={scale}>
+      <primitive object={model} />
+    </group>
+  )
+}
+
+export function HippogriffRacerModel({
+  position = [0, 0, 0],
+  rotation = [0, 0, 0],
+  scale = 0.1,
+  tint = '#ffffff',
+  phase = 0,
+}: {
+  position?: Vec3
+  rotation?: Vec3
+  scale?: number
+  tint?: string
+  phase?: number
+}) {
+  const url = usePirateNationUrl('pn-hippogriff-neutral.gltf')
+  const gltf = useGLTF(url)
+  const rootRef = useRef<Group>(null)
+  const model = useMemo(() => {
+    const cloned = cloneSkeleton(gltf.scene)
+    const tintColor = new Color(tint)
+    cloned.traverse((child) => {
+      const mesh = child as Mesh
+      if (!mesh.isMesh) return
+      mesh.castShadow = false
+      mesh.receiveShadow = false
+      const sourceMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+      const tintedMaterials = sourceMaterials.map((sourceMaterial) => {
+        const material = sourceMaterial.clone() as MeshStandardMaterial
+        if (material.color) material.color.multiply(tintColor)
+        return material
+      })
+      mesh.material = Array.isArray(mesh.material) ? tintedMaterials : tintedMaterials[0]
+    })
+    return cloned
+  }, [gltf.scene, tint])
+  const { actions } = useAnimations(gltf.animations, rootRef)
+
+  useEffect(() => {
+    const action = actions.idle
+    if (!action) return
+    action.reset().setLoop(LoopRepeat, Infinity).play()
+    if (action.getClip().duration > 0) {
+      action.time = phase % action.getClip().duration
+    }
+    return () => {
+      action.stop()
+    }
+  }, [actions, phase])
+
+  return (
+    <group
+      ref={rootRef}
+      position={position}
+      rotation={rotation}
+      scale={scale}
+    >
       <primitive object={model} />
     </group>
   )

@@ -23,6 +23,7 @@ Selected files:
 | `pn-gold-coin.gltf` | `Voxel Game Assets/resources/Gold Coin/ui_icon_coin.gltf` | `9dc4f701dc30dda6c3dcf0ea8a9f327a2f9e3659dd56977c134700f51d61a095` |
 | `pn-barrel.gltf` | `Voxel Game Assets/collectibles/Barrel/model.gltf` | `a2c82223246b001516bc84e8db0b45712313bd79facaa3c190a0a21df91acadc` |
 | `pn-faded-map.gltf` | `Voxel Game Assets/collectibles/Faded Map /model.gltf` | `d8e3a40184e4e07275474c180185a80e48cd633dfec989053fa75fb25610c216` |
+| `pn-hippogriff-neutral.gltf` | `Voxel Game Assets/Mob Enemies /Hippogriff/Hippogriff Neutral /model.gltf` | `f9c6e9ee1655a6601b0c5868ce6ccf78d380ab5b662ff095b2dc30d7a8063601` |
 
 The source repository uses Git LFS. These local files are verified asset
 contents downloaded from GitHub's LFS media endpoint, not pointer files.

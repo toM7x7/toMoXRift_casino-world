@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200">
+  <defs>
+    <pattern id="minorGrid" width="25" height="25" patternUnits="userSpaceOnUse">
+      <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#16364a" stroke-width="1"/>
+    </pattern>
+    <pattern id="majorGrid" width="100" height="100" patternUnits="userSpaceOnUse">
+      <rect width="100" height="100" fill="url(#minorGrid)"/>
+      <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#24506a" stroke-width="1.5"/>
+    </pattern>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f6c453"/>
+    </marker>
+    <style>
+      .bg { fill:#081824; }
+      .grid { fill:url(#majorGrid); }
+      .outline { fill:none; stroke:#d7eef6; stroke-width:3; }
+      .object { fill:#173247; stroke:#d7eef6; stroke-width:2; }
+      .deck { fill:#102b3c; stroke:#f6c453; stroke-width:3; }
+      .console { fill:#243247; stroke:#f6c453; stroke-width:3; }
+      .rail { fill:#69717d; stroke:#d7eef6; stroke-width:2; }
+      .dim { fill:none; stroke:#f6c453; stroke-width:2; marker-start:url(#arrow); marker-end:url(#arrow); }
+      .ext { fill:none; stroke:#f6c453; stroke-width:1; stroke-dasharray:5 5; }
+      .center { fill:none; stroke:#63d7f2; stroke-width:1; stroke-dasharray:12 7 2 7; }
+      .hidden { fill:none; stroke:#6e8fa1; stroke-width:1.5; stroke-dasharray:8 6; }
+      text { font-family:"Noto Sans JP","Yu Gothic UI","Segoe UI",sans-serif; fill:#d7eef6; }
+      .title { font-size:32px; font-weight:800; fill:#fff7e6; }
+      .view { font-size:22px; font-weight:800; fill:#63d7f2; }
+      .label { font-size:17px; font-weight:700; }
+      .small { font-size:14px; }
+      .dimText { font-size:16px; font-weight:800; fill:#f6c453; }
+      .laneText { font-size:15px; font-weight:900; fill:#081824; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1800" height="1200"/>
+  <rect class="grid" x="40" y="40" width="1720" height="1120" opacity="0.78"/>
+
+  <text class="title" x="80" y="92">海賊魔獣ダービー v1｜建築・工業 三面図</text>
+  <text class="small" x="80" y="120">単位: m　基準区画: 建設予定地B 12.00 × 10.00　図面尺度: 主要図 1m = 50px</text>
+
+  <!-- PLAN VIEW -->
+  <text class="view" x="120" y="174">平面図 / PLAN（X-Z）</text>
+  <g id="plan">
+    <rect class="outline" x="120" y="180" width="600" height="500"/>
+    <line class="center" x1="420" y1="165" x2="420" y2="695"/>
+    <line class="center" x1="105" y1="430" x2="735" y2="430"/>
+
+    <!-- Race deck: x 11.8..22.2, z -17.4..-12.4 -->
+    <rect class="deck" x="160" y="210" width="520" height="250"/>
+    <text class="small" x="478" y="205">競走盤 10.40 × 5.00</text>
+
+    <!-- Four lanes -->
+    <rect x="188" y="225" width="465" height="47.5" fill="#63d7f2" opacity="0.80"/>
+    <rect x="188" y="282.5" width="465" height="47.5" fill="#b98b54" opacity="0.85"/>
+    <rect x="188" y="340" width="465" height="47.5" fill="#ff6b3d" opacity="0.85"/>
+    <rect x="188" y="397.5" width="465" height="47.5" fill="#4d7cfe" opacity="0.85"/>
+    <text class="laneText" x="203" y="256">1 ◇ 蒼風</text>
+    <text class="laneText" x="203" y="313">2 ■ 岩王</text>
+    <text class="laneText" x="203" y="371">3 ▲ 火走</text>
+    <text class="laneText" x="203" y="428">4 ● 潮影</text>
+    <line x1="188" y1="223" x2="188" y2="447" stroke="#fff7e6" stroke-width="5"/>
+    <line x1="653" y1="223" x2="653" y2="447" stroke="#fff7e6" stroke-width="5" stroke-dasharray="12 8"/>
+    <text class="small" x="172" y="452">START</text>
+    <text class="small" x="628" y="452">FINISH</text>
+
+    <!-- Rail, spectator strip, controls -->
+    <rect class="rail" x="205" y="472" width="430" height="8"/>
+    <text class="small" x="340" y="498">観戦レール H=1.04</text>
+    <rect class="object" x="150" y="493" width="540" height="125" opacity="0.78"/>
+    <text class="label" x="160" y="522">観戦・操作帯 10.80 × 2.50</text>
+    <rect class="console" x="275" y="588" width="290" height="36"/>
+    <text class="small" x="317" y="612">3D投票操作台 5.80 × 0.72</text>
+
+    <!-- GM and result tower -->
+    <circle cx="168" cy="558" r="18" fill="#c955a5" stroke="#fff7e6" stroke-width="3"/>
+    <text class="small" x="193" y="564">GM</text>
+    <rect x="655" y="500" width="35" height="35" fill="#f6c453" stroke="#fff7e6" stroke-width="2"/>
+    <text class="small" x="615" y="548">順位塔</text>
+
+    <!-- Approach arrow -->
+    <line x1="420" y1="665" x2="420" y2="635" stroke="#63d7f2" stroke-width="5" marker-end="url(#arrow)"/>
+    <text class="label" x="438" y="662">主要接近 +Z</text>
+
+    <!-- Plot dimensions -->
+    <line class="ext" x1="120" y1="180" x2="120" y2="145"/>
+    <line class="ext" x1="720" y1="180" x2="720" y2="145"/>
+    <line class="dim" x1="120" y1="148" x2="720" y2="148"/>
+    <text class="dimText" x="384" y="140">12.00</text>
+    <line class="ext" x1="120" y1="180" x2="85" y2="180"/>
+    <line class="ext" x1="120" y1="680" x2="85" y2="680"/>
+    <line class="dim" x1="88" y1="180" x2="88" y2="680"/>
+    <text class="dimText" x="50" y="438" transform="rotate(-90 50 438)">10.00</text>
+
+    <!-- Internal dimensions -->
+    <line class="dim" x1="160" y1="197" x2="680" y2="197"/>
+    <text class="dimText" x="392" y="193">10.40</text>
+    <line class="dim" x1="188" y1="448" x2="653" y2="448"/>
+    <text class="dimText" x="397" y="444">9.30</text>
+    <line class="dim" x1="700" y1="210" x2="700" y2="460"/>
+    <text class="dimText" x="706" y="342">5.00</text>
+    <line class="dim" x1="700" y1="548" x2="700" y2="618"/>
+    <text class="dimText" x="706" y="590">1.40 MIN</text>
+  </g>
+
+  <!-- TITLE BLOCK / NOTES -->
+  <g id="titleBlock">
+    <rect x="790" y="150" width="930" height="530" fill="#0c2231" stroke="#d7eef6" stroke-width="2"/>
+    <line x1="790" y1="215" x2="1720" y2="215" stroke="#d7eef6"/>
+    <text class="view" x="820" y="192">設計条件・凡例</text>
+    <text class="label" x="820" y="248">区画中心</text><text class="small" x="1010" y="248">[17, 0, -13]</text>
+    <text class="label" x="820" y="280">競走方向</text><text class="small" x="1010" y="280">+X / 4レーン</text>
+    <text class="label" x="820" y="312">競走盤高さ</text><text class="small" x="1010" y="312">上面 Y=0.46</text>
+    <text class="label" x="820" y="344">最大構造高</text><text class="small" x="1010" y="344">3.60（順位塔）</text>
+    <text class="label" x="820" y="376">囲い・屋根</text><text class="small" x="1010" y="376">なし</text>
+    <text class="label" x="820" y="408">自由歩行帯</text><text class="small" x="1010" y="408">奥行1.40以上</text>
+    <text class="label" x="820" y="440">操作方式</text><text class="small" x="1010" y="440">3Dボタン、カメラ固定なし</text>
+
+    <rect x="1280" y="244" width="32" height="18" fill="#63d7f2"/><text class="small" x="1325" y="259">1号 蒼風 ◇</text>
+    <rect x="1280" y="278" width="32" height="18" fill="#b98b54"/><text class="small" x="1325" y="293">2号 岩王 ■</text>
+    <rect x="1280" y="312" width="32" height="18" fill="#ff6b3d"/><text class="small" x="1325" y="327">3号 火走 ▲</text>
+    <rect x="1280" y="346" width="32" height="18" fill="#4d7cfe"/><text class="small" x="1325" y="361">4号 潮影 ●</text>
+
+    <line class="center" x1="820" y1="492" x2="910" y2="492"/><text class="small" x="930" y="498">中心線</text>
+    <line class="hidden" x1="820" y1="526" x2="910" y2="526"/><text class="small" x="930" y="532">隠れ線</text>
+    <line class="dim" x1="820" y1="560" x2="910" y2="560"/><text class="small" x="930" y="566">寸法線</text>
+
+    <rect x="805" y="595" width="900" height="70" fill="#081824" stroke="#69717d"/>
+    <text class="small" x="825" y="620">注記: 本図の寸法はYAML/JSONと一致させる。コンセプト画像は雰囲気確認用で、施工寸法の原本にしない。</text>
+    <text class="small" x="825" y="648">REV 1 / 2026-08-08 / STATUS: 企画・設計レビュー / 実装未承認</text>
+  </g>
+
+  <!-- FRONT VIEW -->
+  <text class="view" x="120" y="748">正面図 / FRONT（X-Y、接近側 +Zから）</text>
+  <g id="front">
+    <line class="outline" x1="120" y1="1030" x2="720" y2="1030"/>
+    <line class="center" x1="420" y1="760" x2="420" y2="1050"/>
+    <rect class="deck" x="160" y="1008" width="520" height="22"/>
+    <rect class="rail" x="205" y="978" width="430" height="52"/>
+    <polygon class="console" points="275,990 565,990 565,948 275,968"/>
+    <rect x="655" y="850" width="35" height="180" fill="#f6c453" stroke="#fff7e6" stroke-width="2"/>
+    <circle cx="168" cy="980" r="17" fill="#c955a5" stroke="#fff7e6" stroke-width="2"/>
+    <line class="hidden" x1="188" y1="1008" x2="188" y2="960"/>
+    <line class="hidden" x1="653" y1="1008" x2="653" y2="960"/>
+    <text class="small" x="300" y="1072">正面幅 12.00</text>
+    <text class="small" x="290" y="944">傾斜18° 投票操作台</text>
+    <text class="small" x="620" y="837">順位塔</text>
+    <line class="ext" x1="720" y1="1030" x2="750" y2="1030"/>
+    <line class="ext" x1="690" y1="850" x2="750" y2="850"/>
+    <line class="dim" x1="745" y1="1030" x2="745" y2="850"/>
+    <text class="dimText" x="752" y="946">3.60</text>
+    <line class="dim" x1="120" y1="1090" x2="720" y2="1090"/>
+    <text class="dimText" x="395" y="1082">12.00</text>
+  </g>
+
+  <!-- RIGHT VIEW -->
+  <text class="view" x="930" y="748">右側面図 / RIGHT（Z-Y）</text>
+  <g id="right">
+    <line class="outline" x1="930" y1="1030" x2="1430" y2="1030"/>
+    <line class="center" x1="1180" y1="760" x2="1180" y2="1050"/>
+    <rect class="deck" x="960" y="1008" width="250" height="22"/>
+    <rect class="rail" x="1228" y="978" width="8" height="52"/>
+    <polygon class="console" points="1341,990 1377,990 1377,948 1341,960"/>
+    <rect x="1265" y="850" width="35" height="180" fill="#f6c453" stroke="#fff7e6" stroke-width="2"/>
+    <circle cx="1308" cy="980" r="17" fill="#c955a5" stroke="#fff7e6" stroke-width="2"/>
+    <text class="small" x="976" y="996">競走盤 5.00</text>
+    <text class="small" x="1320" y="944">操作台</text>
+    <text class="small" x="1245" y="837">順位塔</text>
+    <line class="dim" x1="930" y1="1090" x2="1430" y2="1090"/>
+    <text class="dimText" x="1155" y="1082">10.00</text>
+    <line class="ext" x1="1430" y1="1030" x2="1470" y2="1030"/>
+    <line class="ext" x1="1300" y1="850" x2="1470" y2="850"/>
+    <line class="dim" x1="1465" y1="1030" x2="1465" y2="850"/>
+    <text class="dimText" x="1472" y="946">3.60</text>
+    <line x1="1400" y1="1000" x2="1365" y2="1000" stroke="#63d7f2" stroke-width="5" marker-end="url(#arrow)"/>
+    <text class="small" x="1375" y="1023">+Z接近</text>
+  </g>
+
+  <rect x="1510" y="800" width="210" height="270" fill="#0c2231" stroke="#d7eef6" stroke-width="2"/>
+  <text class="label" x="1530" y="833">高さ一覧</text>
+  <text class="small" x="1530" y="870">競走盤上面　0.46</text>
+  <text class="small" x="1530" y="902">操作台上面　約1.20</text>
+  <text class="small" x="1530" y="934">観戦レール　1.04</text>
+  <text class="small" x="1530" y="966">魔獣上端　約1.65</text>
+  <text class="small" x="1530" y="998">順位塔上端　3.60</text>
+  <text class="small" x="1530" y="1040">全体制限　7.00以下</text>
+</svg>

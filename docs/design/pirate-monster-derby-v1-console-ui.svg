@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <pattern id="grid" width="25" height="25" patternUnits="userSpaceOnUse">
+      <path d="M25 0H0V25" fill="none" stroke="#18384b" stroke-width="1"/>
+    </pattern>
+    <style>
+      text{font-family:"Noto Sans JP","Yu Gothic UI","Segoe UI",sans-serif;fill:#fff7e6}
+      .title{font-size:32px;font-weight:900}.head{font-size:22px;font-weight:900;fill:#63d7f2}
+      .label{font-size:17px;font-weight:800}.small{font-size:14px}.micro{font-size:12px}
+      .panel{fill:#13283a;stroke:#69717d;stroke-width:4}.screen{fill:#081824;stroke:#f6c453;stroke-width:3}
+      .btn{stroke:#fff7e6;stroke-width:2}.gold{fill:#9a6b1f}.cyan{fill:#2f869c}.brown{fill:#805d34}.fire{fill:#b84427}.blue{fill:#3157ad}
+      .confirm{fill:#2f7d62}.cancel{fill:#5e6875}.dim{stroke:#f6c453;stroke-width:2}.note{fill:#0c2231;stroke:#d7eef6;stroke-width:2}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#081824"/>
+  <rect x="35" y="35" width="1530" height="830" fill="url(#grid)"/>
+  <text class="title" x="80" y="92">海賊魔獣ダービー v1｜3D投票操作盤・個人HUD設計</text>
+  <text class="small" x="80" y="120">操作盤: 幅5.80m × 奥行0.72m × 上端約1.20m　傾斜18°　大型画面UIは使用しない</text>
+
+  <text class="head" x="90" y="175">操作盤 正投影 / CONTROL CONSOLE</text>
+  <g transform="translate(90 205)">
+    <rect class="panel" x="0" y="0" width="1000" height="310" rx="6"/>
+    <rect class="screen" x="34" y="26" width="932" height="68" rx="3"/>
+    <text class="label" x="60" y="56">投票内容</text>
+    <text x="210" y="69" font-size="28" font-weight="900" fill="#f6c453">3枚 / 2号 岩王 ■</text>
+
+    <text class="small" x="38" y="126" fill="#cbd5e1">① 賭け金</text>
+    <rect class="btn gold" x="34" y="140" width="92" height="86" rx="5"/>
+    <rect class="btn gold" x="138" y="140" width="92" height="86" rx="5"/>
+    <rect class="btn gold" x="242" y="140" width="92" height="86" rx="5"/>
+    <text class="label" x="61" y="192">1枚</text><text class="label" x="165" y="192">3枚</text><text class="label" x="269" y="192">5枚</text>
+
+    <line x1="354" y1="125" x2="354" y2="238" stroke="#69717d" stroke-width="3"/>
+    <text class="small" x="374" y="126" fill="#cbd5e1">② レーン</text>
+    <rect class="btn cyan" x="370" y="140" width="92" height="86" rx="5"/>
+    <rect class="btn brown" x="474" y="140" width="92" height="86" rx="5"/>
+    <rect class="btn fire" x="578" y="140" width="92" height="86" rx="5"/>
+    <rect class="btn blue" x="682" y="140" width="92" height="86" rx="5"/>
+    <text class="label" x="402" y="180">1号</text><text class="micro" x="399" y="207">蒼風 ◇</text>
+    <text class="label" x="506" y="180">2号</text><text class="micro" x="503" y="207">岩王 ■</text>
+    <text class="label" x="610" y="180">3号</text><text class="micro" x="607" y="207">火走 ▲</text>
+    <text class="label" x="714" y="180">4号</text><text class="micro" x="711" y="207">潮影 ●</text>
+
+    <line x1="794" y1="125" x2="794" y2="238" stroke="#69717d" stroke-width="3"/>
+    <text class="small" x="814" y="126" fill="#cbd5e1">③ 決定</text>
+    <rect class="btn confirm" x="810" y="140" width="156" height="50" rx="5"/>
+    <rect class="btn cancel" x="810" y="198" width="156" height="40" rx="5"/>
+    <text class="label" x="828" y="173">この内容で投票</text>
+    <text class="small" x="866" y="224">取消</text>
+
+    <text class="micro" x="34" y="264" fill="#cbd5e1">選択中はボタン外周が金色に点灯。確定後は賭け金・レーンボタンを無効化し、締切前のみ取消可能。</text>
+    <text class="micro" x="34" y="288" fill="#cbd5e1">全操作を左→右の一方向へ並べ、色だけでなく番号・名前・記号を併記する。</text>
+
+    <line class="dim" x1="0" y1="340" x2="1000" y2="340"/>
+    <line class="dim" x1="0" y1="330" x2="0" y2="350"/><line class="dim" x1="1000" y1="330" x2="1000" y2="350"/>
+    <text x="455" y="370" font-size="18" font-weight="900" fill="#f6c453">5.80m</text>
+  </g>
+
+  <text class="head" x="1160" y="175">個人HUD / 追加1行のみ</text>
+  <g transform="translate(1160 205)">
+    <rect class="panel" width="350" height="190" rx="6"/>
+    <rect x="24" y="24" width="46" height="46" fill="#f6c453"/>
+    <text class="small" x="88" y="45">コイン</text>
+    <text x="88" y="76" font-size="30" font-weight="900" fill="#f6c453">24枚</text>
+    <line x1="24" y1="96" x2="326" y2="96" stroke="#69717d" stroke-width="2"/>
+    <text class="small" x="24" y="125" fill="#cbd5e1">海賊魔獣ダービー</text>
+    <text class="label" x="24" y="158">投票済 3枚 / 2号</text>
+  </g>
+
+  <g transform="translate(1160 425)">
+    <rect class="note" width="350" height="190"/>
+    <text class="label" x="22" y="34">表示状態</text>
+    <text class="small" x="22" y="68">未投票　「ダービー 未投票」</text>
+    <text class="small" x="22" y="98">選択中　「3枚 / 2号 岩王」</text>
+    <text class="small" x="22" y="128">確定後　「投票済 3枚 / 2号」</text>
+    <text class="small" x="22" y="158">結果　　「1着 払戻9枚」</text>
+  </g>
+
+  <text class="head" x="90" y="650">状態と操作可否</text>
+  <g transform="translate(90 680)">
+    <rect class="note" width="1420" height="140"/>
+    <g font-size="17" font-weight="800">
+      <rect x="25" y="35" width="170" height="55" fill="#243247" stroke="#d7eef6"/><text x="73" y="69">WAITING</text>
+      <text x="208" y="69" fill="#f6c453">→</text>
+      <rect x="235" y="35" width="170" height="55" fill="#2f7d62" stroke="#d7eef6"/><text x="289" y="69">ENTRY</text>
+      <text x="418" y="69" fill="#f6c453">→</text>
+      <rect x="445" y="35" width="170" height="55" fill="#805d34" stroke="#d7eef6"/><text x="493" y="69">LOCKED</text>
+      <text x="628" y="69" fill="#f6c453">→</text>
+      <rect x="655" y="35" width="170" height="55" fill="#b84427" stroke="#d7eef6"/><text x="700" y="69">RACING</text>
+      <text x="838" y="69" fill="#f6c453">→</text>
+      <rect x="865" y="35" width="170" height="55" fill="#3157ad" stroke="#d7eef6"/><text x="915" y="69">RESULT</text>
+      <text x="1048" y="69" fill="#f6c453">→</text>
+      <rect x="1075" y="35" width="170" height="55" fill="#5e6875" stroke="#d7eef6"/><text x="1128" y="69">RESET</text>
+      <text x="1258" y="69" fill="#f6c453">→</text>
+      <text x="1290" y="69">WAITING</text>
+    </g>
+    <text class="micro" x="235" y="116">賭け金・レーン・確定・取消が有効</text>
+    <text class="micro" x="655" y="116">操作不可。観戦のみ</text>
+    <text class="micro" x="865" y="116">自動精算。再操作不可</text>
+  </g>
+</svg>

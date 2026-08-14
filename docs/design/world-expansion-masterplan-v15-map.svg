@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1580" viewBox="0 0 1800 1580">
+  <defs>
+    <pattern id="minor" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#16364a"/></pattern>
+    <pattern id="major" width="100" height="100" patternUnits="userSpaceOnUse"><rect width="100" height="100" fill="url(#minor)"/><path d="M100 0H0V100" fill="none" stroke="#24506a" stroke-width="1.5"/></pattern>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="5" refY="5" orient="auto-start-reverse"><path d="M0 0L9 4.5 0 9z" fill="#f6c453"/></marker>
+    <style>
+      text{font-family:"Noto Sans JP","Yu Gothic UI","Segoe UI",sans-serif;fill:#fff7e6}.title{font-size:34px;font-weight:900}.view{font-size:22px;font-weight:900;fill:#63d7f2}.label{font-size:17px;font-weight:900}.small{font-size:14px}.micro{font-size:12px}
+      .world{fill:#5f8745;stroke:#d7eef6;stroke-width:3}.route{fill:#69717d;stroke:#9ba8b4;stroke-width:2}.secondary{fill:#596574;stroke:#9ba8b4;stroke-width:2}.zone{stroke:#fff7e6;stroke-width:3}.dim{stroke:#f6c453;stroke-width:2;marker-start:url(#arrow);marker-end:url(#arrow)}.ext{stroke:#f6c453;stroke-width:1;stroke-dasharray:5 5}.center{stroke:#63d7f2;stroke-width:1;stroke-dasharray:12 6 2 6}.note{fill:#0c2231;stroke:#d7eef6;stroke-width:2}
+    </style>
+  </defs>
+  <rect width="1800" height="1580" fill="#081824"/><rect x="35" y="35" width="1730" height="1510" fill="url(#major)"/>
+  <text class="title" x="75" y="88">ブロック遊技村 v15｜A/B増築・全体更新 建築／工業図</text>
+  <text class="small" x="75" y="118">単位:m　平面図尺度:1m=20px　世界床面56×42　設計レビュー用・実装未承認</text>
+
+  <text class="view" x="100" y="145">全体平面図 / MASTER PLAN（X-Z）</text>
+  <g id="plan">
+    <rect class="world" x="100" y="150" width="1120" height="840"/>
+    <line class="center" x1="660" y1="135" x2="660" y2="1005"/>
+
+    <!-- routes -->
+    <rect class="route" x="600" y="310" width="120" height="640"/>
+    <rect class="route" x="240" y="650" width="840" height="80"/>
+    <rect class="secondary" x="200" y="410" width="920" height="50"/>
+    <rect class="secondary" x="336" y="410" width="48" height="100"/>
+    <rect class="secondary" x="936" y="410" width="48" height="100"/>
+
+    <!-- zone A -->
+    <rect class="zone" x="200" y="210" width="240" height="200" fill="#a66f27"/>
+    <circle cx="320" cy="286" r="62" fill="#d09435" stroke="#fff7e6" stroke-width="3"/>
+    <circle cx="320" cy="286" r="22" fill="#493526" stroke="#f6c453" stroke-width="4"/>
+    <path d="M320 224V348M258 286H382M276 242L364 330M364 242L276 330" stroke="#f6c453" stroke-width="5"/>
+    <text class="label" x="217" y="238">A ◎ 船長の運命盤</text>
+    <text class="small" x="223" y="389">12×10 / 直径6.2</text>
+
+    <!-- exchange -->
+    <rect class="zone" x="580" y="260" width="160" height="100" fill="#9a6b1f"/>
+    <circle cx="660" cy="286" r="20" fill="#f6c453" stroke="#fff7e6" stroke-width="3"/>
+    <rect x="615" y="315" width="90" height="28" fill="#493526" stroke="#fff7e6"/>
+    <text class="label" x="595" y="385">◆ GM受付・10枚</text>
+
+    <!-- zone B -->
+    <rect class="zone" x="880" y="210" width="240" height="200" fill="#294c99"/>
+    <rect x="896" y="232" width="208" height="100" fill="#102b3c" stroke="#f6c453" stroke-width="2"/>
+    <rect x="906" y="240" width="178" height="18" fill="#63d7f2"/><rect x="906" y="262" width="178" height="18" fill="#b98b54"/><rect x="906" y="284" width="178" height="18" fill="#ff6b3d"/><rect x="906" y="306" width="178" height="18" fill="#4d7cfe"/>
+    <rect x="1090" y="340" width="18" height="56" fill="#f6c453"/>
+    <text class="label" x="897" y="238">B ⚑ 海賊魔獣ダービー</text>
+    <text class="small" x="908" y="389">12×10 / 4レーン</text>
+
+    <!-- BJ / MJ -->
+    <rect class="zone" x="240" y="510" width="240" height="200" fill="#a83d87"/>
+    <ellipse cx="360" cy="610" rx="63" ry="34" fill="#493526" stroke="#fff7e6" stroke-width="2"/>
+    <text class="label" x="261" y="540">♠ BJ カード酒場</text><text class="small" x="272" y="690">12×10 / 既存卓維持</text>
+    <rect class="zone" x="840" y="510" width="240" height="200" fill="#2e9b9a"/>
+    <rect x="897" y="568" width="126" height="84" rx="8" fill="#d7eef6" stroke="#fff7e6" stroke-width="2"/>
+    <text class="label" x="864" y="540">▦ MJ 牌工房</text><text class="small" x="872" y="690">12×10 / 既存卓維持</text>
+
+    <!-- welcome -->
+    <rect x="520" y="830" width="280" height="160" fill="#5f8745" stroke="#fff7e6" stroke-width="2" stroke-dasharray="9 6"/>
+    <circle cx="660" cy="930" r="16" fill="#fff7e6" stroke="#f6c453" stroke-width="4"/>
+    <text class="label" x="615" y="970">⌂ SPAWN</text>
+    <rect x="738" y="842" width="92" height="51" fill="#162033" stroke="#f6c453" stroke-width="3" transform="rotate(-18 784 867)"/>
+    <text class="small" x="752" y="820">新・全体地図</text>
+
+    <!-- outer assets -->
+    <g fill="#24733d" stroke="#493526" stroke-width="4">
+      <path d="M180 800l-12-55 20 32 8-43 11 44 24-28-17 54z"/><path d="M1140 800l-12-55 20 32 8-43 11 44 24-28-17 54z"/>
+      <path d="M180 280l-12-55 20 32 8-43 11 44 24-28-17 54z"/><path d="M1140 280l-12-55 20 32 8-43 11 44 24-28-17 54z"/>
+    </g>
+
+    <!-- loop arrows -->
+    <path d="M660 905V705H360V480H240" fill="none" stroke="#f6c453" stroke-width="4" stroke-dasharray="14 8" marker-end="url(#arrow)"/>
+    <path d="M660 705H960V480H1080" fill="none" stroke="#63d7f2" stroke-width="4" stroke-dasharray="14 8" marker-end="url(#arrow)"/>
+    <path d="M1080 435H660V390" fill="none" stroke="#fff7e6" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#arrow)"/>
+    <path d="M240 435H660" fill="none" stroke="#fff7e6" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#arrow)"/>
+
+    <!-- route labels -->
+    <text class="small" x="615" y="765">主軸 6.0m</text>
+    <text class="small" x="520" y="680">中央横断路 4.0m</text>
+    <text class="small" x="512" y="443">北側回遊路 2.5m</text>
+    <text class="micro" x="306" y="495">2.4m</text><text class="micro" x="986" y="495">2.4m</text>
+
+    <!-- dimensions -->
+    <line class="ext" x1="100" y1="150" x2="100" y2="130"/><line class="ext" x1="1220" y1="150" x2="1220" y2="130"/><line class="dim" x1="100" y1="132" x2="1220" y2="132"/><text x="638" y="126" fill="#f6c453" font-size="16" font-weight="900">56.00</text>
+    <line class="ext" x1="100" y1="150" x2="70" y2="150"/><line class="ext" x1="100" y1="990" x2="70" y2="990"/><line class="dim" x1="75" y1="150" x2="75" y2="990"/><text x="48" y="590" fill="#f6c453" font-size="16" font-weight="900" transform="rotate(-90 48 590)">42.00</text>
+  </g>
+
+  <!-- legend -->
+  <g transform="translate(1270 150)">
+    <rect class="note" width="460" height="840"/>
+    <text class="view" x="25" y="42">ゾーン・更新要点</text>
+    <text class="label" x="25" y="88" fill="#e4a641">A ◎ 船長の運命盤</text><text class="small" x="25" y="116">巨大水平盤＋4投票席。配当は個別仕様待ち。</text>
+    <text class="label" x="25" y="160" fill="#c955a5">♠ カード酒場</text><text class="small" x="25" y="188">位置と卓を維持。北リンクだけ追加。</text>
+    <text class="label" x="25" y="232" fill="#f6c453">◆ GM受付</text><text class="small" x="25" y="260">0枚時の手動10枚受取を維持。</text>
+    <text class="label" x="25" y="304" fill="#3dbfbc">▦ 牌工房</text><text class="small" x="25" y="332">位置と卓を維持。北リンクだけ追加。</text>
+    <text class="label" x="25" y="376" fill="#4d7cfe">B ⚑ 海賊魔獣ダービー</text><text class="small" x="25" y="404">4レーン。詳細は個別v1図面を参照。</text>
+
+    <line x1="25" y1="442" x2="435" y2="442" stroke="#69717d"/>
+    <text class="label" x="25" y="480">UIUXの空間原則</text>
+    <text class="small" x="25" y="512">1. 地図はスポーンから5.56m</text>
+    <text class="small" x="25" y="540">2. 色＋番号＋記号＋日本語</text>
+    <text class="small" x="25" y="568">3. 看板上端1.35m以下</text>
+    <text class="small" x="25" y="596">4. 盤面中央に浮遊UIを置かない</text>
+    <text class="small" x="25" y="624">5. 行き止まりを作らない</text>
+
+    <line x1="25" y1="662" x2="435" y2="662" stroke="#69717d"/>
+    <text class="label" x="25" y="700">実装前に解消する差分</text>
+    <text class="small" x="25" y="732">主軸道路 JSON z=18〜-10</text>
+    <text class="small" x="25" y="758">現行表示 z=19〜-13 → v15へ統合</text>
+    <text class="small" x="25" y="790">BJ/MJ JSON奥行11 → 表示10へ統合</text>
+    <text class="small" x="25" y="818">地図座標・寸法を初めて原本化</text>
+  </g>
+
+  <!-- elevations -->
+  <text class="view" x="100" y="1050">北側正面図 / NORTH GAME ROW（X-Y）</text>
+  <g transform="translate(100 1080)">
+    <line x1="0" y1="260" x2="1120" y2="260" stroke="#d7eef6" stroke-width="3"/>
+    <rect x="200" y="232" width="240" height="28" fill="#a66f27" stroke="#fff7e6"/>
+    <circle cx="320" cy="178" r="62" fill="#d09435" stroke="#fff7e6" stroke-width="3"/><circle cx="320" cy="178" r="20" fill="#493526"/>
+    <line x1="320" y1="116" x2="320" y2="240" stroke="#f6c453" stroke-width="5"/><line x1="258" y1="178" x2="382" y2="178" stroke="#f6c453" stroke-width="5"/>
+    <rect x="580" y="232" width="160" height="28" fill="#9a6b1f" stroke="#fff7e6"/><rect x="650" y="80" width="20" height="152" fill="#493526"/><circle cx="660" cy="70" r="24" fill="#f6c453"/>
+    <rect x="880" y="232" width="240" height="28" fill="#294c99" stroke="#fff7e6"/><rect x="1090" y="120" width="26" height="112" fill="#f6c453"/>
+    <text class="small" x="250" y="292">A 最大3.2m</text><text class="small" x="600" y="292">受付3.8m</text><text class="small" x="920" y="292">B 順位塔3.6m</text>
+    <line class="dim" x1="1150" y1="260" x2="1150" y2="30"/><text x="1160" y="150" fill="#f6c453" font-size="16">4.6 MAX</text>
+  </g>
+
+  <text class="view" x="1320" y="1050">右側面 / ROUTE PROFILE（Z-Y）</text>
+  <g transform="translate(1320 1080)">
+    <line x1="0" y1="260" x2="360" y2="260" stroke="#d7eef6" stroke-width="3"/>
+    <rect x="20" y="232" width="80" height="28" fill="#294c99"/><rect x="82" y="150" width="16" height="82" fill="#f6c453"/>
+    <rect x="150" y="232" width="80" height="28" fill="#2e9b9a"/>
+    <rect x="270" y="210" width="55" height="50" fill="#162033" stroke="#f6c453" stroke-width="2"/>
+    <circle cx="340" cy="244" r="10" fill="#fff7e6"/>
+    <text class="micro" x="5" y="292">北側</text><text class="micro" x="145" y="292">中央卓</text><text class="micro" x="265" y="292">地図</text><text class="micro" x="330" y="292">スポーン</text>
+    <path d="M340 250H190V245H60" fill="none" stroke="#f6c453" stroke-width="3" stroke-dasharray="8 5" marker-end="url(#arrow)"/>
+  </g>
+
+  <rect class="note" x="100" y="1460" width="1630" height="70"/><text class="small" x="120" y="1488">注記: 平面寸法の原本は world-expansion-masterplan-v15.json。高さ図は視線・ランドマーク比較用。Aの配当仕様とBの4属性モデル採否は別ゲート。</text><text class="small" x="120" y="1515">REV15 / 2026-08-09 / DESIGN REVIEW / NO RUNTIME OR RELEASE CHANGE</text>
+</svg>

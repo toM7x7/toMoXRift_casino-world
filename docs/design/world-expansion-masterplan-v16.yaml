@@ -1,0 +1,151 @@
+project:
+  id: "neon-casino-club-expansion"
+  revision: 16
+  date: "2026-08-09"
+  status: "再設計レビュー"
+  implementation_authorized: false
+  released: false
+  replaces_design: "world-expansion-masterplan-v15"
+
+source_of_truth:
+  runtime_scene: "src/World.tsx"
+  spatial_json: "src/design/world-expansion-masterplan-v16.json"
+  industrial_drawing: "docs/design/world-expansion-v16-industrial.svg"
+  uiux_drawing: "docs/design/world-expansion-v16-uiux.svg"
+  concept_image: "docs/design/world-expansion-v16-concept.png"
+  prompt_log: "docs/design/world-expansion-v16-image-prompts.md"
+
+core_world:
+  playable_bounds_m:
+    x: [-28, 28]
+    z: [-21, 21]
+  rule: "既存の歩行床とコライダーは維持し、遠景レース場を歩行可能にしない"
+
+area_a:
+  id: "captains-fate-wheel"
+  label: "船長の運命盤"
+  plot_center_m: [-17, 0, -13]
+  plot_size_m: [12, 10]
+  orientation: "south-facing"
+  wheel:
+    center_m: [-17, 3.85, -15.4]
+    diameter_m: 6.8
+    thickness_m: 0.42
+    top_m: 7.25
+    frame_size_m: [7.8, 7.6, 2.0]
+    hub_asset: "Wooden Helm"
+    sectors: 8
+    outcomes: 4
+    encoding: ["color", "number", "symbol", "Japanese"]
+  seating:
+    count: 4
+    row_center_m: [-17, 0, -9.55]
+    seat_spacing_m: 1.65
+    wheel_view_distance_m: 5.85
+    console_max_height_m: 1.05
+    camera_lock: false
+    pointer_lock: false
+    leave_paths: ["3D離席", "Xキー", "席再クリック"]
+  ux:
+    stake_options: [1, 3, 5]
+    controls: ["賭け金", "確定", "離席"]
+    world_display: ["残り時間", "総投票数", "停止結果"]
+    hud_line: "本人の選択と確定状態だけ"
+
+area_b:
+  id: "pirate-monster-derby"
+  label: "海賊魔獣ダービー"
+  selected_scheme: "remote_full_scale_with_local_progress_rail"
+  betting_deck:
+    center_m: [17, 0, -13]
+    size_m: [12, 10]
+    bounds_m:
+      x: [11, 23]
+      z: [-18, -8]
+    view_direction: "east"
+    console_count: 4
+    console_max_height_m: 1.05
+    camera_lock: false
+    pointer_lock: false
+  remote_course:
+    walkable: false
+    collider: false
+    start_x_m: 36
+    finish_x_m: 108
+    length_m: 72
+    bounds_m:
+      x: [36, 108]
+      z: [-18.6, -7.4]
+    near_distance_from_deck_center_m: 19
+    lane_count: 4
+    lane_width_m: 2.35
+    lane_gap_m: 0.45
+    lane_centers_z_m: [-17.2, -14.4, -11.6, -8.8]
+    height_profile_m:
+      start: 0.8
+      wind_bridge: 2.4
+      valley: 0.9
+      finish: 1.6
+    sections:
+      - {id: "launch", x_m: [36, 46], label: "発走"}
+      - {id: "acceleration", x_m: [46, 61], label: "加速直線"}
+      - {id: "wind_bridge", x_m: [61, 75], label: "風橋ジャンプ"}
+      - {id: "valley_chase", x_m: [75, 92], label: "谷の追い上げ"}
+      - {id: "final_sprint", x_m: [92, 108], label: "最終疾走"}
+    race_duration_s: [18, 24]
+  clarity_system:
+    far_field: ["element trail", "number pennant", "section gates"]
+    local_progress_rail: "4本の色付き物理トークンで順位と残距離を表示"
+    hud_line: "賭け金 / 号数 / 投票状態 / 結果"
+  synchronization:
+    scope: "same XRift instance"
+    model: "seed plus authoritative phase timestamps"
+    per_frame_network_positions: false
+    instance_key: "casino.derby.session.v2"
+  asset_strategy:
+    first_profile: "one Hippogriff Neutral GLTF cloned four times"
+    racer_shadows: false
+    dynamic_lights_added: 0
+    particle_cap: 96
+
+alternative_b:
+  id: "arcade_miniature"
+  physical_length_m: 28
+  visual_scale: 0.42
+  strengths: ["個体視認", "低負荷", "実装容易"]
+  weaknesses: ["長距離感が弱い", "v1盤上型との差が小さい"]
+  decision: "不採用。手元進行レールだけを本命案へ統合"
+
+spawn_map:
+  core_map_scale: "preserve"
+  remote_course_representation: "Bの東側に矢印と別枠の概略図"
+  rule: "72mコースを同縮尺で押し込み、既存5地区を読めなくしない"
+
+state_and_economy:
+  wallet_key: "casino.coins.v1"
+  area_a_instance_key: "casino.fateWheel.session.v2"
+  area_b_instance_key: "casino.derby.session.v2"
+  world_storage_role: "persistent wallet only"
+  session_role: "round phase, entries, seed, results"
+  unsettled:
+    - "A総取り配当"
+    - "A NPC種銭"
+    - "A複数当選端数"
+    - "B長距離化後の配当"
+
+implementation_gates:
+  - "v16 JSONとグレーボックス"
+  - "A視認性・席向き・離席QA"
+  - "B 72mプリミティブ負荷試験"
+  - "seed同期PoC"
+  - "3D操作台と進行レール"
+  - "アセット段階投入"
+  - "実インスタンス総合QA"
+
+acceptance:
+  - "A着席位置から盤外周、ポインター、手元操作を同時視認"
+  - "A/Bとも視点固定とpointer lockなし"
+  - "Bは色、番号、手元トークンで順位を三重符号化"
+  - "遠景コースは非歩行で既存コライダーに影響しない"
+  - "新規動的ライト0、粒子96以下、レーサー影なし"
+  - "技術PASSと視覚PASSを分離"

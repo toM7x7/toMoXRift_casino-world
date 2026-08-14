@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "revision": 15,
+  "status": "design-review",
+  "released": false,
+  "implementationAuthorized": false,
+  "units": "meters",
+  "id": "block-casino-world-expansion",
+  "label": "ブロック遊技村 A/B増築・全体更新",
+  "buildPlate": {
+    "center": [0, -0.15, 0],
+    "size": [56, 0.3, 42],
+    "bounds": { "x": [-28, 28], "z": [-21, 21] },
+    "heightLimit": 7
+  },
+  "spawn": {
+    "position": [0, 0, 18],
+    "yaw": 0,
+    "clearRadius": 3
+  },
+  "routes": [
+    {
+      "id": "main-stone-road",
+      "bounds": { "x": [-3, 3], "z": [-13, 19] },
+      "width": 6,
+      "color": "#69717D"
+    },
+    {
+      "id": "cross-plaza-road",
+      "bounds": { "x": [-21, 21], "z": [4, 8] },
+      "width": 4,
+      "color": "#7D858F"
+    },
+    {
+      "id": "north-game-promenade",
+      "bounds": { "x": [-23, 23], "z": [-8, -5.5] },
+      "width": 2.5,
+      "color": "#596574"
+    },
+    {
+      "id": "blackjack-to-fate-link",
+      "bounds": { "x": [-16.2, -13.8], "z": [-8, -3] },
+      "width": 2.4,
+      "color": "#8C6680"
+    },
+    {
+      "id": "mahjong-to-derby-link",
+      "bounds": { "x": [13.8, 16.2], "z": [-8, -3] },
+      "width": 2.4,
+      "color": "#4F8387"
+    }
+  ],
+  "zones": [
+    {
+      "id": "welcome-spawn",
+      "label": "入口・全体地図",
+      "center": [0, 0, 17],
+      "footprint": [14, 8],
+      "symbol": "⌂",
+      "color": "#FFF7E6"
+    },
+    {
+      "id": "blackjack-open-deck",
+      "label": "カード酒場",
+      "center": [-15, 0, 2],
+      "footprint": [12, 10],
+      "symbol": "♠",
+      "color": "#C955A5"
+    },
+    {
+      "id": "mahjong-open-deck",
+      "label": "牌工房",
+      "center": [15, 0, 2],
+      "footprint": [12, 10],
+      "symbol": "▦",
+      "color": "#3DBFBC"
+    },
+    {
+      "id": "coin-exchange-open-counter",
+      "label": "GM受付・交換所",
+      "center": [0, 0, -13],
+      "footprint": [8, 5],
+      "symbol": "◆",
+      "color": "#F6C453"
+    },
+    {
+      "id": "captains-fate-wheel",
+      "label": "船長の運命盤",
+      "center": [-17, 0, -13],
+      "footprint": [12, 10],
+      "symbol": "◎",
+      "color": "#E4A641",
+      "geometry": {
+        "wheelCenter": [-17, 0.46, -14.2],
+        "wheelDiameter": 6.2,
+        "wheelThickness": 0.32,
+        "maximumHeight": 3.2,
+        "votingPositions": 4
+      }
+    },
+    {
+      "id": "pirate-monster-derby",
+      "label": "海賊魔獣ダービー",
+      "center": [17, 0, -13],
+      "footprint": [12, 10],
+      "symbol": "⚑",
+      "color": "#4D7CFE",
+      "sourceSpec": "pirate-monster-derby-v1.json"
+    }
+  ],
+  "spawnMap": {
+    "position": [4.8, 0, 15.2],
+    "rotationY": -0.32,
+    "size": [4.6, 2.55, 0.32],
+    "title": "遊技村 全体地図",
+    "subtitle": "色の道を歩いて遊技台へ"
+  },
+  "wayfinding": {
+    "floorLineWidth": 0.3,
+    "entranceSignMaxHeight": 1.35,
+    "minimumWorldTextHeight": 0.12,
+    "districts": {
+      "captains-fate-wheel": ["#E4A641", "◎", "A", "運命盤"],
+      "blackjack-open-deck": ["#C955A5", "♠", "BJ", "カード"],
+      "coin-exchange-open-counter": ["#F6C453", "◆", "受付", "10枚"],
+      "mahjong-open-deck": ["#3DBFBC", "▦", "MJ", "牌"],
+      "pirate-monster-derby": ["#4D7CFE", "⚑", "B", "ダービー"]
+    }
+  },
+  "ui": {
+    "persistentHud": ["coins", "storage-status", "collapsed-roster"],
+    "remove": ["permanent-notice-panel", "fixed-three-zone-nav", "nonfunctional-hotbar"],
+    "toastSeconds": 3.5,
+    "desktopHudWidth": 208,
+    "compactHudWidth": 196,
+    "contextPanelDesktop": "right",
+    "contextPanelCompact": "bottom-sheet-above-88px-safe-area"
+  },
+  "assetPlan": {
+    "keep": [
+      "pn-starter-pirate.gltf",
+      "pn-palm-tree-animated.gltf",
+      "pn-gold-coin.gltf",
+      "pn-barrel.gltf",
+      "pn-faded-map.gltf"
+    ],
+    "firstPassIntake": [
+      "Wooden Helm/VE/item_woodenhelm.gltf",
+      "Decorations/deco_flag_skull/deco_flag_skull/deco_flag_skull_animated.gltf",
+      "Decorations/Crates/crate_brown/GLTF/crate_brown.gltf",
+      "Hippogriff Neutral/model.gltf"
+    ],
+    "profileBeforeAdding": [
+      "Hippogriff Air/model.gltf",
+      "Hippogriff Earth/model.gltf",
+      "Hippogriff Fire/model.gltf",
+      "Hippogriff Water/model.gltf",
+      "Iron Anchor/VE/Item_Anchor.gltf",
+      "Crafting/Basic Rope/model.gltf"
+    ],
+    "defer": ["Iron Cannon", "raffle tickets", "repeated rope and crate clutter"]
+  },
+  "performance": {
+    "newUniqueGltfFirstPass": 4,
+    "newUniqueGltfAfterProfileMax": 7,
+    "additionalDynamicLights": 0,
+    "additionalAnimatedFlags": 2,
+    "simultaneousRacers": 4,
+    "maximumParticles": 96,
+    "newRacersCastShadow": false
+  },
+  "colliders": {
+    "routes": "shared-build-plate-only",
+    "areaA": ["wheel-base", "voting-seat-bases"],
+    "areaB": ["race-deck", "viewing-rail", "result-tower"],
+    "decorativeProps": "none"
+  }
+}

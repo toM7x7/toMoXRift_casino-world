@@ -2,7 +2,7 @@
   "world": {
     "distDir": "./dist",
     "title": "ブロック遊技村｜ブラックジャック＆麻雀入門",
-    "description": "夕暮れの開放型ブロック遊技公園。正面を向く動くGM、揺れるヤシと灯籠、盤面を隠さない手元操作、常時離席、1〜4人＋NPCのBJ／麻雀、World Storageコインに対応",
+    "description": "夕暮れの開放型ブロック遊技公園。BJ／麻雀に加え、最大8人でコインBET・抽選・払戻ができる船長の運命盤と海賊魔獣ダービーを収録。専用BGMと効果音、World Storageコインに対応",
     "thumbnailPath": "thumbnail.png",
     "buildCommand": "npm run build",
     "ignore": [

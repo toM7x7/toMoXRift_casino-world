@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs><pattern id="g" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#173646"/></pattern><style>.t{font-family:'Yu Gothic UI','Noto Sans JP',sans-serif;fill:#f4fbff}.h{font-weight:800}.c{fill:#55d7ff}.p{fill:#0e2735;stroke:#b9d8e8;stroke-width:2}.gold{fill:#ffc34f}.small{font-size:18px}.mid{font-size:23px}.big{font-size:30px}.line{stroke:#b9d8e8;stroke-width:2;fill:none}.dash{stroke:#b9d8e8;stroke-width:2;stroke-dasharray:8 6;fill:none}</style></defs>
+  <rect width="1600" height="1000" fill="#071a26"/><rect x="25" y="25" width="1550" height="950" fill="url(#g)"/>
+  <text x="65" y="75" class="t h big">v16 観戦UIUX｜視界をゲーム本体、手元を操作と補助情報へ</text>
+  <text x="65" y="108" class="t small">大きな固定HUDなし / pointer lockなし / ESC不要 / 日本語＋色＋番号＋記号</text>
+
+  <rect x="60" y="145" width="710" height="600" rx="10" class="p"/><text x="85" y="185" class="t c h mid">A｜船長の運命盤　着席時の視界</text>
+  <rect x="95" y="215" width="640" height="380" fill="#2e203a" stroke="#b9d8e8" stroke-width="2"/>
+  <circle cx="415" cy="385" r="155" fill="#b87928" stroke="#ffe09a" stroke-width="6"/>
+  <g stroke="#ffe09a" stroke-width="4"><line x1="415" y1="230" x2="415" y2="540"/><line x1="260" y1="385" x2="570" y2="385"/><line x1="305" y1="275" x2="525" y2="495"/><line x1="305" y1="495" x2="525" y2="275"/></g>
+  <path d="M415 210l-22 38h44z" fill="#fff0a8"/><rect x="300" y="548" width="230" height="30" fill="#503017"/><text x="325" y="570" class="t small">残り 08　投票 3人</text>
+  <path d="M230 690l55-105h260l55 105z" fill="#6f431f" stroke="#f4fbff" stroke-width="2"/>
+  <g><rect x="270" y="620" width="70" height="42" rx="6" fill="#244d9e"/><text x="290" y="648" class="t h small">1枚</text><rect x="350" y="620" width="70" height="42" rx="6" fill="#b87928"/><text x="370" y="648" class="t h small">3枚</text><rect x="430" y="620" width="70" height="42" rx="6" fill="#a53782"/><text x="450" y="648" class="t h small">5枚</text><rect x="510" y="620" width="70" height="42" rx="6" fill="#24999c"/><text x="522" y="648" class="t h small">決定</text></g>
+  <text x="85" y="720" class="t small">盤面全体・ポインター・手元ボタンが1視点に収まる。浮遊UIを盤面に重ねない。</text>
+
+  <rect x="805" y="145" width="730" height="600" rx="10" class="p"/><text x="830" y="185" class="t c h mid">B｜海賊魔獣ダービー　観覧デッキの視界</text>
+  <rect x="840" y="215" width="660" height="380" fill="#202f4a" stroke="#b9d8e8" stroke-width="2"/>
+  <path d="M880 490 L1455 335 L1455 455 L880 550 Z" fill="#111d28" stroke="#f4fbff" stroke-width="2"/>
+  <g fill="none" stroke-width="18"><path d="M900 500L1450 355" stroke="#4aaeb6"/><path d="M900 515L1450 380" stroke="#95683f"/><path d="M900 530L1450 405" stroke="#e2583c"/><path d="M900 545L1450 430" stroke="#3f68d0"/></g>
+  <g fill="#ffc34f"><rect x="1015" y="405" width="8" height="135"/><rect x="1215" y="350" width="8" height="135"/><rect x="1445" y="300" width="8" height="155"/></g>
+  <g><circle cx="1110" cy="448" r="10" fill="#4aaeb6"/><circle cx="1080" cy="482" r="10" fill="#95683f"/><circle cx="1145" cy="461" r="10" fill="#e2583c"/><circle cx="1050" cy="518" r="10" fill="#3f68d0"/></g>
+  <text x="870" y="250" class="t small">遠景：身体、ジャンプ、残像、区間門</text>
+  <path d="M940 690l50-105h360l55 105z" fill="#6f431f" stroke="#f4fbff" stroke-width="2"/>
+  <text x="1000" y="620" class="t h small">進行レール</text>
+  <g stroke="#d5e8ef" stroke-width="4"><line x1="1080" y1="635" x2="1335" y2="635"/><line x1="1080" y1="650" x2="1335" y2="650"/><line x1="1080" y1="665" x2="1335" y2="665"/><line x1="1080" y1="680" x2="1335" y2="680"/></g>
+  <g><circle cx="1260" cy="635" r="8" fill="#4aaeb6"/><circle cx="1205" cy="650" r="8" fill="#95683f"/><circle cx="1285" cy="665" r="8" fill="#e2583c"/><circle cx="1170" cy="680" r="8" fill="#3f68d0"/></g>
+  <text x="830" y="720" class="t small">手元：現在順位と残距離。映像を複製せず、物理トークンで遠景の読みにくさだけを補う。</text>
+
+  <rect x="60" y="775" width="1475" height="155" rx="10" class="p"/>
+  <text x="85" y="815" class="t c h mid">共通インタラクション</text>
+  <g class="t small"><text x="85" y="855">着席 → 3D操作 → 確定 → 観戦 → 結果 → もう一度 / 離席</text><text x="85" y="890">離席経路：①常時表示3Dボタン　②Xキー　③席を再クリック</text><text x="760" y="855">HUD：コイン＋本人状態1行だけ</text><text x="760" y="890">禁止：中央大型UI、常時カメラ固定、ESC前提、英語のみ</text></g>
+  <text x="60" y="965" class="t small">REV16 / 2026-08-09 / UIUX REVIEW / Japanese-first</text>
+</svg>

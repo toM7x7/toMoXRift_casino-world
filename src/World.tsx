@@ -13,9 +13,14 @@ import {
 import {
   CasinoButton,
   CasinoNpc,
-  JapanesePanel,
 } from './components/CasinoPrimitives'
+import { CaptainsFateWheel } from './components/CaptainsFateWheel'
+import {
+  CasinoAudioControl,
+  CasinoAudioProvider,
+} from './components/CasinoAudio'
 import { MahjongTable } from './components/MahjongTable'
+import { PirateMonsterDerby } from './components/PirateMonsterDerby'
 import {
   AnimatedPalm,
   FadedMapProp,
@@ -215,6 +220,33 @@ function IslandShell() {
   )
 }
 
+function ExpansionRoutes() {
+  return (
+    <>
+      <mesh position={[0, 0.014, -7]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[46, 3]} />
+        <meshStandardMaterial color="#69717d" roughness={0.96} />
+      </mesh>
+      {[-17, 17].map((x, index) => (
+        <group key={`expansion-route-${x}`}>
+          <mesh position={[x, 0.016, -10.5]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <planeGeometry args={[3, 7]} />
+            <meshStandardMaterial color="#7d858f" roughness={0.96} />
+          </mesh>
+          <mesh position={[x, 0.019, -10.5]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.24, 7]} />
+            <meshStandardMaterial
+              color={index === 0 ? '#f6c453' : '#45b7d1'}
+              emissive={index === 0 ? '#f6c453' : '#45b7d1'}
+              emissiveIntensity={0.1}
+            />
+          </mesh>
+        </group>
+      ))}
+    </>
+  )
+}
+
 function OpenAirGamingDeck({
   center,
   accent,
@@ -352,56 +384,6 @@ function CoinExchange() {
   )
 }
 
-function FuturePlot({
-  center,
-  size,
-  label,
-  accent,
-}: {
-  center: Vec3
-  size: [number, number]
-  label: string
-  accent: string
-}) {
-  const [width, depth] = size
-  return (
-    <group position={center}>
-      <Block position={[0, 0.025, 0]} size={[width, 0.05, depth]} color={palette.dirt} />
-      <Block position={[0, 0.075, -depth / 2]} size={[width, 0.15, 0.18]} color={accent} />
-      <Block position={[0, 0.075, depth / 2]} size={[width, 0.15, 0.18]} color={accent} />
-      <Block position={[-width / 2, 0.075, 0]} size={[0.18, 0.15, depth]} color={accent} />
-      <Block position={[width / 2, 0.075, 0]} size={[0.18, 0.15, depth]} color={accent} />
-      {[-width / 4, 0, width / 4].map((x) => (
-        <Block
-          key={`plot-grid-x-${x}`}
-          position={[x, 0.105, 0]}
-          size={[0.08, 0.04, depth - 0.5]}
-          color="#a98a4c"
-        />
-      ))}
-      {[-depth / 4, 0, depth / 4].map((z) => (
-        <Block
-          key={`plot-grid-z-${z}`}
-          position={[0, 0.105, z]}
-          size={[width - 0.5, 0.04, 0.08]}
-          color="#a98a4c"
-        />
-      ))}
-      <JapanesePanel
-        position={[0, 2.05, -depth / 2 + 0.35]}
-        width={4.2}
-        height={1.1}
-        title={label}
-        lines={['COMING SOON / 新遊技を計画中']}
-        accent={Number.parseInt(accent.slice(1), 16)}
-        background={0x493526}
-      />
-      <Block position={[-1.65, 0.35, 0.6]} size={[1.15, 0.7, 1.15]} color={palette.stone} />
-      <Block position={[1.8, 0.22, -0.4]} size={[0.8, 0.44, 0.8]} color={palette.wood} />
-    </group>
-  )
-}
-
 function SpawnMapBoard() {
   return (
     <group position={[4.2, 0, 9.5]} rotation={[0, -0.46, 0]} scale={0.82}>
@@ -414,7 +396,7 @@ function SpawnMapBoard() {
         遊技村 全体地図
       </Text>
       <Text position={[0, 3.25, 0.18]} fontSize={0.17} color="#fff7e6" anchorX="center">
-        椅子をクリックしてENTRY
+        色の道を歩いて遊技場へ
       </Text>
 
       <mesh position={[0, 2.23, 0.18]}>
@@ -453,8 +435,8 @@ function SpawnMapBoard() {
       <Text position={[-1.48, 2.5, 0.32]} fontSize={0.2} color="#fff7e6" anchorX="center">BJ</Text>
       <Text position={[1.48, 2.5, 0.32]} fontSize={0.2} color="#172033" anchorX="center">麻雀</Text>
       <Text position={[0, 1.69, 0.32]} fontSize={0.13} color="#172033" anchorX="center">交換所</Text>
-      <Text position={[-1.55, 1.7, 0.32]} fontSize={0.11} color="#fff1b8" anchorX="center">建設予定 A</Text>
-      <Text position={[1.55, 1.7, 0.32]} fontSize={0.11} color="#fff1b8" anchorX="center">建設予定 B</Text>
+      <Text position={[-1.55, 1.7, 0.32]} fontSize={0.11} color="#fff1b8" anchorX="center">A 運命盤</Text>
+      <Text position={[1.55, 1.7, 0.32]} fontSize={0.11} color="#fff1b8" anchorX="center">B ダービー</Text>
 
       <mesh position={[0, 2.92, 0.3]}>
         <circleGeometry args={[0.12, 8]} />
@@ -476,45 +458,42 @@ export function World({
 }: WorldProps) {
   return (
     <CasinoEconomyProvider previewCoins={reviewGame ? 10 : undefined}>
-      <group position={position} scale={scale}>
-        <IslandShell />
-        <PirateMarketLandscape />
-        <OpenAirGamingDeck
-          center={vec3(blackjackBuilding.center)}
-          accent={palette.blackjack}
-          label="BJ"
-          japaneseLabel="カード広場"
-        />
-        <OpenAirGamingDeck
-          center={vec3(mahjongBuilding.center)}
-          accent={palette.mahjong}
-          label="MJ"
-          japaneseLabel="牌広場"
-        />
-        <BlackjackTable
-          position={vec3(blackjackBuilding.tableAnchor as number[])}
-          autoStart={reviewGame === 'blackjack'}
-        />
-        <MahjongTable
-          position={vec3(mahjongBuilding.tableAnchor as number[])}
-          autoStart={reviewGame === 'mahjong'}
-        />
-        <CoinExchange />
-        {layout.futurePlots.map((plot) => (
-          <FuturePlot
-            key={plot.id}
-            center={vec3(plot.center)}
-            size={plot.size as [number, number]}
-            label={plot.label}
-            accent={plot.accent}
+      <CasinoAudioProvider>
+        <group position={position} scale={scale}>
+          <IslandShell />
+          <ExpansionRoutes />
+          <PirateMarketLandscape />
+          <OpenAirGamingDeck
+            center={vec3(blackjackBuilding.center)}
+            accent={palette.blackjack}
+            label="BJ"
+            japaneseLabel="カード広場"
           />
-        ))}
-        <SpawnMapBoard />
-        {showSpawn ? (
-          <SpawnPoint position={vec3(layout.spawn.position)} yaw={layout.spawn.yaw} />
-        ) : null}
-      </group>
-      {showHud ? <CasinoHud /> : null}
+          <OpenAirGamingDeck
+            center={vec3(mahjongBuilding.center)}
+            accent={palette.mahjong}
+            label="MJ"
+            japaneseLabel="牌広場"
+          />
+          <BlackjackTable
+            position={vec3(blackjackBuilding.tableAnchor as number[])}
+            autoStart={reviewGame === 'blackjack'}
+          />
+          <MahjongTable
+            position={vec3(mahjongBuilding.tableAnchor as number[])}
+            autoStart={reviewGame === 'mahjong'}
+          />
+          <CoinExchange />
+          <CaptainsFateWheel position={vec3(layout.futurePlots[0].center)} />
+          <PirateMonsterDerby position={vec3(layout.futurePlots[1].center)} />
+          <SpawnMapBoard />
+          <CasinoAudioControl position={[7.3, 1.04, 9.8]} />
+          {showSpawn ? (
+            <SpawnPoint position={vec3(layout.spawn.position)} yaw={layout.spawn.yaw} />
+          ) : null}
+        </group>
+        {showHud ? <CasinoHud /> : null}
+      </CasinoAudioProvider>
     </CasinoEconomyProvider>
   )
 }

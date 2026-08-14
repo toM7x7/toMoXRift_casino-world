@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "revision": 16,
+  "status": "design-review",
+  "implementationAuthorized": false,
+  "units": "meters",
+  "corePlayableBounds": {
+    "x": [-28, 28],
+    "z": [-21, 21]
+  },
+  "areaA": {
+    "id": "captains-fate-wheel",
+    "label": "船長の運命盤",
+    "plot": { "center": [-17, 0, -13], "size": [12, 10] },
+    "orientation": "south-facing",
+    "wheel": {
+      "center": [-17, 3.85, -15.4],
+      "diameter": 6.8,
+      "thickness": 0.42,
+      "top": 7.25,
+      "frameSize": [7.8, 7.6, 2.0],
+      "sectors": 8,
+      "outcomes": 4,
+      "hubAsset": "Wooden Helm"
+    },
+    "seating": {
+      "count": 4,
+      "rowCenter": [-17, 0, -9.55],
+      "spacing": 1.65,
+      "viewDistance": 5.85,
+      "consoleMaxHeight": 1.05,
+      "cameraLock": false,
+      "pointerLock": false,
+      "leavePaths": ["world-button", "key-x", "seat-reclick"]
+    }
+  },
+  "areaB": {
+    "id": "pirate-monster-derby",
+    "label": "海賊魔獣ダービー",
+    "scheme": "remote-full-scale-with-local-progress-rail",
+    "bettingDeck": {
+      "center": [17, 0, -13],
+      "size": [12, 10],
+      "bounds": { "x": [11, 23], "z": [-18, -8] },
+      "viewDirection": "east",
+      "consoleCount": 4,
+      "consoleMaxHeight": 1.05
+    },
+    "remoteCourse": {
+      "walkable": false,
+      "collider": false,
+      "bounds": { "x": [36, 108], "z": [-18.6, -7.4] },
+      "length": 72,
+      "nearDistanceFromDeckCenter": 19,
+      "laneCount": 4,
+      "laneWidth": 2.35,
+      "laneGap": 0.45,
+      "laneCentersZ": [-17.2, -14.4, -11.6, -8.8],
+      "heightProfile": [
+        { "x": 36, "y": 0.8, "label": "start" },
+        { "x": 61, "y": 1.4, "label": "ramp" },
+        { "x": 69, "y": 2.4, "label": "wind-bridge" },
+        { "x": 83, "y": 0.9, "label": "valley" },
+        { "x": 108, "y": 1.6, "label": "finish" }
+      ],
+      "sections": [
+        { "id": "launch", "x": [36, 46], "label": "発走" },
+        { "id": "acceleration", "x": [46, 61], "label": "加速直線" },
+        { "id": "wind-bridge", "x": [61, 75], "label": "風橋ジャンプ" },
+        { "id": "valley-chase", "x": [75, 92], "label": "谷の追い上げ" },
+        { "id": "final-sprint", "x": [92, 108], "label": "最終疾走" }
+      ],
+      "raceDurationSeconds": [18, 24]
+    },
+    "clarity": {
+      "farField": ["element-trail", "number-pennant", "section-gates"],
+      "localProgressRail": true,
+      "hudLine": true
+    },
+    "synchronization": {
+      "scope": "same-instance",
+      "model": "seed-and-phase-timestamps",
+      "perFramePositions": false,
+      "instanceKey": "casino.derby.session.v2"
+    }
+  },
+  "spawnMap": {
+    "coreMapScale": "preserve",
+    "remoteCourse": "diagrammatic-arrow-and-inset"
+  },
+  "performanceBudget": {
+    "newDynamicLights": 0,
+    "particleCap": 96,
+    "racerShadows": false,
+    "firstProfileUniqueRacerGltf": 1
+  },
+  "stateKeys": {
+    "wallet": "casino.coins.v1",
+    "fateWheel": "casino.fateWheel.session.v2",
+    "derby": "casino.derby.session.v2"
+  }
+}

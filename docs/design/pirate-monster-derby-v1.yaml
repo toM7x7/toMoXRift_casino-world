@@ -1,0 +1,292 @@
+project:
+  id: "pirate-monster-derby"
+  japanese_name: "海賊魔獣ダービー"
+  revision: 1
+  date: "2026-08-08"
+  status: "企画・設計レビュー"
+  implementation_authorized: false
+  intent: "既存ボクセル資産と12m×10mの建設予定地Bを使い、1人でも複数人でも短時間で観戦と投票を楽しめる盤上型レースを追加する"
+
+source_of_truth:
+  world_layout: "src/design/sandbox-layout-v9.json"
+  spatial_runtime_json: "src/design/pirate-monster-derby-v1.json"
+  industrial_drawing: "docs/design/pirate-monster-derby-v1-three-view.svg"
+  interaction_drawing: "docs/design/pirate-monster-derby-v1-console-ui.svg"
+  concept_image: "docs/design/pirate-monster-derby-v1-concept.png"
+  image_prompt_log: "docs/design/pirate-monster-derby-v1-image-prompts.md"
+  economy_component: "src/components/CasinoEconomy.tsx"
+
+product_principles:
+  - "実寸競馬場ではなく、サンドボックス世界の盤上競技として見せる"
+  - "大きな画面UIで競走路を隠さず、投票は3D操作台、確認だけ小型HUDで行う"
+  - "1人でも配当が成立する固定配当方式にする"
+  - "勝敗は先に同期乱数で確定し、全クライアントが同じ着順と走行軌道を再生する"
+  - "実通貨、換金、外部価値とは接続しないワールド内遊技コインとして扱う"
+
+site:
+  plot_id: "future-plot-b"
+  plot_center_m: [17, 0, -13]
+  plot_size_m: [12, 10]
+  plot_bounds_m:
+    x: [11, 23]
+    z: [-18, -8]
+  approach_direction: "+z"
+  enclosure: "none"
+  roof: "none"
+  maximum_object_height_m: 3.6
+  design_clearance_m:
+    plot_edge: 0.6
+    player_route: 1.4
+    control_spacing: 0.65
+
+spatial_program:
+  race_deck:
+    center_m: [17, 0.22, -14.9]
+    size_m: [10.4, 0.44, 5.0]
+    bounds_m:
+      x: [11.8, 22.2]
+      z: [-17.4, -12.4]
+    finish: "dark navy block base with sandstone curb"
+    player_access: "観戦側から進入不可。左右の保守隙間は演出用でインタラクトなし"
+  lanes:
+    count: 4
+    direction: "+x"
+    start_x_m: 12.35
+    finish_x_m: 21.65
+    usable_length_m: 9.3
+    width_m: 0.95
+    separator_m: 0.2
+    center_z_m: [-16.625, -15.475, -14.325, -13.175]
+    surface_height_m: 0.46
+  spectator_strip:
+    center_m: [17, 0.05, -10.55]
+    size_m: [10.8, 2.5]
+    clear_walkway_depth_m: 1.4
+    finish: "stone paving with four colored inlays"
+  viewing_rail:
+    center_m: [17, 0.52, -12.02]
+    size_xyz_m: [8.6, 1.04, 0.16]
+    opening_m:
+      left: 1.1
+      right: 1.1
+  betting_console:
+    center_m: [17, 0.78, -9.48]
+    size_m: [5.8, 0.85, 0.72]
+    tilt_deg: 18
+    player_standing_z_m: -8.75
+  result_tower:
+    center_m: [22.05, 1.8, -11.25]
+    size_m: [0.7, 3.6, 0.7]
+    display_faces: ["+z", "-x"]
+  gm_position_m: [11.95, 0, -10.45]
+  camera_interest_point_m: [17, 0.75, -14.7]
+
+racers:
+  shared_species: "Hippogriff"
+  asset_source: "https://github.com/proofofplay/piratenation-art/tree/main/Voxel%20Game%20Assets/Mob%20Enemies/Hippogriff"
+  license: "CC0-1.0"
+  model_animation_clips: ["idle", "hit", "attack"]
+  locomotion_strategy: "位置進行、上下動、ロール、ピッチ、羽ばたき速度をround seedから手続き生成する"
+  entries:
+    - lane: 1
+      id: "soufu"
+      name: "蒼風"
+      element: "Air"
+      color: "#63D7F2"
+      mark: "◇"
+      style: "先行"
+    - lane: 2
+      id: "ganou"
+      name: "岩王"
+      element: "Earth"
+      color: "#B98B54"
+      mark: "■"
+      style: "持久"
+    - lane: 3
+      id: "kaso"
+      name: "火走"
+      element: "Fire"
+      color: "#FF6B3D"
+      mark: "▲"
+      style: "追込"
+    - lane: 4
+      id: "shiokage"
+      name: "潮影"
+      element: "Water"
+      color: "#4D7CFE"
+      mark: "●"
+      style: "波乱"
+
+game_rules:
+  humans:
+    minimum: 1
+    maximum_recommended: 4
+    multiple_players_may_choose_same_lane: true
+  wager_options_coins: [1, 3, 5]
+  eligibility:
+    minimum_balance: 1
+    one_ticket_per_player_per_round: true
+  round_timing_seconds:
+    waiting: null
+    entry: 20
+    locked: 3
+    racing: 12
+    result: 8
+    reset: 2
+  start_policy:
+    no_entry: "待機継続"
+    first_entry: "20秒カウント開始"
+    manual_start: "投票者が1人以上いて受付開始から7秒経過した場合、GM横の出走レバーで残り時間を3秒へ短縮"
+    minimum_entry_open_seconds_before_expedite: 7
+  cancellation:
+    allowed_phases: ["ENTRY"]
+    result: "賭け金を全額返却"
+  winner_selection:
+    method: "round seedから重複なしの着順を一度だけ生成"
+    v1_probability: "4体均等、各25%"
+    presentation_stats: "脚質は走行曲線の見た目だけを変え、勝率を偽装しない"
+  payout_gross:
+    first_place_multiplier: 3
+    second_place_multiplier: 1
+    third_place_multiplier: 0
+    fourth_place_multiplier: 0
+    explanation: "1着は賭け金を含む3倍、2着は賭け金返還。均等勝率で理論払戻率100%"
+  zero_balance: "既存仕様どおりGM受付で10枚を受け取る。自動配布しない"
+
+player_flow:
+  - step: 1
+    action: "操作台で賭け金1・3・5枚を選ぶ"
+    feedback: "選択ボタンが金色に点灯"
+  - step: 2
+    action: "1〜4号のレーンボタンを選ぶ"
+    feedback: "番号、名前、色、記号を同時表示"
+  - step: 3
+    action: "『この内容で投票』を押す"
+    feedback: "コインを先に差し引き、投票札をレール前へ立てる"
+  - step: 4
+    action: "締切まで『取消』可能"
+    feedback: "取消時は即時返金"
+  - step: 5
+    action: "観戦する"
+    feedback: "順位塔、レーン照明、GM音声で進行。移動やカメラを強制固定しない"
+  - step: 6
+    action: "結果確認"
+    feedback: "該当者へ一度だけ配当し、8秒後に次ラウンドへ"
+
+ui:
+  policy: "盤面を隠す大型DOMを追加しない"
+  world_space:
+    controls: ["賭け金 1枚", "賭け金 3枚", "賭け金 5枚", "1号", "2号", "3号", "4号", "この内容で投票", "取消"]
+    race_board: ["受付中", "投票締切", "出走", "確定"]
+    result_board: ["1着", "2着", "払戻"]
+  personal_hud:
+    placement: "既存コインHUD内の1行追加"
+    idle: "ダービー 未投票"
+    draft: "3枚 / 2号 岩王"
+    confirmed: "投票済 3枚 / 2号"
+    result: "1着 払戻9枚"
+  readability:
+    minimum_world_text_height_m: 0.12
+    redundant_coding: ["番号", "日本語名", "色", "形状記号"]
+    avoid: ["英語だけの操作", "赤緑だけの判別", "コース中央の浮遊UI", "常時カメラ固定"]
+
+multiplayer_and_state:
+  scope: "同一XRiftインスタンス"
+  instance_state_key: "casino.derby.session.v1"
+  instance_state_fields:
+    - "schemaVersion"
+    - "roundId"
+    - "phase"
+    - "phaseEndsAt"
+    - "seed"
+    - "entriesByUserId"
+    - "finishOrder"
+    - "settledUserIds"
+  persistent_wallet_key: "casino.coins.v1"
+  transaction_order:
+    entry: ["残高確認", "コイン減算", "ENTRY登録", "登録失敗時は補償返金"]
+    cancellation: ["ENTRY削除", "コイン返却"]
+    result: ["対象確認", "settledUserIds確認", "コイン加算", "settledUserIds追加"]
+  known_platform_constraint: "World Storageの残高加算とInstance Stateの精算済み記録は単一トランザクションではない"
+  mitigation:
+    - "賭け金上限を5枚に固定"
+    - "同一roundIdのローカル二重実行を即時拒否"
+    - "精算中は操作を無効化"
+    - "再接続・同時タブ・精算途中切断をQA項目として明示"
+    - "厳密な金融整合性が必要になった場合のみ外部台帳へ拡張"
+
+animation_and_audio:
+  gm_orientation:
+    entry_facing_target_m: [17, 1.4, -8.75]
+    racing_facing_target_m: [17, 0.75, -14.7]
+    result_facing_target_m: [17, 1.4, -8.75]
+    rule: "受付・結果時はプレイヤー側を向き、競走中だけ首と上体をコースへ向ける"
+  timeline:
+    - at_seconds: 0
+      event: "ゲート閉鎖、ランタン3灯"
+    - at_seconds: 3
+      event: "号砲、全レーン発進"
+    - at_seconds: 3.0-10.0
+      event: "脚質別の加減速と2回の順位変動"
+    - at_seconds: 10.0-14.0
+      event: "最終加速、粒子と旗の揺れを強化"
+    - at_seconds: 15
+      event: "着順確定、勝者レーン点灯"
+  motion_limits:
+    racer_vertical_bob_m: 0.08
+    racer_roll_deg: 4
+    racer_pitch_deg: 6
+    camera_shake: "none"
+  audio_cues: ["受付開始ベル", "残り3秒", "号砲", "足音または羽音", "ゴール鐘", "払戻チャイム"]
+
+performance_budget:
+  initial_racer_count: 4
+  max_simultaneous_particles: 80
+  max_dynamic_lights: 2
+  shadow_casting_racers: 0
+  model_loading: "4体を事前読込し、ラウンド中に追加ロードしない"
+  fallback: "低負荷設定では粒子、影、観客札の揺れを停止"
+
+qa_acceptance:
+  spatial:
+    - "12m×10m区画内に全構造物が収まる"
+    - "接近側に幅1.4m以上の連続歩行帯がある"
+    - "主要通路から操作台、4レーン、ゴールが同時に読める"
+    - "結果塔とGMが競走路を隠さない"
+  gameplay:
+    - "1人で投票、出走、払戻、次ラウンドまで完走できる"
+    - "複数人が同じレーンへ投票できる"
+    - "1人1ラウンド1票を超えて賭けられない"
+    - "締切前取消だけが返金される"
+    - "全クライアントで着順が一致する"
+  economy:
+    - "残高不足で投票できない"
+    - "1着は3倍、2着は返還、その他は0枚になる"
+    - "同一セッション中に同じroundIdを二重精算しない"
+    - "残高0枚時だけ受付で10枚を受け取れる"
+  ui:
+    - "ゲーム中もコース全体が見える"
+    - "ESCやpointer lockを要求しない"
+    - "日本語だけで投票と取消が理解できる"
+    - "色覚に依存せず番号と記号で識別できる"
+
+non_goals_v1:
+  - "騎手アバターの搭乗"
+  - "プレイヤー自身による操縦"
+  - "クロスインスタンス同時レース"
+  - "ユーザー間の直接コイン送金"
+  - "可変オッズと総取りプール"
+  - "実通貨、NFT、外部ランキング報酬との接続"
+
+review_gates:
+  gate_1: "企画承認: 名称、4体、配当、1ラウンド45秒前後"
+  gate_2: "図面承認: 三面図、通路幅、視線、UI位置"
+  gate_3: "灰色箱PoC: アセットなしで同期レースと精算を検証"
+  gate_4: "アセット統合: Hippogriff 4属性、音、粒子"
+  gate_5: "実インスタンスQA後にのみアップロード"
+
+visual_review:
+  accepted_concept: "docs/design/pirate-monster-derby-v1-concept.png"
+  archived_draft: "docs/design/pirate-monster-derby-v1-concept-draft-mixed-species.png"
+  draft_rejection_reason: "4体が別種となり、同一Hippogriffの4属性という公平性・可読性仕様と不一致だった"
+  accepted_correction: "空間構成を維持し、同体格・同種の4属性レーサーへ修正"
