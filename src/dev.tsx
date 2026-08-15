@@ -6,7 +6,7 @@
  */
 
 import { DevEnvironment, XRiftProvider } from '@xrift/world-components'
-import type { CameraConfig, PhysicsConfig } from '@xrift/world-components'
+import type { CameraConfig, PhysicsConfig, ServerClockContextValue } from '@xrift/world-components'
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
@@ -22,6 +22,14 @@ const worldConfig = xriftConfig.world as {
   physics?: PhysicsConfig
   camera?: CameraConfig
   outputBufferType?: string
+}
+
+const devServerClock: ServerClockContextValue = {
+  now: () => Date.now(),
+  uncertainty: 10,
+  synced: true,
+  timeJumpCount: 0,
+  lastTimeJumpMs: 0,
 }
 
 const previewMode = new URLSearchParams(window.location.search).get('mode')
@@ -69,7 +77,7 @@ const reviewCamera = previewMode === 'map'
     : layout.cameraPresets.thumbnail
 
 createRoot(rootElement).render(
-  <XRiftProvider baseUrl="/">
+  <XRiftProvider baseUrl="/" serverClockImplementation={devServerClock}>
     {isReviewMode ? (
       <div style={{ width: '100vw', height: '100vh', background: layout.palette.sky }}>
         <Canvas

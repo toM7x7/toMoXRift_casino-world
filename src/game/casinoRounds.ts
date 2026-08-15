@@ -53,3 +53,49 @@ export function choiceBetTotals(
 export function roundToken(game: 'fate' | 'derby', roundId: number, startedAt: number) {
   return `${game}:${roundId}:${startedAt}`
 }
+
+export function roundProgress(
+  startedAt: number,
+  durationMs: number,
+  now: number,
+  durationFactor = 1,
+) {
+  if (startedAt <= 0 || durationMs <= 0 || durationFactor <= 0) return 0
+  return Math.min(1, Math.max(0, (now - startedAt) / (durationMs * durationFactor)))
+}
+
+function normalizePositive(value: number) {
+  const twoPi = Math.PI * 2
+  return ((value % twoPi) + twoPi) % twoPi
+}
+
+function easeOutQuint(value: number) {
+  return 1 - (1 - value) ** 5
+}
+
+export function synchronizedWheelAngle({
+  roundId,
+  resultIndex,
+  choiceCount,
+  startedAt,
+  durationMs,
+  now,
+  turns = 5,
+}: {
+  roundId: number
+  resultIndex: number
+  choiceCount: number
+  startedAt: number
+  durationMs: number
+  now: number
+  turns?: number
+}) {
+  if (choiceCount <= 0) return 0
+  const sectorAngle = (Math.PI * 2) / choiceCount
+  const startIndex = ((roundId * 3) % choiceCount + choiceCount) % choiceCount
+  const startAngle = startIndex * sectorAngle
+  const desiredAngle = Math.PI / 2 - (resultIndex + 0.5) * sectorAngle
+  const correction = normalizePositive(desiredAngle - startAngle)
+  const progress = roundProgress(startedAt, durationMs, now)
+  return startAngle + easeOutQuint(progress) * (Math.PI * 2 * turns + correction)
+}

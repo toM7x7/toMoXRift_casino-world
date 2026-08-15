@@ -241,12 +241,14 @@ export function HippogriffRacerModel({
   scale = 0.1,
   tint = '#ffffff',
   phase = 0,
+  synchronizedNow,
 }: {
   position?: Vec3
   rotation?: Vec3
   scale?: number
   tint?: string
   phase?: number
+  synchronizedNow?: () => number
 }) {
   const url = usePirateNationUrl('pn-hippogriff-neutral.gltf')
   const gltf = useGLTF(url)
@@ -269,7 +271,7 @@ export function HippogriffRacerModel({
     })
     return cloned
   }, [gltf.scene, tint])
-  const { actions } = useAnimations(gltf.animations, rootRef)
+  const { actions, mixer } = useAnimations(gltf.animations, rootRef)
 
   useEffect(() => {
     const action = actions.idle
@@ -282,6 +284,11 @@ export function HippogriffRacerModel({
       action.stop()
     }
   }, [actions, phase])
+
+  useFrame(() => {
+    if (!synchronizedNow) return
+    mixer.setTime(synchronizedNow() / 1000 + phase)
+  })
 
   return (
     <group

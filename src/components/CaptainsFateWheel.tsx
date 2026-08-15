@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import { RigidBody } from '@react-three/rapier'
-import { useInstanceState, useUsers } from '@xrift/world-components'
+import { useInstanceState, useServerClock, useUsers } from '@xrift/world-components'
 import { useEffect, useRef, useState } from 'react'
 import type { Group } from 'three'
 import {
@@ -8,6 +8,7 @@ import {
   CASINO_BET_OPTIONS,
   choiceBetTotals,
   seededResult,
+  synchronizedWheelAngle,
   type CasinoRoundBet,
 } from '../game/casinoRounds'
 import { useCasinoAudio } from './CasinoAudio'
@@ -21,6 +22,7 @@ import {
 import { useCasinoEconomy } from './CasinoEconomy'
 import {
   roundIsComplete,
+  scheduleAtServerTime,
   useCasinoRoundSettlement,
   useRoundClock,
   type FormalCasinoRoundState,
@@ -30,7 +32,8 @@ type Vec3 = [number, number, number]
 
 interface FateWheelState extends FormalCasinoRoundState {}
 
-const SESSION_KEY = 'casino.fate-wheel.round.v2'
+const SESSION_KEY = 'casino.fate-wheel.round.v3'
+const SYNCHRONIZED_START_DELAY_MS = 1500
 const EMPTY_STATE: FateWheelState = {
   roundId: 1,
   phase: 'betting',
@@ -51,35 +54,19 @@ const SECTORS = [
   { color: '#d7ad42', label: '金' },
 ]
 
-function easeOutQuint(value: number) {
-  return 1 - (1 - value) ** 5
-}
-
-function normalizePositive(value: number) {
-  const twoPi = Math.PI * 2
-  return ((value % twoPi) + twoPi) % twoPi
-}
-
-function FateWheelFace({ state }: { state: FateWheelState }) {
+function FateWheelFace({ state, serverNow }: { state: FateWheelState; serverNow: () => number }) {
   const wheelRef = useRef<Group>(null)
-  const startAngleRef = useRef(0)
-  const roundRef = useRef(state.roundId)
-
-  useEffect(() => {
-    if (roundRef.current === state.roundId || state.phase !== 'running') return
-    roundRef.current = state.roundId
-    startAngleRef.current = wheelRef.current?.rotation.z ?? 0
-  }, [state.phase, state.roundId])
 
   useFrame(() => {
     if (!wheelRef.current || state.phase !== 'running' || state.startedAt <= 0) return
-    const elapsed = Date.now() - state.startedAt
-    const progress = Math.min(1, Math.max(0, elapsed / state.durationMs))
-    const sectorAngle = (Math.PI * 2) / SECTORS.length
-    const desired = Math.PI / 2 - (state.resultIndex + 0.5) * sectorAngle
-    const correction = normalizePositive(desired - startAngleRef.current)
-    wheelRef.current.rotation.z = startAngleRef.current
-      + easeOutQuint(progress) * (Math.PI * 10 + correction)
+    wheelRef.current.rotation.z = synchronizedWheelAngle({
+      roundId: state.roundId,
+      resultIndex: state.resultIndex,
+      choiceCount: SECTORS.length,
+      startedAt: state.startedAt,
+      durationMs: state.durationMs,
+      now: serverNow(),
+    })
   })
 
   return (
@@ -113,6 +100,7 @@ function FateWheelFace({ state }: { state: FateWheelState }) {
 export function CaptainsFateWheel({ position }: { position: Vec3 }) {
   const [state, setState] = useInstanceState<FateWheelState>(SESSION_KEY, EMPTY_STATE)
   const { localUser } = useUsers()
+  const clock = useServerClock({ require: 'motion' })
   const { coins, ready, busy, transact } = useCasinoEconomy()
   const { play } = useCasinoAudio()
   const [selectedColor, setSelectedColor] = useState(0)
@@ -135,9 +123,12 @@ export function CaptainsFateWheel({ position }: { position: Vec3 }) {
     if (state.phase !== 'running' || state.startedAt <= 0) return
     const token = `${state.roundId}:${state.startedAt}`
     if (heardRoundRef.current === token) return
-    heardRoundRef.current = token
-    play('wheel')
-  }, [play, state.phase, state.roundId, state.startedAt])
+    return scheduleAtServerTime(state.startedAt, clock.now, () => {
+      if (heardRoundRef.current === token) return
+      heardRoundRef.current = token
+      play('wheel')
+    })
+  }, [clock.now, clock.timeJumpCount, play, state.phase, state.roundId, state.startedAt])
 
   const selectColor = (index: number) => {
     if (state.phase !== 'betting' || localBet) return
@@ -172,7 +163,7 @@ export function CaptainsFateWheel({ position }: { position: Vec3 }) {
       return
     }
     if (state.phase !== 'betting' || playerCount === 0) return
-    const startedAt = Date.now() + 250
+    const startedAt = clock.now() + SYNCHRONIZED_START_DELAY_MS
     setState({
       ...state,
       phase: 'running',
@@ -204,7 +195,7 @@ export function CaptainsFateWheel({ position }: { position: Vec3 }) {
       </RigidBody>
 
       <group position={[0, 3.9, -2.2]}>
-        <FateWheelFace state={state} />
+        <FateWheelFace state={state} serverNow={clock.now} />
         <mesh position={[-3.65, -1.25, -0.22]} castShadow>
           <boxGeometry args={[0.46, 5.8, 0.7]} />
           <meshStandardMaterial color="#493526" roughness={0.88} />

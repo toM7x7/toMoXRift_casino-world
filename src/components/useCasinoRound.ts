@@ -1,4 +1,4 @@
-import { useUsers, useWorldStorage } from '@xrift/world-components'
+import { useServerClock, useUsers, useWorldStorage } from '@xrift/world-components'
 import { useEffect, useRef, useState } from 'react'
 import {
   roundToken,
@@ -18,12 +18,39 @@ export interface FormalCasinoRoundState {
 }
 
 export function useRoundClock(intervalMs = 200) {
-  const [now, setNow] = useState(() => Date.now())
+  const clock = useServerClock({ require: 'motion' })
+  const [now, setNow] = useState(() => clock.now())
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), intervalMs)
+    setNow(clock.now())
+    const timer = window.setInterval(() => setNow(clock.now()), intervalMs)
     return () => window.clearInterval(timer)
-  }, [intervalMs])
+  }, [clock.now, clock.timeJumpCount, intervalMs])
   return now
+}
+
+export function scheduleAtServerTime(
+  deadlineMs: number,
+  now: () => number,
+  callback: () => void,
+) {
+  let cancelled = false
+  let timer: number | undefined
+
+  const check = () => {
+    if (cancelled) return
+    const remaining = deadlineMs - now()
+    if (remaining <= 0) {
+      callback()
+      return
+    }
+    timer = window.setTimeout(check, Math.max(16, Math.min(remaining, 1000)))
+  }
+
+  check()
+  return () => {
+    cancelled = true
+    if (timer !== undefined) window.clearTimeout(timer)
+  }
 }
 
 export function roundIsComplete(state: FormalCasinoRoundState, now: number) {
@@ -44,6 +71,7 @@ export function useCasinoRoundSettlement({
   winReason: string
 }) {
   const { localUser } = useUsers()
+  const clock = useServerClock({ require: 'motion' })
   const storage = useWorldStorage()
   const { transact } = useCasinoEconomy()
   const { play } = useCasinoAudio()
@@ -55,10 +83,9 @@ export function useCasinoRoundSettlement({
     const localBet = state.bets[localUser.id]
     if (!localBet) return
     const token = roundToken(game, state.roundId, state.startedAt)
-    const delay = Math.max(0, state.startedAt + state.durationMs - Date.now())
     const markerKey = `casino.${game}.settled.v2`
 
-    const timer = window.setTimeout(() => {
+    return scheduleAtServerTime(state.startedAt + state.durationMs + 80, clock.now, () => {
       if (settledRef.current.has(token) || inFlightRef.current.has(token)) return
       inFlightRef.current.add(token)
       const settle = async () => {
@@ -93,8 +120,6 @@ export function useCasinoRoundSettlement({
         }
       }
       void settle()
-    }, delay + 80)
-
-    return () => window.clearTimeout(timer)
-  }, [choiceCount, game, localUser, play, state, storage, transact, winReason])
+    })
+  }, [choiceCount, clock.now, clock.timeJumpCount, game, localUser, play, state, storage, transact, winReason])
 }

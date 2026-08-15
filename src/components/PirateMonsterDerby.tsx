@@ -1,13 +1,14 @@
 import { Text } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { RigidBody } from '@react-three/rapier'
-import { useInstanceState, useUsers } from '@xrift/world-components'
+import { useInstanceState, useServerClock, useUsers } from '@xrift/world-components'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import type { Group } from 'three'
 import {
   canJoinRound,
   CASINO_BET_OPTIONS,
   choiceBetTotals,
+  roundProgress,
   seededResult,
   type CasinoRoundBet,
 } from '../game/casinoRounds'
@@ -24,6 +25,7 @@ import { JapanesePanel } from './CasinoPrimitives'
 import { HippogriffRacerModel } from './PirateNationAssets'
 import {
   roundIsComplete,
+  scheduleAtServerTime,
   useCasinoRoundSettlement,
   useRoundClock,
   type FormalCasinoRoundState,
@@ -33,7 +35,8 @@ type Vec3 = [number, number, number]
 
 interface DerbyRoundState extends FormalCasinoRoundState {}
 
-const SESSION_KEY = 'casino.pirate-monster-derby.round.v2'
+const SESSION_KEY = 'casino.pirate-monster-derby.round.v3'
+const SYNCHRONIZED_START_DELAY_MS = 1500
 const EMPTY_STATE: DerbyRoundState = {
   roundId: 1,
   phase: 'betting',
@@ -91,9 +94,11 @@ function PrimitiveRacer({ color }: { color: string }) {
 function DerbyRacer({
   lane,
   state,
+  serverNow,
 }: {
   lane: number
   state: DerbyRoundState
+  serverNow: () => number
 }) {
   const racerRef = useRef<Group>(null)
   const color = LANE_COLORS[lane]
@@ -101,23 +106,24 @@ function DerbyRacer({
   const rank = (lane - winner + LANE_COLORS.length) % LANE_COLORS.length
   const finishFactor = 0.86 + rank * 0.045
 
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (!racerRef.current) return
-    const elapsed = state.phase === 'running' && state.startedAt > 0 ? Date.now() - state.startedAt : 0
+    const frameNow = serverNow()
     const rawProgress = state.phase === 'running' && state.startedAt > 0
-      ? Math.min(1, Math.max(0, elapsed / (state.durationMs * finishFactor)))
+      ? roundProgress(state.startedAt, state.durationMs, frameNow, finishFactor)
       : 0
+    const serverSeconds = frameNow / 1000
     const surge = Math.sin(rawProgress * Math.PI * (2.2 + lane * 0.17))
       * 0.025
       * (1 - rawProgress)
     const progress = Math.min(1, Math.max(0, rawProgress ** 0.92 + surge))
     racerRef.current.position.set(
       LANE_X[lane],
-      0.62 + Math.sin(clock.getElapsedTime() * 7.2 + lane) * (rawProgress > 0 && rawProgress < 1 ? 0.12 : 0.035),
+      0.62 + Math.sin(serverSeconds * 7.2 + lane) * (rawProgress > 0 && rawProgress < 1 ? 0.12 : 0.035),
       START_Z + (FINISH_Z - START_Z) * progress,
     )
     racerRef.current.rotation.z = rawProgress > 0 && rawProgress < 1
-      ? Math.sin(clock.getElapsedTime() * 4.4 + lane) * 0.035
+      ? Math.sin(serverSeconds * 4.4 + lane) * 0.035
       : 0
   })
 
@@ -129,6 +135,7 @@ function DerbyRacer({
           scale={0.072}
           tint={color}
           phase={lane * 0.42}
+          synchronizedNow={serverNow}
         />
       </Suspense>
       <Block position={[0, 2.22, 0]} size={[0.08, 1.05, 0.08]} color="#493526" />
@@ -363,7 +370,7 @@ function ObservationDeck() {
   )
 }
 
-function RaceCourse({ state }: { state: DerbyRoundState }) {
+function RaceCourse({ state, serverNow }: { state: DerbyRoundState; serverNow: () => number }) {
   const laneOffsets = [-4.2, -1.4, 1.4, 4.2]
   return (
     <group>
@@ -401,7 +408,7 @@ function RaceCourse({ state }: { state: DerbyRoundState }) {
         </group>
       ))}
       {LANE_COLORS.map((_, lane) => (
-        <DerbyRacer key={`derby-racer-${lane}`} lane={lane} state={state} />
+        <DerbyRacer key={`derby-racer-${lane}`} lane={lane} state={state} serverNow={serverNow} />
       ))}
       <pointLight position={[39, 7, 0]} intensity={8} distance={46} color="#d7e8ff" />
     </group>
@@ -411,6 +418,7 @@ function RaceCourse({ state }: { state: DerbyRoundState }) {
 export function PirateMonsterDerby({ position }: { position: Vec3 }) {
   const [state, setState] = useInstanceState<DerbyRoundState>(SESSION_KEY, EMPTY_STATE)
   const { localUser } = useUsers()
+  const clock = useServerClock({ require: 'motion' })
   const { coins, ready, busy, transact } = useCasinoEconomy()
   const { play } = useCasinoAudio()
   const [selectedLane, setSelectedLane] = useState(0)
@@ -432,9 +440,12 @@ export function PirateMonsterDerby({ position }: { position: Vec3 }) {
     if (state.phase !== 'running' || state.startedAt <= 0) return
     const token = `${state.roundId}:${state.startedAt}`
     if (heardRoundRef.current === token) return
-    heardRoundRef.current = token
-    play('race')
-  }, [play, state.phase, state.roundId, state.startedAt])
+    return scheduleAtServerTime(state.startedAt, clock.now, () => {
+      if (heardRoundRef.current === token) return
+      heardRoundRef.current = token
+      play('race')
+    })
+  }, [clock.now, clock.timeJumpCount, play, state.phase, state.roundId, state.startedAt])
 
   const selectLane = (lane: number) => {
     if (state.phase !== 'betting' || localBet) return
@@ -469,7 +480,7 @@ export function PirateMonsterDerby({ position }: { position: Vec3 }) {
       return
     }
     if (state.phase !== 'betting' || playerCount === 0) return
-    const startedAt = Date.now() + 250
+    const startedAt = clock.now() + SYNCHRONIZED_START_DELAY_MS
     setState({
       ...state,
       phase: 'running',
@@ -499,7 +510,7 @@ export function PirateMonsterDerby({ position }: { position: Vec3 }) {
       />
       <ObservationDeck />
       <group position={[-6, -1.35, 0]}>
-        <RaceCourse state={state} />
+        <RaceCourse state={state} serverNow={clock.now} />
       </group>
     </group>
   )
