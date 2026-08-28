@@ -1,7 +1,7 @@
 import { Text, useTexture } from '@react-three/drei'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { Interactable } from '@xrift/world-components'
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { NearestFilter, SRGBColorSpace, type Texture } from 'three'
 import {
   createAnimalJaraWall,
@@ -26,13 +26,6 @@ interface AnimalJaraPrototypeState {
   winner?: string
   lastDiscard?: { seat: number; tile: string }
   nextNpcSeat: number
-}
-
-declare global {
-  interface Window {
-    render_game_to_text?: () => string
-    advanceTime?: (ms: number) => void
-  }
 }
 
 const EMPTY_STATE: AnimalJaraPrototypeState = {
@@ -183,20 +176,16 @@ export function AnimalJaraPrototype({
   position,
   rotation = [0, 0, 0],
   autoStart = false,
-  qaHooks = false,
 }: {
   position: Vec3
   rotation?: Vec3
   autoStart?: boolean
-  qaHooks?: boolean
 }) {
   const atlas = useTexture('/design/animal-emblem-atlas-v31.png')
   atlas.magFilter = NearestFilter
   atlas.minFilter = NearestFilter
   atlas.colorSpace = SRGBColorSpace
   const [state, setState] = useState<AnimalJaraPrototypeState>(() => autoStart ? createStartedState() : EMPTY_STATE)
-  const stateRef = useRef(state)
-  stateRef.current = state
 
   const finishNpcSequence = (source: AnimalJaraPrototypeState, startingSeat: number): AnimalJaraPrototypeState => {
     const next: AnimalJaraPrototypeState = {
@@ -279,36 +268,6 @@ export function AnimalJaraPrototype({
   const passRon = () => setState((current) => current.phase === 'ron-window'
     ? finishNpcSequence(current, current.nextNpcSeat)
     : current)
-
-  useEffect(() => {
-    if (!qaHooks) return undefined
-    window.render_game_to_text = () => JSON.stringify({
-      coordinateSystem: 'right-handed 3D; local +x right, +y up, +z toward player',
-      game: 'animal-jara-beta',
-      phase: state.phase,
-      message: state.message,
-      wallTiles: state.wall.length,
-      handCounts: state.hands.map((hand) => hand.length),
-      playerTiles: state.hands[0],
-      discardCounts: state.discards.map((tiles) => tiles.length),
-      lastDiscard: state.lastDiscard,
-      winner: state.winner,
-      economy: 'beta-free-no-coin-settlement',
-    })
-    window.advanceTime = (ms: number) => {
-      if (ms <= 0) return
-      if (stateRef.current.phase === 'ron-window') {
-        passRon()
-      } else if (stateRef.current.phase === 'player-turn'
-        && !isWinningAnimalJaraHand(stateRef.current.hands[0])) {
-        discardPlayerTile(0)
-      }
-    }
-    return () => {
-      delete window.render_game_to_text
-      delete window.advanceTime
-    }
-  }, [qaHooks, state])
 
   const playerCanTsumo = state.phase === 'player-turn' && isWinningAnimalJaraHand(state.hands[0])
   const latestDiscards = state.discards.flatMap((tiles, seat) => tiles.slice(-2).map((tile) => ({ tile, seat })))

@@ -755,7 +755,6 @@ export function World({
               position={vec3(animalEmblemDesign.facilities.D.center)}
               rotation={[0, Math.PI, 0]}
               autoStart={reviewScene === 'animal-jara'}
-              qaHooks={reviewScene === 'animal-jara'}
             />
           </Suspense>
           <CasinoAdminObservatory preview={reviewScene === 'admin'} />
