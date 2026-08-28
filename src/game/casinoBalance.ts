@@ -5,7 +5,9 @@ export type DicePokerHand = 'three-kind' | 'straight' | 'pair' | 'high'
 export const CASINO_BALANCE = {
   schemaVersion: 1,
   exchange: {
-    rifToCasino: { enabled: true, rifUnits: 1, casinoUnits: 1, feeBps: 0 },
+    rifToCasino: { enabled: true, rifUnits: 1, casinoUnits: 50, feeBps: 0 },
+    casinoToRif: { enabled: true, casinoUnits: 50, rifUnits: 1, feeBps: 0 },
+    dailyLimitRif: 5,
   },
   blackjack: {
     roundBet: 2,

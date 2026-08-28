@@ -36,8 +36,6 @@ import {
   JapanesePanel,
 } from './CasinoPrimitives'
 
-const BET = 2
-const WIN_PAYOUT = 6
 const SESSION_KEY = 'casino.mahjong.table.v13'
 const NPC_NAMES = ['ミオ', 'アカリ', 'レン', 'ユイ'] as const
 const WIND_NAMES = ['東', '南', '西', '北'] as const
@@ -72,7 +70,7 @@ const EMPTY_SESSION: MahjongTableState = {
   discards: [[], [], [], []],
   currentSeat: null,
   winnerSeat: null,
-  message: '椅子を選んでENTRYしてください。空席は開始後NPCになります',
+  message: '無料研究卓です。椅子を選んで参加してください',
 }
 
 const NPC_TRANSFORMS = [
@@ -387,11 +385,10 @@ export function MahjongTable({
   position?: [number, number, number]
   autoStart?: boolean
 }) {
-  const { coins, ready, busy, transact } = useCasinoEconomy()
+  const { ready, busy } = useCasinoEconomy()
   const { localUser, remoteUsers } = useUsers()
   const { teleport } = useTeleport()
   const [state, setState] = useInstanceState<MahjongTableState>(SESSION_KEY, EMPTY_SESSION)
-  const payoutRoundRef = useRef(-1)
   const autoStartedRef = useRef(false)
   const leavingRef = useRef(false)
   const localUserId = localUser?.id ?? 'local-preview-user'
@@ -423,10 +420,7 @@ export function MahjongTable({
     if (
       state.phase !== 'lobby'
       || state.seats[seatIndex] !== null
-      || coins < BET
     ) return
-    const paid = await transact(-BET, '麻雀ENTRY')
-    if (paid === null) return
     setState((current) => {
       if (current.phase !== 'lobby' || current.seats[seatIndex] !== null) return current
       const seats = [...current.seats]
@@ -434,17 +428,16 @@ export function MahjongTable({
       return {
         ...current,
         seats,
-        message: `${localName}さんが${WIND_NAMES[seatIndex]}家へENTRY`,
+        message: `${localName}さんが${WIND_NAMES[seatIndex]}家へ無料参加`,
       }
     })
     sitCamera(seatIndex)
-  }, [coins, localName, localUserId, setState, sitCamera, state.phase, state.seats, transact])
+  }, [localName, localUserId, setState, sitCamera, state.phase, state.seats])
 
   const leaveTable = useCallback(async () => {
     if (localSeat < 0 || leavingRef.current) return
     leavingRef.current = true
     releaseSeatLock()
-    const shouldRefund = state.phase === 'lobby'
     setState((current) => {
       const seats = [...current.seats]
       seats[localSeat] = null
@@ -459,9 +452,8 @@ export function MahjongTable({
           : `${localName}さんが離席しました`,
       }
     })
-    if (shouldRefund) await transact(BET, '開始前ENTRY返却')
     teleport({ position: [position[0], position[1], position[2] + 4.55], yaw: 0 })
-  }, [localName, localSeat, position, releaseSeatLock, setState, state.phase, teleport, transact])
+  }, [localName, localSeat, position, releaseSeatLock, setState, state.phase, teleport])
 
   useEffect(() => {
     if (seated) return
@@ -539,7 +531,7 @@ export function MahjongTable({
       ...EMPTY_SESSION,
       roundId: current.roundId,
       seats: current.seats,
-      message: 'ENTRYを維持しました。任意のタイミングで対局開始',
+      message: '無料参加席を維持しました。任意のタイミングで対局開始',
     }))
   }, [isHost, setState, state.phase])
 
@@ -581,16 +573,6 @@ export function MahjongTable({
     }, 650)
     return () => window.clearTimeout(timer)
   }, [isHost, setState, state.currentSeat, state.phase, state.roundId, state.seats])
-
-  useEffect(() => {
-    if (
-      state.phase !== 'settled'
-      || state.winnerSeat !== localSeat
-      || payoutRoundRef.current === state.roundId
-    ) return
-    payoutRoundRef.current = state.roundId
-    void transact(WIN_PAYOUT, '麻雀ツモ配当')
-  }, [localSeat, state.phase, state.roundId, state.winnerSeat, transact])
 
   useEffect(() => {
     if (!autoStart || autoStartedRef.current || !ready || busy) return
@@ -664,7 +646,7 @@ export function MahjongTable({
             && state.seats[index] === null
             && ready
             && !busy
-            && coins >= BET
+            && ready
           }
           occupied={state.seats[index] !== null}
           onSit={() => void joinTable(index)}

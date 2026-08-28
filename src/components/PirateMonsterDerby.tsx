@@ -15,6 +15,7 @@ import {
   type CasinoRoundBet,
 } from '../game/casinoRounds'
 import { balancedExactChoiceReturn } from '../game/casinoBalance'
+import { createCasinoWagerId } from '../game/casinoWallet'
 import { useCasinoAudio } from './CasinoAudio'
 import { useCasinoEconomy } from './CasinoEconomy'
 import {
@@ -488,7 +489,7 @@ export function PirateMonsterDerby({ position }: { position: Vec3 }) {
   const [state, setState] = useInstanceState<DerbyRoundState>(SESSION_KEY, EMPTY_STATE)
   const { localUser } = useUsers()
   const clock = useServerClock({ require: 'motion' })
-  const { coins, ready, busy, transact } = useCasinoEconomy()
+  const { coins, ready, busy, placeWager } = useCasinoEconomy()
   const { play } = useCasinoAudio()
   const [selectedLane, setSelectedLane] = useState(0)
   const [betAmount, setBetAmount] = useState<number>(1)
@@ -551,13 +552,19 @@ export function PirateMonsterDerby({ position }: { position: Vec3 }) {
   const placeBet = async () => {
     if (!localUser || state.phase !== 'betting' || localBet) return
     if (!canJoinRound(state.bets, localUser.id) || coins < betAmount) return
-    const next = await transact(-betAmount, `ダービー・${LANE_LABELS[selectedLane]}にBET`)
+    const wagerId = createCasinoWagerId('derby', localUser.id)
+    const next = await placeWager(
+      wagerId,
+      betAmount,
+      `ダービー・${LANE_LABELS[selectedLane]}にBET`,
+    )
     if (next === null) return
     const bet: CasinoRoundBet = {
       userId: localUser.id,
       userName: localUser.displayName,
       choice: selectedLane,
       amount: betAmount,
+      wagerId,
     }
     setState((previous) => previous.phase === 'betting'
       ? { ...previous, bets: { ...previous.bets, [localUser.id]: bet } }

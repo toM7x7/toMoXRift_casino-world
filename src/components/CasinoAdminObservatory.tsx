@@ -25,10 +25,14 @@ import {
   type RegisteredCasinoPlayer,
 } from '../game/casinoLedger'
 import { COIN_KEY } from '../game/economy'
+import { CASINO_WALLET_KEY, parseCasinoWallet } from '../game/casinoWallet'
 import {
+  EXCHANGE_COIN_REDEEMED_TOTAL_KEY,
   EXCHANGE_COIN_TOTAL_KEY,
   EXCHANGE_COUNT_KEY,
   EXCHANGE_RIF_TOTAL_KEY,
+  EXCHANGE_RIF_OUT_TOTAL_KEY,
+  EXCHANGE_WITHDRAWAL_COUNT_KEY,
 } from '../game/rifExchange'
 import { CasinoButton } from './CasinoPrimitives'
 
@@ -36,6 +40,8 @@ type Vec3 = [number, number, number]
 
 interface AuditPlayerRow extends RegisteredCasinoPlayer {
   coins: number | null
+  bonus: number | null
+  redeemable: number | null
   stats: CasinoPlayerStats
 }
 
@@ -51,7 +57,10 @@ interface CasinoAuditSnapshot {
   relief: number
   rifIn: number
   rifMinted: number
+  rifOut: number
+  coinRedeemed: number
   exchanges: number
+  withdrawals: number
   transactions: number
 }
 
@@ -67,16 +76,19 @@ const EMPTY_AUDIT: CasinoAuditSnapshot = {
   relief: 0,
   rifIn: 0,
   rifMinted: 0,
+  rifOut: 0,
+  coinRedeemed: 0,
   exchanges: 0,
+  withdrawals: 0,
   transactions: 0,
 }
 
 const PREVIEW_AUDIT: CasinoAuditSnapshot = {
   rows: [
-    { id: 'preview-1', name: '船長トモ', coins: 42, stats: { version: 1, wagered: 31, payouts: 48, refunds: 2, relief: 0, rifMinted: 20, transactions: 12 } },
-    { id: 'preview-2', name: '赤ひげ', coins: 18, stats: { version: 1, wagered: 22, payouts: 16, refunds: 0, relief: 10, rifMinted: 4, transactions: 9 } },
-    { id: 'preview-3', name: '青い鳥', coins: 7, stats: { version: 1, wagered: 14, payouts: 11, refunds: 0, relief: 0, rifMinted: 0, transactions: 6 } },
-    { id: 'preview-4', name: '見習い', coins: 3, stats: { version: 1, wagered: 7, payouts: 0, refunds: 0, relief: 10, rifMinted: 0, transactions: 3 } },
+    { id: 'preview-1', name: '船長トモ', coins: 42, bonus: 12, redeemable: 30, stats: { version: 1, wagered: 31, payouts: 48, refunds: 2, relief: 0, rifMinted: 20, transactions: 12 } },
+    { id: 'preview-2', name: '赤ひげ', coins: 18, bonus: 18, redeemable: 0, stats: { version: 1, wagered: 22, payouts: 16, refunds: 0, relief: 10, rifMinted: 4, transactions: 9 } },
+    { id: 'preview-3', name: '青い鳥', coins: 7, bonus: 2, redeemable: 5, stats: { version: 1, wagered: 14, payouts: 11, refunds: 0, relief: 0, rifMinted: 0, transactions: 6 } },
+    { id: 'preview-4', name: '見習い', coins: 3, bonus: 3, redeemable: 0, stats: { version: 1, wagered: 7, payouts: 0, refunds: 0, relief: 10, rifMinted: 0, transactions: 3 } },
   ],
   registryCount: 4,
   readableWallets: 4,
@@ -88,7 +100,10 @@ const PREVIEW_AUDIT: CasinoAuditSnapshot = {
   relief: 20,
   rifIn: 24,
   rifMinted: 24,
+  rifOut: 2,
+  coinRedeemed: 100,
   exchanges: 5,
+  withdrawals: 2,
   transactions: 30,
 }
 
@@ -175,32 +190,40 @@ export function CasinoAdminObservatory({
         const batch = registry.slice(index, index + 12)
         const batchRows = await Promise.all(batch.map(async (player) => {
           try {
-            const [coinValue, statsValue] = await Promise.all([
+            const [coinValue, walletValue, statsValue] = await Promise.all([
               storage.player.get(COIN_KEY, { userId: player.id }),
+              storage.player.get(CASINO_WALLET_KEY, { userId: player.id }),
               storage.player.get(CASINO_PLAYER_STATS_KEY, { userId: player.id }),
             ])
+            const legacyCoins = typeof coinValue === 'number' && Number.isFinite(coinValue)
+              ? Math.max(0, Math.floor(coinValue))
+              : 0
+            const wallet = parseCasinoWallet(walletValue, legacyCoins)
             return {
               ...player,
-              coins: typeof coinValue === 'number' && Number.isFinite(coinValue)
-                ? Math.max(0, Math.floor(coinValue))
-                : null,
+              coins: walletValue !== undefined || typeof coinValue === 'number' ? wallet.bonus + wallet.redeemable : null,
+              bonus: walletValue !== undefined || typeof coinValue === 'number' ? wallet.bonus : null,
+              redeemable: walletValue !== undefined || typeof coinValue === 'number' ? wallet.redeemable : null,
               stats: parseCasinoPlayerStats(statsValue),
             }
           } catch {
-            return { ...player, coins: null, stats: parseCasinoPlayerStats(null) }
+            return { ...player, coins: null, bonus: null, redeemable: null, stats: parseCasinoPlayerStats(null) }
           }
         }))
         rows.push(...batchRows)
       }
 
-      const [wageredValue, payoutValue, refundValue, reliefValue, rifInValue, rifMintedValue, exchangeValue, transactionValue] = await Promise.all([
+      const [wageredValue, payoutValue, refundValue, reliefValue, rifInValue, rifMintedValue, rifOutValue, coinRedeemedValue, exchangeValue, withdrawalValue, transactionValue] = await Promise.all([
         storage.shared.get(CASINO_WAGERED_TOTAL_KEY),
         storage.shared.get(CASINO_PAYOUT_TOTAL_KEY),
         storage.shared.get(CASINO_REFUND_TOTAL_KEY),
         storage.shared.get(CASINO_RELIEF_TOTAL_KEY),
         storage.shared.get(EXCHANGE_RIF_TOTAL_KEY),
         storage.shared.get(EXCHANGE_COIN_TOTAL_KEY),
+        storage.shared.get(EXCHANGE_RIF_OUT_TOTAL_KEY),
+        storage.shared.get(EXCHANGE_COIN_REDEEMED_TOTAL_KEY),
         storage.shared.get(EXCHANGE_COUNT_KEY),
+        storage.shared.get(EXCHANGE_WITHDRAWAL_COUNT_KEY),
         storage.shared.get(CASINO_TRANSACTION_TOTAL_KEY),
       ])
       const readableRows = rows.filter((row) => row.coins !== null)
@@ -217,7 +240,10 @@ export function CasinoAdminObservatory({
         relief: safeNumber(reliefValue),
         rifIn: safeNumber(rifInValue),
         rifMinted: safeNumber(rifMintedValue),
+        rifOut: safeNumber(rifOutValue),
+        coinRedeemed: safeNumber(coinRedeemedValue),
         exchanges: safeNumber(exchangeValue),
+        withdrawals: safeNumber(withdrawalValue),
         transactions: safeNumber(transactionValue),
       })
       setStatus('参考集計・15秒更新')
@@ -235,7 +261,7 @@ export function CasinoAdminObservatory({
 
   const gmNet = gmNetCoins(snapshot)
   const playerLines = snapshot.rows.slice(0, 8).map((row, index) => (
-    `${String(index + 1).padStart(2, '0')}  ${row.name.slice(0, 12).padEnd(12, '　')}  ${row.coins === null ? '—' : `${row.coins}枚`}  BET ${row.stats.wagered} / 払戻 ${row.stats.payouts}`
+    `${String(index + 1).padStart(2, '0')} ${row.name.slice(0, 9).padEnd(9, '　')} 合計${row.coins ?? '—'} / 両替${row.redeemable ?? '—'} / 遊技${row.bonus ?? '—'}`
   ))
   if (snapshot.rows.length > 8) playerLines.push(`ほか ${snapshot.rows.length - 8}ウォレット`)
 
@@ -283,7 +309,8 @@ export function CasinoAdminObservatory({
               `救済発行　　 ${formatCoins(snapshot.relief)}`,
               `RIF流入　　　${snapshot.rifIn} RIF`,
               `RIF交換発行　${formatCoins(snapshot.rifMinted)}`,
-              `交換回数　　 ${snapshot.exchanges}件`,
+              `RIF出金　　　${snapshot.rifOut} RIF / ${formatCoins(snapshot.coinRedeemed)}`,
+              `入金${snapshot.exchanges}件 / 出金${snapshot.withdrawals}件`,
             ].join('\n')}
           </Text>
 

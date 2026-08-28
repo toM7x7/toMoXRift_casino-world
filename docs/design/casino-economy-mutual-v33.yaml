@@ -1,0 +1,60 @@
+version: 33
+title: RIF相互交換・カジノ経済実装仕様
+status: implemented_local_validation
+approved_at: 2026-08-28
+language: ja
+
+exchange:
+  rate_version: rif-casino-mutual-v2
+  inward: { rif: 1, redeemable_casino_coins: 50, fee_bps: 0 }
+  outward: { redeemable_casino_coins: 50, rif: 1, fee_bps: 0 }
+  minimum: { rif: 1, casino_coins: 50 }
+  maximum_per_action: { rif: 5, casino_coins: 250 }
+  daily_limits:
+    timezone: Asia/Tokyo
+    total_rif: 5
+    accounting: inward_plus_outward_no_netting
+
+wallet:
+  storage_key: casino.wallet.v2
+  buckets:
+    redeemable:
+      sources: [rif_deposit, audited_game_return_from_redeemable_stake]
+      can_withdraw_to_rif: true
+    bonus:
+      sources: [legacy_balance, relief_10, operator_grant, unaudited_game]
+      can_withdraw_to_rif: false
+  migration:
+    legacy_key: casino.coins.v1
+    rule: keep_same_quantity_as_bonus
+    after_migration: legacy_key_read_only_wallet_v2_is_source_of_truth
+  spend_order: [bonus, redeemable]
+  mixed_return_rounding: floor_redeemable_remainder_to_bonus
+
+idempotency:
+  rif_scope: worldId_plus_clientTransactionId
+  deposit_stages: [created, rif_paid, wallet_applied, completed]
+  withdrawal_stages: [created, casino_debited, rif_granted, completed]
+  wallet_applied_ids_retained: 64
+  closed_wager_ids_retained: 64
+  wager_id: random_once_at_entry_and_shared_with_round_state
+  retry_rule: reuse_same_clientTransactionId
+
+games:
+  blackjack: { economy: audited, wager_lineage: enabled, duplicate_settlement_guard: player_marker_plus_wallet_wager }
+  fate_wheel: { economy: audited, wager_lineage: enabled, clock: useServerClock }
+  derby: { economy: audited, wager_lineage: enabled, clock: useServerClock }
+  mahjong: { economy: isolated_free_beta, coin_change: none, reason: logic_and_payout_audit_pending }
+  animal_jara: { economy: isolated_free_beta, coin_change: none }
+  emblem_dice_poker: { economy: construction_closed, shared_engine_ready: true }
+
+trust_boundary:
+  rifcoin_api: v0.1_unauthenticated
+  world_storage: public_read_shared_write_by_authenticated_world_users
+  not_authentication: [cors, allowedDomains, worldId, useUsers_localUser]
+  use_only_as: non_cash_xrift_game_currency
+  admin_totals: best_effort_observability_not_accounting_ledger
+
+qa:
+  required: [typecheck, unit_tests, production_build, local_browser_visual_check, xrift_security_check_before_upload]
+  publish_state: not_uploaded_in_v33_local_work

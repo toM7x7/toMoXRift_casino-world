@@ -1,0 +1,30 @@
+{
+  "version": 33,
+  "status": "implemented-local-validation",
+  "exchange": {
+    "rateVersion": "rif-casino-mutual-v2",
+    "inward": { "rif": 1, "redeemableCasinoCoins": 50, "feeBps": 0 },
+    "outward": { "redeemableCasinoCoins": 50, "rif": 1, "feeBps": 0 },
+    "dailyLimits": { "timezone": "Asia/Tokyo", "totalRif": 5, "calculation": "inwardRif + outwardRif" }
+  },
+  "wallet": {
+    "key": "casino.wallet.v2",
+    "legacyMigration": "casino.coins.v1 is retained at the same quantity as bonus then becomes read-only",
+    "spendOrder": ["bonus", "redeemable"],
+    "redeemableReturn": "proportional to stake source; mixed remainder floors to bonus",
+    "wagerId": "random once per entry and persisted into shared round state"
+  },
+  "gameEconomy": {
+    "blackjack": "audited-lineage",
+    "fateWheel": "audited-lineage",
+    "derby": "audited-lineage",
+    "mahjong": "free-no-coin-change-pending-audit",
+    "animalJara": "free-no-coin-change-beta",
+    "emblemDicePoker": "closed-construction"
+  },
+  "trustBoundary": {
+    "rifcoin": "v0.1-unauthenticated-client-contract",
+    "worldStorage": "public-kv-not-accounting-authority",
+    "adminCounters": "best-effort-observability"
+  }
+}

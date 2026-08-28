@@ -8,8 +8,10 @@ import {
 } from './casinoBalance'
 
 describe('casino balance', () => {
-  it('keeps the released one-way exchange rate centralized', () => {
-    expect(CASINO_BALANCE.exchange.rifToCasino).toMatchObject({ rifUnits: 1, casinoUnits: 1 })
+  it('keeps the approved mutual 1 RIF to 50 coin exchange centralized', () => {
+    expect(CASINO_BALANCE.exchange.rifToCasino).toMatchObject({ rifUnits: 1, casinoUnits: 50 })
+    expect(CASINO_BALANCE.exchange.casinoToRif).toMatchObject({ casinoUnits: 50, rifUnits: 1 })
+    expect(CASINO_BALANCE.exchange.dailyLimitRif).toBe(5)
   })
 
   it('uses explicit rounded paytables for exact-choice games', () => {

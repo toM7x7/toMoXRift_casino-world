@@ -36,6 +36,7 @@ import { Skybox } from './components/Skybox'
 import { canClaimRelief } from './game/economy'
 import {
   minimumConvertibleRifAmount,
+  quoteCasinoWithdrawal,
   quoteRifExchange,
   RIF_EXCHANGE_CONFIG,
 } from './game/rifExchange'
@@ -492,6 +493,8 @@ function PirateMarketLandscape() {
 function CoinExchange() {
   const {
     coins,
+    bonusCoins,
+    redeemableCoins,
     ready,
     busy,
     claimRelief,
@@ -499,25 +502,41 @@ function CoinExchange() {
     rifReady,
     exchangeNotice,
     pendingExchangeAmount,
+    pendingExchangeDirection,
+    dailyRifIn,
+    dailyRifOut,
     refreshRifBalance,
     convertRifToCasino,
+    convertCasinoToRif,
   } = useCasinoEconomy()
+  const [exchangeDirection, setExchangeDirection] = useState<'RIF_TO_CASINO' | 'CASINO_TO_RIF'>('RIF_TO_CASINO')
   const [exchangeAmount, setExchangeAmount] = useState(1)
   const minimumExchangeRif = minimumConvertibleRifAmount() ?? RIF_EXCHANGE_CONFIG.minimumRif
-  const eligible = canClaimRelief(coins, rifBalance, rifReady, minimumExchangeRif)
+  const dailyRifTotal = dailyRifIn + dailyRifOut
+  const effectiveMinimumRif = dailyRifTotal >= RIF_EXCHANGE_CONFIG.dailyLimitRif
+    ? Number.POSITIVE_INFINITY
+    : minimumExchangeRif
+  const eligible = canClaimRelief(coins, rifBalance, rifReady, effectiveMinimumRif)
   const center = vec3(exchangeBuilding.center)
   const accent = eligible ? palette.amber : '#8e7951'
-  const quote = quoteRifExchange(exchangeAmount)
+  const quote = exchangeDirection === 'RIF_TO_CASINO'
+    ? quoteRifExchange(exchangeAmount)
+    : quoteCasinoWithdrawal(exchangeAmount * RIF_EXCHANGE_CONFIG.casinoCoinUnits)
   const canExchange = ready
     && rifReady
     && !busy
-    && rifBalance !== null
-    && rifBalance >= exchangeAmount
     && quote !== null
+    && (exchangeDirection === 'RIF_TO_CASINO'
+      ? rifBalance !== null
+        && rifBalance >= exchangeAmount
+        && dailyRifTotal + exchangeAmount <= RIF_EXCHANGE_CONFIG.dailyLimitRif
+      : redeemableCoins >= quote.casinoCoinAmount
+        && dailyRifTotal + exchangeAmount <= RIF_EXCHANGE_CONFIG.dailyLimitRif)
 
   useEffect(() => {
     if (pendingExchangeAmount !== null) setExchangeAmount(pendingExchangeAmount)
-  }, [pendingExchangeAmount])
+    if (pendingExchangeDirection !== null) setExchangeDirection(pendingExchangeDirection)
+  }, [pendingExchangeAmount, pendingExchangeDirection])
 
   const adjustExchangeAmount = (delta: number) => {
     setExchangeAmount((current) => Math.min(
@@ -559,26 +578,41 @@ function CoinExchange() {
         showLabel={false}
       />
       <JapanesePanel
-        position={[0, 2.38, -1.7]}
+        position={[0, 2.65, -1.7]}
         width={6.1}
-        height={1.42}
-        title="RIF → カジノコイン交換所"
+        height={2.1}
+        title="RIF ⇄ カジノコイン交換所"
         lines={[
-          `RIF残高 ${rifBalance ?? '—'}　　交換 ${exchangeAmount} RIF → ${quote?.casinoCoinAmount ?? '—'}枚`,
-          `現在 1 RIF = 1枚 ／ カジノコインからRIFへは交換できません`,
+          `1 RIF = 両替可能カジノコイン50枚（入出金とも同率）`,
+          `RIF ${rifBalance ?? '—'}　合計${coins}枚（両替可能${redeemableCoins} / 遊技用${bonusCoins}）`,
+          `本日 交換${dailyRifTotal}/5 RIF（入${dailyRifIn} / 出${dailyRifOut}）`,
           exchangeNotice,
         ]}
         accent={0xf6c453}
         background={0x172033}
       />
 
-      {[-100, -10, -1, 1, 10, 100].map((delta, index) => (
+      {(['RIF_TO_CASINO', 'CASINO_TO_RIF'] as const).map((direction, index) => (
+        <CasinoButton
+          key={direction}
+          id={`rif-direction-${direction.toLowerCase()}`}
+          label={direction === 'RIF_TO_CASINO' ? 'RIFを入金' : 'コインを出金'}
+          detail={direction === 'RIF_TO_CASINO' ? '1 RIF → 50枚' : '50枚 → 1 RIF'}
+          position={[-2.1 + index * 1.55, 1.08, 1.15]}
+          width={1.4}
+          height={0.5}
+          color={exchangeDirection === direction ? '#c58b22' : '#52657e'}
+          enabled={!busy}
+          onPress={() => setExchangeDirection(direction)}
+        />
+      ))}
+      {[-1, 1].map((delta, index) => (
         <CasinoButton
           key={`rif-amount-${delta}`}
-          id={`rif-amount-${delta > 0 ? 'plus' : 'minus'}-${Math.abs(delta)}`}
-          label={`${delta > 0 ? '+' : '−'}${Math.abs(delta)}`}
-          position={[-2.5 + index * 1, 0.5, 1.15]}
-          width={0.82}
+          id={`rif-amount-${delta > 0 ? 'plus' : 'minus'}`}
+          label={delta > 0 ? '+1' : '−1'}
+          position={[1.15 + index * 0.85, 1.08, 1.15]}
+          width={0.72}
           height={0.5}
           color={delta > 0 ? '#2c7a7b' : '#8b4a59'}
           enabled={!busy}
@@ -588,8 +622,8 @@ function CoinExchange() {
       <CasinoButton
         id="rif-balance-refresh"
         label="残高更新"
-        position={[-2.45, 1.08, 1.15]}
-        width={1.15}
+        position={[2.75, 1.08, 1.15]}
+        width={1.05}
         height={0.5}
         color="#52657e"
         enabled={!busy}
@@ -597,25 +631,36 @@ function CoinExchange() {
       />
       <CasinoButton
         id="rif-amount-all"
-        label="RIF全額"
-        position={[-1.15, 1.08, 1.15]}
+        label="上限まで"
+        position={[-2.35, 0.48, 1.15]}
         width={1.2}
         height={0.5}
         color="#52657e"
-        enabled={!busy && rifBalance !== null && rifBalance >= minimumExchangeRif}
-        onPress={() => setExchangeAmount(Math.min(rifBalance ?? 1, RIF_EXCHANGE_CONFIG.maximumRif))}
+        enabled={!busy && (exchangeDirection === 'RIF_TO_CASINO'
+          ? rifBalance !== null && rifBalance >= minimumExchangeRif
+          : redeemableCoins >= RIF_EXCHANGE_CONFIG.casinoCoinUnits)}
+        onPress={() => setExchangeAmount(Math.max(1, Math.min(
+          RIF_EXCHANGE_CONFIG.dailyLimitRif - dailyRifTotal,
+          exchangeDirection === 'RIF_TO_CASINO'
+            ? rifBalance ?? 1
+            : Math.floor(redeemableCoins / RIF_EXCHANGE_CONFIG.casinoCoinUnits),
+        )))}
       />
       <CasinoButton
         id="rif-to-casino-confirm"
-        label={`${exchangeAmount} RIFを${quote?.casinoCoinAmount ?? '—'}枚へ交換`}
-        detail="確定後はRIFへ戻せません"
-        position={[1.3, 1.08, 1.15]}
-        width={3.5}
+        label={exchangeDirection === 'RIF_TO_CASINO'
+          ? `${exchangeAmount} RIF → ${quote?.casinoCoinAmount ?? '—'}枚`
+          : `${quote?.casinoCoinAmount ?? '—'}枚 → ${exchangeAmount} RIF`}
+        detail="1日各5 RIFまで・手数料なし"
+        position={[0.35, 0.48, 1.15]}
+        width={3.8}
         height={0.5}
         labelFontSize={0.15}
         color="#c58b22"
         enabled={canExchange}
-        onPress={() => void convertRifToCasino(exchangeAmount)}
+        onPress={() => void (exchangeDirection === 'RIF_TO_CASINO'
+          ? convertRifToCasino(exchangeAmount)
+          : convertCasinoToRif(exchangeAmount * RIF_EXCHANGE_CONFIG.casinoCoinUnits))}
       />
       <CasinoButton
         id="gm-relief-claim"
@@ -694,7 +739,7 @@ function SpawnMapBoard() {
       </mesh>
 
       <Text position={[-1.48, 2.5, 0.32]} fontSize={0.2} color="#fff7e6" anchorX="center">BJ</Text>
-      <Text position={[1.48, 2.5, 0.32]} fontSize={0.2} color="#172033" anchorX="center">麻雀</Text>
+      <Text position={[1.48, 2.5, 0.32]} fontSize={0.2} color="#172033" anchorX="center">麻雀β</Text>
       <Text position={[0, 1.69, 0.32]} fontSize={0.13} color="#172033" anchorX="center">交換所</Text>
       <Text position={[-1.55, 1.7, 0.32]} fontSize={0.11} color="#fff1b8" anchorX="center">A 運命盤</Text>
       <Text position={[1.55, 1.7, 0.32]} fontSize={0.11} color="#fff1b8" anchorX="center">B ダービー</Text>
@@ -736,8 +781,8 @@ export function World({
           <OpenAirGamingDeck
             center={vec3(mahjongBuilding.center)}
             accent={palette.mahjong}
-            label="MJ"
-            japaneseLabel="牌広場"
+            label="MJ β"
+            japaneseLabel="無料研究卓"
           />
           <BlackjackTable
             position={vec3(blackjackBuilding.tableAnchor as number[])}

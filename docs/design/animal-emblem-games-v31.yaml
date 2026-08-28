@@ -106,15 +106,15 @@ construction_sites:
     beta_economy: free_no_coin_change
 
 exchange_v2_draft:
-  activation: disabled
+  activation: superseded_by_casino_economy_mutual_v33
   denomination_migration:
-    current: "1 RIF -> 1 casino coin"
+    current: "1 RIF <-> 50 redeemable casino coins"
     target: "1 RIF <-> 50 redeemable casino coins"
     existing_balance: 旧残高は枚数を変えずbonusへ分類しRIF換金不可
   inward: { rif: 1, redeemable_casino_coins: 50, fee_bps: 0 }
   outward: { redeemable_casino_coins: 50, rif: 1, fee_bps: 0, minimum_casino_coins: 50 }
-  limits: { per_transaction_rif: 3, daily_rif: 5 }
-  reserve_rule: RIF入金累計からRIF出金累計を引いた準備金を超えて付与しない
+  limits: { per_transaction_rif: 5, daily_total_rif: 5, directions: [in, out], day_boundary: Asia/Tokyo }
+  reserve_rule: World Storageは公開KVのため監視値のみ。RIF付与の強制上限はRIFCoin側の将来対応事項
   wallet_buckets:
     redeemable: RIF交換由来とその賭けによる払戻
     bonus: 救済10枚・運営配布・ボーナス由来

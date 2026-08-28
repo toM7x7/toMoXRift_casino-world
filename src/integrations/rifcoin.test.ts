@@ -9,7 +9,7 @@ function response(body: unknown) {
 }
 
 describe('RIFCoin client', () => {
-  it('uses a negative amount for one-way RIF payments', async () => {
+  it('uses negative payments and positive grants with stable transaction IDs', async () => {
     const request = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
       const input = JSON.parse(String(init?.body)) as { amount: number }
       return response({
@@ -32,6 +32,7 @@ describe('RIFCoin client', () => {
       clientTransactionId: 'stable-id',
     }
     expect((await currency.pay(base)).amount).toBe(-3)
-    expect(request).toHaveBeenCalledTimes(1)
+    expect((await currency.grant(base)).amount).toBe(3)
+    expect(request).toHaveBeenCalledTimes(2)
   })
 })

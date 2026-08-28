@@ -114,6 +114,18 @@ export class XRiftCurrency {
   }
 
   async pay(input: CurrencyChange, options: RequestOptions = {}): Promise<TransactionResult> {
+    return this.change(input, -input.amount, options)
+  }
+
+  async grant(input: CurrencyChange, options: RequestOptions = {}): Promise<TransactionResult> {
+    return this.change(input, input.amount, options)
+  }
+
+  private async change(
+    input: CurrencyChange,
+    signedAmount: number,
+    options: RequestOptions,
+  ): Promise<TransactionResult> {
     requireString(input.userId, 'userId')
     requireString(input.reason, 'reason')
     requireString(input.clientTransactionId, 'clientTransactionId')
@@ -128,7 +140,7 @@ export class XRiftCurrency {
       body: JSON.stringify({
         userId: input.userId,
         worldId: this.worldId,
-        amount: -input.amount,
+        amount: signedAmount,
         reason: input.reason,
         clientTransactionId: input.clientTransactionId,
         ...(input.metadata === undefined ? {} : { metadata: input.metadata }),

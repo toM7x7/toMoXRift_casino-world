@@ -16,6 +16,7 @@ import {
   seededResult,
   type CasinoRoundBet,
 } from '../game/casinoRounds'
+import { createCasinoWagerId } from '../game/casinoWallet'
 import { useCasinoAudio } from './CasinoAudio'
 import { useCasinoEconomy } from './CasinoEconomy'
 import { JapanesePanel } from './CasinoPrimitives'
@@ -105,7 +106,7 @@ export function PirateEmblemDicePoker({ position }: { position: Vec3 }) {
   const [state, setState] = useInstanceState<DicePokerState>(SESSION_KEY, EMPTY_STATE)
   const { localUser } = useUsers()
   const clock = useServerClock({ require: 'motion' })
-  const { coins, ready, busy, transact } = useCasinoEconomy()
+  const { coins, ready, busy, placeWager } = useCasinoEconomy()
   const { play } = useCasinoAudio()
   const [betAmount, setBetAmount] = useState<number>(2)
   const now = useRoundClock()
@@ -161,13 +162,19 @@ export function PirateEmblemDicePoker({ position }: { position: Vec3 }) {
   const placeBet = async () => {
     if (!localUser || state.phase !== 'betting' || localBet) return
     if (!canJoinRound(state.bets, localUser.id) || coins < betAmount) return
-    const next = await transact(-betAmount, '紋章ダイスポーカー・参加')
+    const wagerId = createCasinoWagerId('dice-poker', localUser.id)
+    const next = await placeWager(
+      wagerId,
+      betAmount,
+      '紋章ダイスポーカー・参加',
+    )
     if (next === null) return
     const bet: CasinoRoundBet = {
       userId: localUser.id,
       userName: localUser.displayName,
       choice: 0,
       amount: betAmount,
+      wagerId,
     }
     setState((previous) => previous.phase === 'betting'
       ? { ...previous, bets: { ...previous.bets, [localUser.id]: bet } }

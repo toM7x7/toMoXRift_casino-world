@@ -6,6 +6,7 @@ export interface CasinoRoundBet {
   userName: string
   choice: number
   amount: number
+  wagerId?: string
 }
 
 export function isValidBetAmount(amount: number) {

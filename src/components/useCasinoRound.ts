@@ -18,6 +18,10 @@ export interface FormalCasinoRoundState {
   bets: Record<string, CasinoRoundBet>
 }
 
+export function casinoRoundWagerId(game: CasinoRoundGame, roundId: number, userId: string) {
+  return `${game}:${roundId}:${userId}`
+}
+
 export function useRoundClock(intervalMs = 200) {
   const clock = useServerClock({ require: 'motion' })
   const [now, setNow] = useState(() => clock.now())
@@ -76,7 +80,7 @@ export function useCasinoRoundSettlement({
   const { localUser } = useUsers()
   const clock = useServerClock({ require: 'motion' })
   const storage = useWorldStorage()
-  const { transact } = useCasinoEconomy()
+  const { busy, settleWager } = useCasinoEconomy()
   const { play } = useCasinoAudio()
   const settledRef = useRef(new Set<string>())
   const inFlightRef = useRef(new Set<string>())
@@ -114,14 +118,18 @@ export function useCasinoRoundSettlement({
           }
 
           const payout = fixedPayout ?? totalReturn(localBet, state.resultIndex, choiceCount)
-          if (payout > 0) {
-            const next = await transact(payout, `${winReason}・払戻`)
-            if (next === null) {
-              if (persistedClaim) {
-                await storage.player.delete(markerKey).catch(() => undefined)
-              }
-              return
+          const next = await settleWager(
+            localBet.wagerId ?? casinoRoundWagerId(game, state.roundId, localUser.id),
+            payout,
+            `${winReason}・払戻`,
+          )
+          if (next === null) {
+            if (persistedClaim) {
+              await storage.player.delete(markerKey).catch(() => undefined)
             }
+            return
+          }
+          if (payout > 0) {
             play('win')
           } else {
             play('lose')
@@ -134,5 +142,5 @@ export function useCasinoRoundSettlement({
       }
       void settle()
     })
-  }, [choiceCount, clock.now, clock.timeJumpCount, fixedPayout, game, localUser, play, state, storage, transact, winReason])
+  }, [busy, choiceCount, clock.now, clock.timeJumpCount, fixedPayout, game, localUser, play, settleWager, state, storage, winReason])
 }

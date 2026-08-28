@@ -2,7 +2,7 @@
   "world": {
     "distDir": "./dist",
     "title": "ブロック遊技村｜海賊カジノ＆アニマルじゃらβ",
-    "description": "夕暮れの開放型ブロック遊技公園。BJ／麻雀／船長の運命盤／海賊魔獣ダービーに加え、西港D開発地区で無料のアニマルじゃらβを公開。RIFは現在一方向交換のみ。最大8人BET、同期演出、BGM・効果音、World Storageコインに対応",
+    "description": "夕暮れの開放型ブロック遊技公園。BJ／無料研究中の麻雀／船長の運命盤／海賊魔獣ダービー／アニマルじゃらβを収録。1 RIF＝両替可能カジノコイン50枚の相互交換、入出金合計1日5 RIF上限、同期演出、BGM・効果音、World Storageコインに対応",
     "thumbnailPath": "thumbnail.png",
     "buildCommand": "npm run build",
     "ignore": [
