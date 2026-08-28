@@ -1,0 +1,54 @@
+{
+  "version": 20,
+  "status": "implemented-local",
+  "principle": "keep the spectacle sightline clear; put large physical controls on the floor edge",
+  "fateWheel": {
+    "spectacle": "fixed vertical wheel",
+    "choiceControls": {
+      "layout": "four large floor pads on each side",
+      "count": 8,
+      "padMeters": [1.7, 1.28],
+      "centerSightlineClear": true,
+      "showsAggregateCoins": true
+    },
+    "actionRow": ["1 coin", "3 coins", "5 coins", "confirm bet", "start draw"],
+    "preSpinMs": 5000,
+    "spinMs": 5200,
+    "resultHoldMs": 6500,
+    "resultBehavior": "winner sector remains illuminated, then the round returns to betting automatically"
+  },
+  "monsterDerby": {
+    "choiceControls": {
+      "layout": "four miniature racer pedestals",
+      "count": 4,
+      "showsRacerName": true,
+      "showsAggregateCoins": true
+    },
+    "participantRoster": {
+      "capacity": 8,
+      "layout": "four ENTRY pads on each side edge"
+    },
+    "actionRow": ["1 coin", "3 coins", "5 coins", "issue ticket", "start presentation"],
+    "preRaceMs": 10000,
+    "raceMs": 18000,
+    "resultHoldMs": 8000,
+    "raceRacerScale": 0.052,
+    "broadcast": ["racer introduction", "countdown", "live leader", "confirmed order"],
+    "broadcastLocations": ["voting plaza", "observation deck"],
+    "resetBehavior": "racers and shared round state return to the waiting state automatically"
+  },
+  "audio": {
+    "bgmMood": "bright C-major casino promenade",
+    "bgmFile": "casino-bgm.wav",
+    "effects": ["select", "bet", "countdown", "wheel", "race", "win", "lose"],
+    "commentaryV20": "state-derived Japanese text plus local cue sounds",
+    "futureTts": "external TTS behind a server cache; never required for core play"
+  },
+  "qa": {
+    "tests": 22,
+    "typecheck": "pass",
+    "productionBuild": "pass",
+    "browserConsoleErrors": 0,
+    "visualChecks": ["wheel front", "derby bookmaker", "deck sightline"]
+  }
+}

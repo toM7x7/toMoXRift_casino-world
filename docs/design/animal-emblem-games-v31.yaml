@@ -1,0 +1,127 @@
+version: 31
+title: 動物紋章 共通アート・ダイス・アニマルじゃら設計
+status: animal_jara_public_beta
+language: ja
+
+art_system:
+  style: 16bit_pixel_art
+  source_canvas:
+    atlas_px: [1448, 1086]
+    grid: [4, 3]
+    cell_px: [362, 362]
+  runtime_export:
+    atlas_px: [768, 576]
+    cell_px: [192, 192]
+    interpolation: nearest
+    background: transparent
+  silhouette_rules:
+    - 32px表示でも動物種を識別できる
+    - 正面または横向きの単純な一体シルエット
+    - 目は1〜2px、輪郭は濃紺2px相当
+    - 文字・数字・ロゴ・グラデーションを使わない
+  habitats:
+    land: { color: "#E85D5D", secondary: "#FFB36B", label: 陸 }
+    sea: { color: "#3296D8", secondary: "#63D6D2", label: 海 }
+    sky: { color: "#D6A83D", secondary: "#F5E08C", label: 空 }
+  emblems:
+    - { id: cat, name: ネコ, habitat: land, atlas_cell: [0, 0], dice_rank: 1 }
+    - { id: rabbit, name: ウサギ, habitat: land, atlas_cell: [1, 0], dice_rank: 2 }
+    - { id: fox, name: キツネ, habitat: land, atlas_cell: [2, 0] }
+    - { id: bear, name: クマ, habitat: land, atlas_cell: [3, 0] }
+    - { id: whale, name: クジラ, habitat: sea, atlas_cell: [0, 1], dice_rank: 3 }
+    - { id: shark, name: サメ, habitat: sea, atlas_cell: [1, 1], dice_rank: 4 }
+    - { id: pufferfish, name: フグ, habitat: sea, atlas_cell: [2, 1] }
+    - { id: octopus, name: タコ, habitat: sea, atlas_cell: [3, 1] }
+    - { id: owl, name: フクロウ, habitat: sky, atlas_cell: [0, 2], dice_rank: 5 }
+    - { id: parrot, name: オウム, habitat: sky, atlas_cell: [1, 2], dice_rank: 6 }
+    - { id: eagle, name: ワシ, habitat: sky, atlas_cell: [2, 2] }
+    - { id: bat, name: コウモリ, habitat: sky, atlas_cell: [3, 2] }
+
+emblem_dice_poker:
+  facility: C
+  construction_state: closed
+  faces: [cat, rabbit, whale, shark, owl, parrot]
+  bet_options: [2, 4, 6]
+  flow: [掛け金選択, 参加確定, 5秒カウント, 3個同時抽選, 役判定, 払戻]
+  hands:
+    - { id: high, name: 役なし, condition: 連番でない全て別, total_return: 0 }
+    - { id: pair, name: 一組, condition: 同じ動物が2個, total_return: 1.5 }
+    - { id: straight, name: 連番, condition: dice_rankが3つ連続, total_return: 2 }
+    - { id: three_kind, name: 三つ揃い, condition: 同じ動物が3個, total_return: 4 }
+  theoretical_rtp: 0.958333
+  win_probability: 0.555556
+  players: { min: 1, max: 8, shared_result: true }
+
+animal_jara:
+  facility: D
+  construction_state: public_beta
+  local_prototype_mode: animal-jara-prototype
+  working_title: アニマルじゃら
+  players: { min: 1, max: 4, npc_fill: true }
+  wall:
+    emblem_types: 12
+    copies_per_type: 4
+    total_tiles: 48
+  hand:
+    initial_tiles: 8
+    turn: 1枚引く→完成判定→1枚捨てる
+    win_tiles: 9
+    win_shape: 3枚組を3組
+  valid_sets:
+    - { id: same_three, name: なかよし三つ, condition: 同じ動物3枚 }
+    - { id: habitat_three, name: 生息地チーム, condition: 同じ生息地の違う動物3枚 }
+  calls:
+    pon: false
+    chi: false
+    reason: 初版は捨て牌選択とロン／ツモだけに絞る
+  finish:
+    tsumo: 引いた牌で9枚が完成
+    ron: 他プレイヤーの捨て牌で9枚が完成
+    wall_empty: 流局
+  economy_draft:
+    enabled_in_beta: false
+    round_entry: 4
+    winner_total_return: 15
+    draw_return: 2
+    target_rtp_note: NPC4人換算の等確率勝利で93.75%を基準に、流局率をシミュレーション後に調整
+
+shared_ui_rules:
+  - アイコンの下に日本語名を常時表示する
+  - 生息地は色と記号の二重符号化にする
+  - 選択中は白い外枠と●を併用する
+  - 結果表示は役名・投入枚数・払戻枚数を同じ面に出す
+  - VRでは最小文字高をワールド空間12cm相当とする
+
+construction_sites:
+  facility_c:
+    center: [-37, 0, -10]
+    footprint: [13.5, 11.5]
+    perimeter_collider_height: 1.4
+    access: closed
+  facility_d:
+    center: [-37, 0, 9]
+    footprint: [14, 12]
+    perimeter_collider_height: 1.4
+    access: public_beta
+    beta_economy: free_no_coin_change
+
+exchange_v2_draft:
+  activation: disabled
+  denomination_migration:
+    current: "1 RIF -> 1 casino coin"
+    target: "1 RIF <-> 50 redeemable casino coins"
+    existing_balance: 旧残高は枚数を変えずbonusへ分類しRIF換金不可
+  inward: { rif: 1, redeemable_casino_coins: 50, fee_bps: 0 }
+  outward: { redeemable_casino_coins: 50, rif: 1, fee_bps: 0, minimum_casino_coins: 50 }
+  limits: { per_transaction_rif: 3, daily_rif: 5 }
+  reserve_rule: RIF入金累計からRIF出金累計を引いた準備金を超えて付与しない
+  wallet_buckets:
+    redeemable: RIF交換由来とその賭けによる払戻
+    bonus: 救済10枚・運営配布・ボーナス由来
+    rule: 賭け元と払戻先を同じbucketに固定しbonusはRIFへ交換不可
+  required_before_enable:
+    - RIFCoin SDKのgrantを統合
+    - stable clientTransactionIdによるRIF付与の冪等化
+    - casino_debitedからrif_grantedまでのpending復旧
+    - 複数ユーザーの同時換金に耐える原子的な準備金減算と失敗時補償
+    - N-JELLYとの付与上限・レート合意

@@ -1,0 +1,105 @@
+version: 24
+status: proposal_waiting_external_common_coin_spec
+
+wallets:
+  external_common:
+    authority: external_server
+    redeemable: true
+  casino_redeemable:
+    authority: exchange_backend_or_verifiable_session_ledger
+    storage_key_candidate: casino.redeemable.v1
+    redeemable: true
+  casino_play:
+    authority: world_storage
+    storage_key_candidate: casino.play.v2
+    redeemable: false
+    sources: [zero_balance_relief, achievements, npc_subsidy, events]
+  reputation:
+    authority: world_storage
+    redeemable: false
+    purchasable: false
+
+exchange_v0:
+  deposit:
+    common_units: 1
+    casino_redeemable_chips: 100
+    fee_percent: 0
+    minimum_common: 1
+  withdrawal:
+    casino_redeemable_chips: 105
+    common_units: 1
+    effective_spread_percent: 4.76
+  quote_ttl_seconds: 60
+  user_time_caps: none
+  solvency_conditions: [cannot_spend_above_balance, cannot_redeem_above_backed_reserve]
+
+funding_lineage:
+  default_spend_order: [casino_play, casino_redeemable]
+  payout_attribution: proportional_to_stake_source
+  relief_to_redeemable_conversion: forbidden
+
+games:
+  blackjack:
+    stake_chips: [10, 20, 50]
+    gross_multiplier:
+      win: 2.0
+      blackjack: 2.5
+      push: 1.0
+    target_rtp_percent: 95
+    simulated_rtp_percent_hit_below_17: 94.8
+    simulated_hands: 500000
+  pirate_donjara:
+    entry_chips: 20
+    multiplayer_rake_percent: 5
+    redeemable_profit_from_npc: false
+    solo_surplus_reward_wallet: casino_play
+  fate_wheel:
+    stake_chips: [10, 20, 50]
+    multiplayer_settlement: parimutuel
+    rake_percent: 5
+    no_winner_split: { jackpot_rollover_percent: 50, sink_percent: 50 }
+    solo_wallet: casino_play
+  derby:
+    stake_chips: [10, 20, 50]
+    multiplayer_settlement: parimutuel
+    rake_percent: 5
+    solo_wallet: casino_play
+
+direct_common_coin:
+  status: deferred_separate_review
+  product_name: 航海金庫セッション
+  escrow_common_range: [1, 5]
+  required: [session_id, expires_at, max_loss, one_time_nonce, server_verifiable_settlement]
+  preferred_first_games: [fate_wheel, derby]
+  deferred_games: [blackjack, pirate_donjara]
+  client_self_reported_result: forbidden
+
+vip:
+  progression_axes:
+    voyage_rank:
+      source: reputation_and_achievement_breadth
+      tiers: [見習い, 船員, 航海士, 船長]
+    hospitality_grade:
+      source: rolling_30d_average_chip_balance_or_lifetime_sink_spend
+      tiers: [一般客, 常連, 上客, 大船主]
+      recalculation_days: 30
+  benefits: [higher_stake_ceiling, themed_room, private_table, replay_camera, special_commentary, named_flag, tournaments]
+  hospitality_only: [dedicated_cashier_lane, named_seat, victory_fireworks, theme_rental, photo_stage]
+  forbidden: [better_rtp, win_rate_boost, payout_boost, exchange_discount, fee_discount, paid_reroll]
+
+ux_priorities:
+  blackjack: [entry_cost_and_seat_state, two_primary_actions, separate_leave]
+  pirate_donjara: [clear_rebrand, image_tiles, explicit_discard, no_unimplemented_calls]
+  fate_wheel: [eight_arc_kiosks, wheel_visible_from_each_position, symbol_plus_name_plus_color]
+  derby: [preserve_current_space, show_rake_and_provisional_odds, show_my_pick, show_final_order]
+  exchange: [four_balances_visible, explicit_fee, quote_expiry, transaction_id, error_state_separation]
+
+implementation_gates:
+  - local_four_game_ux_acceptance
+  - adapter_types_and_mock
+  - separate_wallet_migration
+  - sandbox_failure_and_idempotency_tests
+  - reserve_and_limit_dashboard
+  - deposit_only_pilot
+  - audited_small_withdrawal
+  - separate_direct_coin_review

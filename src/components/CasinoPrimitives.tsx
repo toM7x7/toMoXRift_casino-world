@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import { AnimatedPirateModel } from './PirateNationAssets'
 
 const PIRATE_FORWARD_OFFSET = -Math.PI / 2
+export const JAPANESE_FONT_URL = '/fonts/MPLUS1p-Regular.ttf'
 
 interface CasinoButtonProps {
   id: string
@@ -54,6 +55,7 @@ export function CasinoButton({
           />
         </mesh>
         <Text
+          font={JAPANESE_FONT_URL}
           position={[0, titleY, 0.086]}
           fontSize={labelFontSize ?? Math.min(0.2, height * 0.28)}
           maxWidth={width * 0.88}
@@ -66,6 +68,7 @@ export function CasinoButton({
         </Text>
         {detail ? (
           <Text
+            font={JAPANESE_FONT_URL}
             position={[0, -0.16, 0.087]}
             fontSize={Math.min(0.105, height * 0.15)}
             maxWidth={width * 0.9}
@@ -116,6 +119,7 @@ export function JapanesePanel({
         <meshStandardMaterial color={background} roughness={0.84} />
       </mesh>
       <Text
+        font={JAPANESE_FONT_URL}
         position={[0, titleY, 0.125]}
         fontSize={Math.min(0.34, height * 0.27)}
         maxWidth={width * 0.88}
@@ -128,6 +132,7 @@ export function JapanesePanel({
       </Text>
       {lines.map((line, index) => (
         <Text
+          font={JAPANESE_FONT_URL}
           key={`${line}-${index}`}
           position={[0, startY - index * lineSpacing, 0.126]}
           fontSize={Math.min(index === 0 ? 0.18 : 0.15, height * 0.15)}

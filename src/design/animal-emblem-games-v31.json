@@ -1,0 +1,40 @@
+{
+  "version": 31,
+  "status": "animal-jara-public-beta",
+  "atlas": {
+    "sourcePx": [1448, 1086],
+    "runtimePx": [768, 576],
+    "grid": [4, 3],
+    "runtimeCellPx": [192, 192],
+    "textureFilter": "nearest"
+  },
+  "habitats": {
+    "land": { "label": "陸", "color": "#E85D5D" },
+    "sea": { "label": "海", "color": "#3296D8" },
+    "sky": { "label": "空", "color": "#D6A83D" }
+  },
+  "emblems": [
+    { "id": "cat", "name": "ネコ", "habitat": "land", "cell": [0, 0], "diceRank": 1 },
+    { "id": "rabbit", "name": "ウサギ", "habitat": "land", "cell": [1, 0], "diceRank": 2 },
+    { "id": "fox", "name": "キツネ", "habitat": "land", "cell": [2, 0] },
+    { "id": "bear", "name": "クマ", "habitat": "land", "cell": [3, 0] },
+    { "id": "whale", "name": "クジラ", "habitat": "sea", "cell": [0, 1], "diceRank": 3 },
+    { "id": "shark", "name": "サメ", "habitat": "sea", "cell": [1, 1], "diceRank": 4 },
+    { "id": "pufferfish", "name": "フグ", "habitat": "sea", "cell": [2, 1] },
+    { "id": "octopus", "name": "タコ", "habitat": "sea", "cell": [3, 1] },
+    { "id": "owl", "name": "フクロウ", "habitat": "sky", "cell": [0, 2], "diceRank": 5 },
+    { "id": "parrot", "name": "オウム", "habitat": "sky", "cell": [1, 2], "diceRank": 6 },
+    { "id": "eagle", "name": "ワシ", "habitat": "sky", "cell": [2, 2] },
+    { "id": "bat", "name": "コウモリ", "habitat": "sky", "cell": [3, 2] }
+  ],
+  "facilities": {
+    "C": { "name": "動物紋章ダイス", "center": [-37, 0, -10], "footprint": [13.5, 11.5], "access": "closed" },
+    "D": {
+      "name": "アニマルじゃらβ",
+      "center": [-37, 0, 9],
+      "footprint": [14, 12],
+      "access": "public-beta",
+      "economy": "free-no-coin-change"
+    }
+  }
+}

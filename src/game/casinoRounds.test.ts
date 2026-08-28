@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   canJoinRound,
   choiceBetTotals,
+  countdownSeconds,
+  finishOrder,
   isValidBetAmount,
   MAX_ROUND_PLAYERS,
   roundProgress,
@@ -57,6 +59,13 @@ describe('casino formal rounds', () => {
     }, 4)).toEqual([1, 0, 8, 0])
   })
 
+  it('exposes a stable pre-start countdown and deterministic finish order', () => {
+    expect(countdownSeconds(10_000, 5_200)).toBe(5)
+    expect(countdownSeconds(10_000, 10_000)).toBe(0)
+    expect(finishOrder(2, 4)).toEqual([2, 3, 0, 1])
+    expect(finishOrder(-1, 4)).toEqual([3, 0, 1, 2])
+  })
+
   it('derives animation progress only from the shared server epoch', () => {
     expect(roundProgress(10_000, 5_000, 9_000)).toBe(0)
     expect(roundProgress(10_000, 5_000, 12_500)).toBe(0.5)
@@ -72,13 +81,14 @@ describe('casino formal rounds', () => {
       startedAt: 10_000,
       durationMs: 5_000,
     }
-    expect(synchronizedWheelAngle({ ...input, now: 12_500 }))
-      .toBe(synchronizedWheelAngle({ ...input, now: 12_500 }))
+    const halfwayA = synchronizedWheelAngle({ ...input, now: 12_500 })
+    const halfwayB = synchronizedWheelAngle({ ...input, now: 12_500 })
+    expect(halfwayA).toBe(halfwayB)
 
     const finalAngle = synchronizedWheelAngle({ ...input, now: 15_000 })
     const sectorAngle = (Math.PI * 2) / input.choiceCount
     const desired = Math.PI / 2 - (input.resultIndex + 0.5) * sectorAngle
-    const difference = ((finalAngle - desired) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2)
-    expect(difference).toBeCloseTo(0, 8)
+    const normalizedDifference = ((finalAngle - desired) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2)
+    expect(normalizedDifference).toBeCloseTo(0, 8)
   })
 })

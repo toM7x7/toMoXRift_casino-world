@@ -1,0 +1,34 @@
+version: 28
+status: release_candidate
+world_id: 04f41fd3-3e59-45ee-9133-fd905a899ef3
+admin_deck:
+  center: [0, 7, -38]
+  size: [18, 0.6, 11]
+  floor_surface_y: 7.3
+  bounds: { x: [-9, 9], z: [-43.5, -32.5] }
+  gap_from_main_island_north_edge_m: 11.5
+  visual_role: distant_silhouette_behind_reception
+transit:
+  reception_device: [0, 0, -16.55]
+  device_face: north
+  destination: { position: [0, 7.8, -33.5], yaw: 180 }
+  return_destination: { position: [0, 0.55, -9.3], yaw: 180 }
+authorization:
+  identity: useUsers.localUser
+  owner: useWorld.info.owner.id
+  additional_users: reviewed_static_allowlist
+  guest_policy: deny
+  checks: [before_confirm, after_confirm]
+  forbidden_authority: world_storage
+  data_secrecy: none
+audit_query:
+  activation_radius_m: 9.5
+  refresh_seconds: 15
+qa:
+  modes: [admin-access, admin, thumbnail]
+  console_errors: 0
+  acceptance:
+    - unauthorized_users_never_call_teleport
+    - owner_and_approved_users_can_confirm_transit
+    - return_button_visible_from_arrival_view
+    - admin_deck_does_not_overlap_main_island

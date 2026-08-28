@@ -50,8 +50,15 @@ export function choiceBetTotals(
   return totals
 }
 
-export function roundToken(game: 'fate' | 'derby', roundId: number, startedAt: number) {
+export type CasinoRoundGame = 'fate' | 'derby' | 'dice-poker'
+
+export function roundToken(game: CasinoRoundGame, roundId: number, startedAt: number) {
   return `${game}:${roundId}:${startedAt}`
+}
+
+export function countdownSeconds(startedAt: number, now: number) {
+  if (startedAt <= now) return 0
+  return Math.ceil((startedAt - now) / 1000)
 }
 
 export function roundProgress(
@@ -98,4 +105,10 @@ export function synchronizedWheelAngle({
   const correction = normalizePositive(desiredAngle - startAngle)
   const progress = roundProgress(startedAt, durationMs, now)
   return startAngle + easeOutQuint(progress) * (Math.PI * 2 * turns + correction)
+}
+
+export function finishOrder(winner: number, choiceCount: number) {
+  if (!Number.isInteger(choiceCount) || choiceCount <= 0) return []
+  const normalizedWinner = ((winner % choiceCount) + choiceCount) % choiceCount
+  return Array.from({ length: choiceCount }, (_, index) => (normalizedWinner + index) % choiceCount)
 }

@@ -1,0 +1,22 @@
+{
+  "version": 28,
+  "worldId": "04f41fd3-3e59-45ee-9133-fd905a899ef3",
+  "deck": {
+    "center": [0, 7, -38],
+    "size": [18, 0.6, 11],
+    "floorSurfaceY": 7.3,
+    "mainIslandGap": 11.5
+  },
+  "transit": {
+    "receptionDevice": [0, 0, -16.55],
+    "destination": { "position": [0, 7.8, -33.5], "yaw": 180 },
+    "returnDestination": { "position": [0, 0.55, -9.3], "yaw": 180 }
+  },
+  "authorization": {
+    "ownerSource": "useWorld.info.owner.id",
+    "identitySource": "useUsers.localUser",
+    "additionalUsers": "reviewed-static-allowlist",
+    "worldStorageRoleAuthority": false,
+    "recheckAfterConfirmation": true
+  }
+}

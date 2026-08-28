@@ -1,0 +1,110 @@
+version: 30
+title: 現実寄り遊技ルール・西港拡張設計
+status: superseded_by_v31_preconstruction
+superseded_by: animal-emblem-games-v31.yaml
+unit: meter
+
+economy:
+  principle: 参加時に支払い、着席・観覧は無料
+  settlement:
+    scope: player_world_storage
+    idempotency: game_round_startedAt_token_preclaim
+  exchange:
+    rif_to_casino:
+      enabled: true
+      rate: "1 RIF : 1 casino coin"
+      fee_bps: 0
+    casino_to_rif_future:
+      enabled: false
+      draft_rate: "10 casino coins : 1 RIF"
+      fee_bps: 1000
+      daily_rif_limit: 10
+      gate: idempotent_shared_coin_award_api_required
+
+games:
+  blackjack:
+    seats: 4
+    seat_fee: 0
+    round_bet: 2
+    dealer_rule: stand_on_all_17
+    player_actions: [hit, stand, double_down]
+    payouts_total_return:
+      lose: 0
+      push: 2
+      normal_win: 4
+      natural_blackjack: 5
+    exploit_control: payment_is_required_for_every_round
+  fate_wheel:
+    players: 8
+    choices: 8
+    bet_options: [1, 3, 5]
+    total_return_by_bet: {1: 7, 3: 22, 5: 37}
+    rtp_by_bet: {1: 0.875, 3: 0.9167, 5: 0.925}
+  derby:
+    players: 8
+    choices: 4
+    bet_options: [1, 3, 5]
+    total_return_by_bet: {1: 3, 3: 11, 5: 19}
+    rtp_by_bet: {1: 1.0, 3: 0.9167, 5: 0.95}
+  emblem_dice_poker:
+    players: 8
+    dice: 3
+    faces: [anchor, compass, chest, cannon, ship, crown]
+    bet_options: [2, 4, 6]
+    hand_order: [no_hand, pair, straight, three_kind]
+    total_return_multiplier: {no_hand: 0, pair: 1.5, straight: 2, three_kind: 4}
+    theoretical_rtp: 0.95833
+    flow: [select_stake, confirm_entry, five_second_countdown, synchronized_roll, result_hold]
+
+site_plan:
+  existing_island:
+    center: [0, 0, 0]
+    size: [56, 0.3, 42]
+    west_connection_opening:
+      x: -28
+      z_range: [-2, 2]
+      clear_width: 4
+  west_harbor:
+    center: [-37, -0.15, 0]
+    platform_size: [18, 0.3, 38]
+    bounds:
+      x: [-46, -28]
+      z: [-19, 19]
+    collider_half_extents: [9, 0.15, 19]
+    pedestrian_axis:
+      north_south_width: 3
+      east_west_connection_width: 4.5
+    facility_c:
+      name: 海賊紋章・3ダイスポーカー
+      center: [-37, 0, -10]
+      footprint: [13.5, 11.5]
+      front_control_z: -5.55
+    facility_d:
+      name: 次期対戦カードサロン予定地
+      center: [-37, 0, 9]
+      footprint: [14, 12]
+      state: vacant_preview_plot
+
+industrial_views:
+  plan_view:
+    main_island_xz: "x[-28,28] z[-21,21]"
+    west_harbor_xz: "x[-46,-28] z[-19,19]"
+    connection: "west wall opening z[-2,2]"
+  front_elevation_west_harbor:
+    ground_top_y: 0
+    dice_table_top_y: 1.10
+    dice_center_y: 2.05
+    main_status_panel_center_y: 4.20
+  side_elevation_dice_poker:
+    table_z: -11.2
+    control_row_z: -5.55
+    sightline: "controls -> dice -> main status panel"
+
+qa_gates:
+  - west_connection_has_no_wall_or_collider_overlap
+  - all_three_stake_pads_and_both_action_pads_are_visible_from_front
+  - player_eye_view_preserves_dice_and_main_status_panel
+  - dice_do_not_occlude_status_panel
+  - facility_d_does_not_overlap_facility_c
+  - blackjack_seat_view_keeps_leave_hit_stand_double_controls_clickable
+  - settlement_token_blocks_duplicate_payout_after_remount

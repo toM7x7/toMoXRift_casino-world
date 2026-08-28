@@ -1,0 +1,44 @@
+{
+  "version": 24,
+  "status": "proposal_waiting_external_common_coin_spec",
+  "wallets": {
+    "externalCommon": { "authority": "external-server", "redeemable": true },
+    "casinoRedeemable": { "authority": "exchange-backend-or-verifiable-session-ledger", "keyCandidate": "casino.redeemable.v1", "redeemable": true },
+    "casinoPlay": { "authority": "world-storage", "keyCandidate": "casino.play.v2", "redeemable": false },
+    "reputation": { "authority": "world-storage", "redeemable": false, "purchasable": false }
+  },
+  "exchangeV0": {
+    "deposit": { "commonUnits": 1, "redeemableChips": 100, "feePercent": 0, "minimumCommon": 1 },
+    "withdrawal": { "redeemableChips": 105, "commonUnits": 1, "effectiveSpreadPercent": 4.76 },
+    "quoteTtlSeconds": 60,
+    "userTimeCaps": null,
+    "solvencyConditions": ["cannot-spend-above-balance", "cannot-redeem-above-backed-reserve"]
+  },
+  "fundingLineage": {
+    "defaultSpendOrder": ["casinoPlay", "casinoRedeemable"],
+    "payoutAttribution": "proportional-to-stake-source",
+    "reliefToRedeemable": false
+  },
+  "gameRates": {
+    "blackjack": { "stakes": [10, 20, 50], "grossWin": 2, "grossBlackjack": 2.5, "grossPush": 1, "targetRtp": 0.95, "simulatedRtpHitBelow17": 0.948, "simulatedHands": 500000 },
+    "pirateDonjara": { "entry": 20, "multiplayerRake": 0.05, "redeemableProfitFromNpc": false },
+    "fateWheel": { "stakes": [10, 20, 50], "settlement": "parimutuel", "rake": 0.05, "soloWallet": "casinoPlay" },
+    "derby": { "stakes": [10, 20, 50], "settlement": "parimutuel", "rake": 0.05, "soloWallet": "casinoPlay" }
+  },
+  "directCommonCoin": {
+    "status": "deferred-separate-review",
+    "productName": "航海金庫セッション",
+    "escrowCommonRange": [1, 5],
+    "preferredFirstGames": ["fateWheel", "derby"],
+    "clientSelfReportedResult": false
+  },
+  "vip": {
+    "voyageRankSource": "reputation-and-achievement-breadth",
+    "hospitalityGradeSource": "rolling-30d-average-chip-balance-or-lifetime-sink-spend",
+    "hospitalityGrades": ["一般客", "常連", "上客", "大船主"],
+    "recalculationDays": 30,
+    "sameRtpAsStandard": true,
+    "sameExchangeRateAsStandard": true,
+    "benefits": ["higher-stake-ceiling", "themed-room", "private-table", "replay-camera", "special-commentary", "named-flag", "tournaments"]
+  }
+}

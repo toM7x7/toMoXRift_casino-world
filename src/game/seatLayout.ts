@@ -6,10 +6,10 @@ export interface SeatTransform {
 }
 
 export const BLACKJACK_SEATS: SeatTransform[] = [
-  { position: [-2.15, 0, 3.05], yaw: 325, controlPosition: [-0.88, 0.85, 1.86], controlRotation: [0, 0, 0] },
-  { position: [-0.72, 0, 3.25], yaw: 347, controlPosition: [-0.28, 0.85, 1.86], controlRotation: [0, 0, 0] },
-  { position: [0.72, 0, 3.25], yaw: 13, controlPosition: [0.28, 0.85, 1.86], controlRotation: [0, 0, 0] },
-  { position: [2.15, 0, 3.05], yaw: 35, controlPosition: [0.88, 0.85, 1.86], controlRotation: [0, 0, 0] },
+  { position: [-2.15, 0, 3.05], yaw: 325, controlPosition: [-0.88, 0.98, 1.8], controlRotation: [0, 0, 0] },
+  { position: [-0.72, 0, 3.25], yaw: 347, controlPosition: [-0.28, 0.98, 1.8], controlRotation: [0, 0, 0] },
+  { position: [0.72, 0, 3.25], yaw: 13, controlPosition: [0.28, 0.98, 1.8], controlRotation: [0, 0, 0] },
+  { position: [2.15, 0, 3.05], yaw: 35, controlPosition: [0.88, 0.98, 1.8], controlRotation: [0, 0, 0] },
 ]
 
 export const MAHJONG_SEATS: SeatTransform[] = [

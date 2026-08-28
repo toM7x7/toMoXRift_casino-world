@@ -1,10 +1,11 @@
-import { Text } from '@react-three/drei'
+import { Text, useTexture } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { SpawnPoint } from '@xrift/world-components'
-import { Suspense, useRef } from 'react'
-import type { Group, PointLight } from 'three'
+import { Suspense, useEffect, useRef, useState } from 'react'
+import { NearestFilter, SRGBColorSpace, type Group, type PointLight } from 'three'
 import { BlackjackTable } from './components/BlackjackTable'
+import { AnimalJaraPrototype } from './components/AnimalJaraPrototype'
 import {
   CasinoEconomyProvider,
   CasinoHud,
@@ -13,8 +14,12 @@ import {
 import {
   CasinoButton,
   CasinoNpc,
+  JAPANESE_FONT_URL,
+  JapanesePanel,
 } from './components/CasinoPrimitives'
 import { CaptainsFateWheel } from './components/CaptainsFateWheel'
+import { CasinoAdminObservatory } from './components/CasinoAdminObservatory'
+import { CasinoAdminTransit } from './components/CasinoAdminTransit'
 import {
   CasinoAudioControl,
   CasinoAudioProvider,
@@ -28,7 +33,15 @@ import {
   RotatingGoldCoin,
 } from './components/PirateNationAssets'
 import { Skybox } from './components/Skybox'
+import { canClaimRelief } from './game/economy'
+import {
+  minimumConvertibleRifAmount,
+  quoteRifExchange,
+  RIF_EXCHANGE_CONFIG,
+} from './game/rifExchange'
 import pirateLayout from './design/pirate-nation-layout-v12.json'
+import expansionDesign from './design/casino-rules-expansion-v30.json'
+import animalEmblemDesign from './design/animal-emblem-games-v31.json'
 import layout from './design/sandbox-layout-v9.json'
 
 export interface WorldProps {
@@ -37,6 +50,7 @@ export interface WorldProps {
   showHud?: boolean
   showSpawn?: boolean
   reviewGame?: 'blackjack' | 'mahjong'
+  reviewScene?: 'admin' | 'admin-access' | 'animal-jara'
 }
 
 type Vec3 = [number, number, number]
@@ -45,6 +59,7 @@ const palette = layout.palette
 const blackjackBuilding = layout.buildings[0]
 const mahjongBuilding = layout.buildings[1]
 const exchangeBuilding = layout.buildings[2]
+const westHarbor = expansionDesign.westHarbor
 
 function Block({
   position,
@@ -153,10 +168,10 @@ function IslandShell() {
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
-        shadow-camera-left={-32}
-        shadow-camera-right={32}
-        shadow-camera-top={24}
-        shadow-camera-bottom={-24}
+        shadow-camera-left={-54}
+        shadow-camera-right={62}
+        shadow-camera-top={44}
+        shadow-camera-bottom={-44}
       />
 
       <RigidBody type="fixed" colliders={false} restitution={0} friction={0.92}>
@@ -175,7 +190,8 @@ function IslandShell() {
       <Block position={[0, -0.86, 0]} size={[54, 0.18, 40]} color={palette.stone} />
 
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0.9}>
-        <Block position={[-27.75, edgeHeight / 2, 0]} size={[0.5, edgeHeight, 42]} color={palette.stone} />
+        <Block position={[-27.75, edgeHeight / 2, -11.5]} size={[0.5, edgeHeight, 19]} color={palette.stone} />
+        <Block position={[-27.75, edgeHeight / 2, 11.5]} size={[0.5, edgeHeight, 19]} color={palette.stone} />
         <Block position={[27.75, edgeHeight / 2, 0]} size={[0.5, edgeHeight, 42]} color={palette.stone} />
         <Block position={[0, edgeHeight / 2, -20.75]} size={[55, edgeHeight, 0.5]} color={palette.stone} />
         <Block position={[0, edgeHeight / 2, 20.75]} size={[55, edgeHeight, 0.5]} color={palette.stone} />
@@ -244,6 +260,150 @@ function ExpansionRoutes() {
         </group>
       ))}
     </>
+  )
+}
+
+function ClosedConstructionPlot({
+  center,
+  footprint,
+  code,
+  title,
+  concept,
+  accent,
+  signFacesSouth,
+}: {
+  center: Vec3
+  footprint: [number, number]
+  code: string
+  title: string
+  concept: string
+  accent: string
+  signFacesSouth: boolean
+}) {
+  const halfWidth = footprint[0] / 2
+  const halfDepth = footprint[1] / 2
+  const signZ = signFacesSouth ? halfDepth + 0.42 : -halfDepth - 0.42
+  return (
+    <group position={center}>
+      <Block position={[0, 0.06, 0]} size={[footprint[0], 0.12, footprint[1]]} color="#8b6a43" receiveShadow />
+      <Block position={[0, 0.13, 0]} size={[footprint[0] - 0.6, 0.05, footprint[1] - 0.6]} color="#526748" receiveShadow />
+      <RigidBody type="fixed" colliders={false} restitution={0} friction={0.92}>
+        <CuboidCollider args={[halfWidth, 0.7, 0.16]} position={[0, 0.7, -halfDepth]} />
+        <CuboidCollider args={[halfWidth, 0.7, 0.16]} position={[0, 0.7, halfDepth]} />
+        <CuboidCollider args={[0.16, 0.7, halfDepth]} position={[-halfWidth, 0.7, 0]} />
+        <CuboidCollider args={[0.16, 0.7, halfDepth]} position={[halfWidth, 0.7, 0]} />
+      </RigidBody>
+      <Block position={[0, 0.7, -halfDepth]} size={[footprint[0], 1.4, 0.32]} color="#8d3f3f" />
+      <Block position={[0, 0.7, halfDepth]} size={[footprint[0], 1.4, 0.32]} color="#8d3f3f" />
+      <Block position={[-halfWidth, 0.7, 0]} size={[0.32, 1.4, footprint[1]]} color="#8d3f3f" />
+      <Block position={[halfWidth, 0.7, 0]} size={[0.32, 1.4, footprint[1]]} color="#8d3f3f" />
+      {[-halfWidth + 0.18, halfWidth - 0.18].flatMap((x) => (
+        [-halfDepth + 0.18, halfDepth - 0.18].map((z) => (
+          <group key={`construction-stake-${code}-${x}-${z}`} position={[x, 0, z]}>
+            <Block position={[0, 1.15, 0]} size={[0.28, 2.3, 0.28]} color={palette.wood} />
+            <Block position={[0, 2.25, 0]} size={[0.62, 0.22, 0.62]} color={accent} emissive={accent} emissiveIntensity={0.32} />
+          </group>
+        ))
+      ))}
+      <Block position={[0, 0.22, 0]} size={[Math.min(9.5, footprint[0] - 2), 0.18, Math.min(6.8, footprint[1] - 2)]} color="#75543a" />
+      <Text position={[0, 0.34, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.72} color="#fff1b8" anchorX="center">
+        {`FACILITY ${code} / 建築予定地`}
+      </Text>
+      <Text position={[0, 0.35, 1.15]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.28} color="#dbeafe" anchorX="center">
+        {concept}
+      </Text>
+      <JapanesePanel
+        position={[0, 2.45, signZ]}
+        rotation={[0, signFacesSouth ? 0 : Math.PI, 0]}
+        width={5.7}
+        height={1.45}
+        title={title}
+        lines={['現在は設計中・立入禁止', '動物紋章とルール確定後に建築開始']}
+        accent={Number.parseInt(accent.slice(1), 16)}
+      />
+    </group>
+  )
+}
+
+function AnimalEmblemPreviewBoard() {
+  const texture = useTexture('/design/animal-emblem-atlas-v31.png')
+  texture.magFilter = NearestFilter
+  texture.minFilter = NearestFilter
+  texture.colorSpace = SRGBColorSpace
+  return (
+    <group>
+      <Block position={[-45.2, 2.55, 0]} size={[0.2, 4.25, 5.3]} color="#172033" />
+      <mesh position={[-45.08, 2.42, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <planeGeometry args={[4.65, 3.49]} />
+        <meshBasicMaterial map={texture} transparent alphaTest={0.02} />
+      </mesh>
+      <Text position={[-44.95, 4.22, 0]} rotation={[0, Math.PI / 2, 0]} fontSize={0.27} color="#fff1b8" anchorX="center">
+        共通動物紋章・デザイン中
+      </Text>
+    </group>
+  )
+}
+
+function WestHarborExpansion() {
+  const center = westHarbor.center
+  const size = westHarbor.size
+  return (
+    <group>
+      <RigidBody type="fixed" colliders={false} restitution={0} friction={0.92}>
+        <CuboidCollider args={[size[0] / 2, size[1] / 2, size[2] / 2]} position={vec3(center)} />
+        <CuboidCollider args={[0.25, 0.3, 19]} position={[-45.75, 0.3, 0]} />
+        <CuboidCollider args={[9, 0.3, 0.25]} position={[-37, 0.3, -18.75]} />
+        <CuboidCollider args={[9, 0.3, 0.25]} position={[-37, 0.3, 18.75]} />
+      </RigidBody>
+      <Block position={vec3(center)} size={vec3(size)} color="#6f8a4c" />
+      <Block position={[center[0], -0.5, center[2]]} size={[size[0] - 0.6, 0.4, size[2] - 0.6]} color={palette.dirt} />
+      <Block position={[-45.75, 0.3, 0]} size={[0.5, 0.6, 38]} color={palette.stone} />
+      <Block position={[-37, 0.3, -18.75]} size={[18, 0.6, 0.5]} color={palette.stone} />
+      <Block position={[-37, 0.3, 18.75]} size={[18, 0.6, 0.5]} color={palette.stone} />
+      <mesh position={[-32.5, 0.018, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 2]} receiveShadow>
+        <planeGeometry args={[4.5, 9]} />
+        <meshStandardMaterial color="#7d858f" roughness={0.95} />
+      </mesh>
+      <mesh position={[-37, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[3, 36]} />
+        <meshStandardMaterial color="#69717d" roughness={0.95} />
+      </mesh>
+      <JapanesePanel
+        position={[-30.2, 2.35, 2.1]}
+        rotation={[0, Math.PI / 2, 0]}
+        width={4.1}
+        height={1.35}
+        title="西港・建築計画区画"
+        lines={['C 動物紋章ダイス予定地', 'D アニマルじゃらβ・無料開放中']}
+        accent={0x45b7d1}
+      />
+      <LanternPost position={[-30.4, 0, -2.2]} accent="#45b7d1" phase={1.2} />
+      <LanternPost position={[-30.4, 0, 2.2]} accent="#f6c453" phase={2.4} />
+      <LanternPost position={[-44.2, 0, -3]} accent="#45b7d1" phase={3.6} />
+      <LanternPost position={[-44.2, 0, 3]} accent="#f6c453" phase={4.8} />
+      <ClosedConstructionPlot
+        center={vec3(animalEmblemDesign.facilities.C.center)}
+        footprint={animalEmblemDesign.facilities.C.footprint as [number, number]}
+        code="C"
+        title="動物紋章ダイス・建築予定地"
+        concept="共通動物紋章セットを設計中"
+        accent="#45b7d1"
+        signFacesSouth
+      />
+      <group position={vec3(animalEmblemDesign.facilities.D.center)}>
+        <Block position={[0, 0.06, 0]} size={[14, 0.12, 12]} color="#8b6a43" receiveShadow />
+        <Block position={[0, 0.13, 0]} size={[13.4, 0.05, 11.4]} color="#526748" receiveShadow />
+        {[[-6.65, -5.65], [6.65, -5.65], [-6.65, 5.65], [6.65, 5.65]].map(([x, z]) => (
+          <group key={`animal-jara-beta-marker-${x}-${z}`} position={[x, 0, z]}>
+            <Block position={[0, 0.75, 0]} size={[0.24, 1.5, 0.24]} color={palette.wood} />
+            <Block position={[0, 1.45, 0]} size={[0.5, 0.18, 0.5]} color="#f6c453" emissive="#f6c453" emissiveIntensity={0.35} />
+          </group>
+        ))}
+      </group>
+      <Suspense fallback={null}>
+        <AnimalEmblemPreviewBoard />
+      </Suspense>
+    </group>
   )
 }
 
@@ -330,10 +490,41 @@ function PirateMarketLandscape() {
 }
 
 function CoinExchange() {
-  const { coins, ready, busy, claimRelief } = useCasinoEconomy()
-  const eligible = coins === 0
+  const {
+    coins,
+    ready,
+    busy,
+    claimRelief,
+    rifBalance,
+    rifReady,
+    exchangeNotice,
+    pendingExchangeAmount,
+    refreshRifBalance,
+    convertRifToCasino,
+  } = useCasinoEconomy()
+  const [exchangeAmount, setExchangeAmount] = useState(1)
+  const minimumExchangeRif = minimumConvertibleRifAmount() ?? RIF_EXCHANGE_CONFIG.minimumRif
+  const eligible = canClaimRelief(coins, rifBalance, rifReady, minimumExchangeRif)
   const center = vec3(exchangeBuilding.center)
   const accent = eligible ? palette.amber : '#8e7951'
+  const quote = quoteRifExchange(exchangeAmount)
+  const canExchange = ready
+    && rifReady
+    && !busy
+    && rifBalance !== null
+    && rifBalance >= exchangeAmount
+    && quote !== null
+
+  useEffect(() => {
+    if (pendingExchangeAmount !== null) setExchangeAmount(pendingExchangeAmount)
+  }, [pendingExchangeAmount])
+
+  const adjustExchangeAmount = (delta: number) => {
+    setExchangeAmount((current) => Math.min(
+      RIF_EXCHANGE_CONFIG.maximumRif,
+      Math.max(RIF_EXCHANGE_CONFIG.minimumRif, current + delta),
+    ))
+  }
 
   return (
     <group position={center}>
@@ -342,15 +533,15 @@ function CoinExchange() {
       <Block position={[-3.3, 1.65, -1.95]} size={[0.38, 3.3, 0.38]} color={palette.wood} />
       <Block position={[3.3, 1.65, -1.95]} size={[0.38, 3.3, 0.38]} color={palette.wood} />
       <Block position={[0, 3.15, -1.95]} size={[6.9, 0.38, 0.38]} color={palette.amber} />
-      <Block position={[0, 0.5, 0.75]} size={[4.8, 1, 0.72]} color={palette.wood} />
+      <Block position={[0, 0.58, 0.75]} size={[6.4, 1.16, 0.72]} color={palette.wood} />
 
       <Suspense fallback={(
-        <mesh position={[0, 3.45, -1.72]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-          <cylinderGeometry args={[0.78, 0.78, 0.28, 8]} />
+        <mesh position={[0, 3.9, -1.55]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.62, 0.62, 0.24, 8]} />
           <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={eligible ? 0.75 : 0.05} roughness={0.76} flatShading />
         </mesh>
       )}>
-        <RotatingGoldCoin position={[0, 3.45, -1.72]} />
+        <RotatingGoldCoin position={[0, 3.9, -1.55]} scale={0.055} />
         <PirateBarrel position={[-3.05, 0.64, -1.25]} rotation={[0, 0.25, 0]} />
         <PirateBarrel position={[3.05, 0.64, -1.25]} rotation={[0, -0.25, 0]} />
         <FadedMapProp position={[1.35, 1.035, 0.78]} />
@@ -367,19 +558,85 @@ function CoinExchange() {
         modelScale={2.52}
         showLabel={false}
       />
+      <JapanesePanel
+        position={[0, 2.38, -1.7]}
+        width={6.1}
+        height={1.42}
+        title="RIF → カジノコイン交換所"
+        lines={[
+          `RIF残高 ${rifBalance ?? '—'}　　交換 ${exchangeAmount} RIF → ${quote?.casinoCoinAmount ?? '—'}枚`,
+          `現在 1 RIF = 1枚 ／ カジノコインからRIFへは交換できません`,
+          exchangeNotice,
+        ]}
+        accent={0xf6c453}
+        background={0x172033}
+      />
+
+      {[-100, -10, -1, 1, 10, 100].map((delta, index) => (
+        <CasinoButton
+          key={`rif-amount-${delta}`}
+          id={`rif-amount-${delta > 0 ? 'plus' : 'minus'}-${Math.abs(delta)}`}
+          label={`${delta > 0 ? '+' : '−'}${Math.abs(delta)}`}
+          position={[-2.5 + index * 1, 0.5, 1.15]}
+          width={0.82}
+          height={0.5}
+          color={delta > 0 ? '#2c7a7b' : '#8b4a59'}
+          enabled={!busy}
+          onPress={() => adjustExchangeAmount(delta)}
+        />
+      ))}
+      <CasinoButton
+        id="rif-balance-refresh"
+        label="残高更新"
+        position={[-2.45, 1.08, 1.15]}
+        width={1.15}
+        height={0.5}
+        color="#52657e"
+        enabled={!busy}
+        onPress={() => void refreshRifBalance()}
+      />
+      <CasinoButton
+        id="rif-amount-all"
+        label="RIF全額"
+        position={[-1.15, 1.08, 1.15]}
+        width={1.2}
+        height={0.5}
+        color="#52657e"
+        enabled={!busy && rifBalance !== null && rifBalance >= minimumExchangeRif}
+        onPress={() => setExchangeAmount(Math.min(rifBalance ?? 1, RIF_EXCHANGE_CONFIG.maximumRif))}
+      />
+      <CasinoButton
+        id="rif-to-casino-confirm"
+        label={`${exchangeAmount} RIFを${quote?.casinoCoinAmount ?? '—'}枚へ交換`}
+        detail="確定後はRIFへ戻せません"
+        position={[1.3, 1.08, 1.15]}
+        width={3.5}
+        height={0.5}
+        labelFontSize={0.15}
+        color="#c58b22"
+        enabled={canExchange}
+        onPress={() => void convertRifToCasino(exchangeAmount)}
+      />
       <CasinoButton
         id="gm-relief-claim"
-        label="ミラから10枚受取る"
-        detail={eligible ? '残高0枚・受取できます' : '残高0枚で利用できます'}
-        position={[0, 1.08, 1.14]}
-        width={1.9}
-        height={0.42}
+        label="救済10枚を受取る"
+        detail={eligible
+          ? 'ゲームもRIF交換もできないため受取可'
+          : !rifReady
+            ? 'RIF残高を確認中'
+            : rifBalance !== null && rifBalance >= minimumExchangeRif
+              ? '先にRIF交換を利用できます'
+              : 'カジノ残高0枚で利用できます'}
+        position={[0, 0.14, 2]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        width={3}
+        height={0.68}
         color="#c58b22"
         enabled={ready && !busy && eligible}
         onPress={() => void claimRelief()}
       />
-      <CoinOre position={[-3.15, 0, 2.2]} active={eligible} />
-      <CoinOre position={[3.15, 0, 2.2]} active={eligible} />
+      <CoinOre position={[-3.45, 0, 2]} active={eligible} />
+      <CoinOre position={[3.45, 0, 2]} active={eligible} />
     </group>
   )
 }
@@ -427,6 +684,10 @@ function SpawnMapBoard() {
         <boxGeometry args={[1.05, 0.42, 0.05]} />
         <meshStandardMaterial color={palette.dirt} />
       </mesh>
+      <mesh position={[-2.02, 2.18, 0.275]}>
+        <boxGeometry args={[0.55, 1.42, 0.05]} />
+        <meshStandardMaterial color="#2f7f75" />
+      </mesh>
       <mesh position={[1.55, 1.7, 0.27]}>
         <boxGeometry args={[1.05, 0.42, 0.05]} />
         <meshStandardMaterial color={palette.dirt} />
@@ -437,6 +698,7 @@ function SpawnMapBoard() {
       <Text position={[0, 1.69, 0.32]} fontSize={0.13} color="#172033" anchorX="center">交換所</Text>
       <Text position={[-1.55, 1.7, 0.32]} fontSize={0.11} color="#fff1b8" anchorX="center">A 運命盤</Text>
       <Text position={[1.55, 1.7, 0.32]} fontSize={0.11} color="#fff1b8" anchorX="center">B ダービー</Text>
+      <Text font={JAPANESE_FONT_URL} position={[-2.02, 2.18, 0.33]} rotation={[0, 0, Math.PI / 2]} fontSize={0.085} color="#fff7e6" anchorX="center">C予定 / Dβ公開</Text>
 
       <mesh position={[0, 2.92, 0.3]}>
         <circleGeometry args={[0.12, 8]} />
@@ -455,13 +717,15 @@ export function World({
   showHud = true,
   showSpawn = true,
   reviewGame,
+  reviewScene,
 }: WorldProps) {
   return (
-    <CasinoEconomyProvider previewCoins={reviewGame ? 10 : undefined}>
+    <CasinoEconomyProvider previewCoins={reviewGame || reviewScene ? 10 : undefined}>
       <CasinoAudioProvider>
         <group position={position} scale={scale}>
           <IslandShell />
           <ExpansionRoutes />
+          <WestHarborExpansion />
           <PirateMarketLandscape />
           <OpenAirGamingDeck
             center={vec3(blackjackBuilding.center)}
@@ -486,6 +750,16 @@ export function World({
           <CoinExchange />
           <CaptainsFateWheel position={vec3(layout.futurePlots[0].center)} />
           <PirateMonsterDerby position={vec3(layout.futurePlots[1].center)} />
+          <Suspense fallback={null}>
+            <AnimalJaraPrototype
+              position={vec3(animalEmblemDesign.facilities.D.center)}
+              rotation={[0, Math.PI, 0]}
+              autoStart={reviewScene === 'animal-jara'}
+              qaHooks={reviewScene === 'animal-jara'}
+            />
+          </Suspense>
+          <CasinoAdminObservatory preview={reviewScene === 'admin'} />
+          <CasinoAdminTransit previewAuthorized={reviewScene === 'admin-access'} />
           <SpawnMapBoard />
           <CasinoAudioControl position={[7.3, 1.04, 9.8]} />
           {showSpawn ? (

@@ -1,0 +1,19 @@
+{
+  "version": 30,
+  "status": "superseded-by-v31-preconstruction",
+  "westHarbor": {
+    "center": [-37, -0.15, 0],
+    "size": [18, 0.3, 38],
+    "bounds": { "x": [-46, -28], "z": [-19, 19] },
+    "connectionOpening": { "x": -28, "z": [-2, 2], "width": 4 },
+    "dicePoker": { "center": [-37, 0, -10], "footprint": [13.5, 11.5] },
+    "plannedFacility": { "center": [-37, 0, 9], "footprint": [14, 12] }
+  },
+  "cameraPresets": {
+    "westExpansion": { "position": [-53, 21, 29], "target": [-34, 1, 0], "fov": 58 },
+    "westEntrance": { "position": [-29, 5.5, 0], "target": [-44.8, 2.1, 0], "fov": 58 },
+    "dicePoker": { "position": [-37, 8, 3], "target": [-37, 1.4, -9.5], "fov": 60 },
+    "dicePokerPlayer": { "position": [-37, 1.65, -4.15], "target": [-37, 1.65, -10.6], "fov": 70 },
+    "animalJaraPrototype": { "position": [-37, 7.4, 0.8], "target": [-37, 1.25, 9.3], "fov": 64 }
+  }
+}

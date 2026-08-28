@@ -1,0 +1,23 @@
+{
+  "version": 29,
+  "deck": {
+    "centerBefore": [0, 7, -38],
+    "centerAfter": [0, 7, -48],
+    "rotationYDegrees": 180,
+    "size": [18, 0.6, 11],
+    "boundsAfter": { "x": [-9, 9], "z": [-53.5, -42.5] },
+    "mainIslandGap": 21.5
+  },
+  "transit": {
+    "adminDestination": { "position": [0, 7.8, -52.5], "yaw": 0 },
+    "receptionReturn": { "position": [0, 0.55, -9.3], "yaw": 180 }
+  },
+  "publicFacade": {
+    "title": "北極星 通信塔",
+    "subtitle": "NORTH STAR SIGNAL TOWER",
+    "size": [7.2, 2.25],
+    "fullAuditBoardVisibility": "within-9.5m-only",
+    "silhouette": "stepped-floating-signal-ship-hull",
+    "auditCopyVisible": false
+  }
+}

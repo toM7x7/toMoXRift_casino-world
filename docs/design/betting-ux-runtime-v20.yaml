@@ -1,0 +1,44 @@
+version: 20
+status: implemented-local
+design_rule: "観戦対象を中央に、賭け操作を床の外周に置く"
+
+fate_wheel:
+  spectacle: vertical_fixed_wheel
+  side_choice_pads:
+    count: 8
+    columns: [left_4, right_4]
+    size_m: [1.7, 1.28]
+  action_row: [coin_1, coin_3, coin_5, confirm, start]
+  timing_ms:
+    presentation: 5000
+    spin: 5200
+    result: 6500
+  auto_return_to_betting: true
+
+monster_derby:
+  miniature_bookmaker_pedestals: 4
+  participant_entry_pads:
+    count: 8
+    columns: [left_4, right_4]
+  action_row: [coin_1, coin_3, coin_5, issue_ticket, start_presentation]
+  timing_ms:
+    introductions_and_countdown: 10000
+    race: 18000
+    result: 8000
+  racer_scale: 0.052
+  broadcast_surfaces: [voting_plaza, observation_deck]
+  broadcast_states: [entry, introduction, countdown, live_order, final_order]
+  auto_return_to_waiting: true
+
+audio:
+  bgm: "明るいCメジャーのカジノ・プロムナード"
+  local_effects: [select, bet, countdown, wheel, race, win, lose]
+  commentary_now: "ラウンド状態から生成する日本語実況文と短いローカル効果音"
+  commentary_future: "外部TTSをサーバー側で生成・キャッシュする任意拡張"
+
+acceptance:
+  wheel_center_sightline: clear
+  bet_targets: large_center_ray_targets
+  derby_target_identity: miniature_plus_name_plus_lane_color
+  result_visible_from_deck: true
+  browser_console_errors: 0

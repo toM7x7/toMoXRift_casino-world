@@ -1,0 +1,71 @@
+version: 27
+status: implemented_local_with_restricted_transit
+area:
+  id: casino-admin-observatory
+  world_center: [0, 7, -38]
+  deck_size: [18, 0.6, 11]
+  world_bounds:
+    x: [-9, 9]
+    y_floor_surface: 7.3
+    z: [-43.5, -32.5]
+  separation_from_main_island_north_edge_m: 11.5
+  access: owner_or_static_allowlist_teleport
+transit:
+  reception_device_world_position: [0, 0, -16.55]
+  admin_destination: { position: [0, 7.8, -33.5], yaw: 180 }
+  reception_return: { position: [0, 0.55, -9.3], yaw: 180 }
+  owner_source: useWorld.info.owner.id
+  local_identity_source: useUsers.localUser.id
+  authorization:
+    - reject_guests
+    - allow_world_owner
+    - allow_reviewed_static_user_ids
+    - recheck_after_confirmation
+    - never_use_world_storage_as_role_authority
+dashboard:
+  refresh_seconds: 15
+  storage_query_activation_radius_m: 9.5
+  visibility: public_reference_data
+  authority: not_an_accounting_source_of_truth
+  observed_wallets_max: 200
+  summary:
+    - observed_total_balance
+    - observed_average_balance
+    - lifetime_wagered_from_v27
+    - lifetime_payout_and_refund_from_v27
+    - theoretical_gm_net_from_v27
+    - relief_issued_from_v27
+    - rif_in_and_casino_minted_existing_counters
+  player_rows:
+    sort: balance_desc
+    visible: 8
+    fields: [display_name, current_balance, lifetime_wagered, lifetime_payout]
+storage:
+  player_keys:
+    balance: casino.coins.v1
+    stats: casino.player-stats.v1
+  shared_keys:
+    registry: casino.player-registry.v1
+    wagered: casino.flow.wagered.v1
+    payout: casino.flow.payout.v1
+    refund: casino.flow.refund.v1
+    relief: casino.flow.relief.v1
+    transaction_count: casino.flow.transaction-count.v1
+  caveats:
+    - world_storage_is_public
+    - shared_values_are_best_effort_and_player_writable
+    - historical_player_ids_cannot_be_enumerated_before_registry_start
+    - physical_admin_area_is_an_experience_gate_not_a_data-secrecy_boundary
+    - ordinary_players_outside_the_deck_do_not_run_audit_queries
+derby_ramp_fix:
+  attraction_center_world: [17, 0, -13]
+  deck_local_x_bounds: [9, 17]
+  central_west_rail_opening_local_z: [-3.15, 3.15]
+  ramp_before_center_local: [7.5, 0.3, 4.65]
+  ramp_after_center_local: [7.5, 0.3, 0]
+  ramp_local_z_bounds_after: [-1.5, 1.5]
+  ramp_local_x_endpoints: [6, 9]
+  alignment:
+    west_endpoint: voting_plaza_east_edge_x_6
+    east_endpoint: observation_deck_west_edge_x_9
+    side_clearance_to_rail_opening_m: 1.65

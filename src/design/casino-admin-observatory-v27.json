@@ -1,0 +1,25 @@
+{
+  "version": 27,
+  "area": {
+    "center": [0, 7, -38],
+    "deckSize": [18, 0.6, 11],
+    "mainIslandGap": 11.5,
+    "access": "owner-or-static-allowlist-teleport",
+    "adminDestination": { "position": [0, 7.8, -33.5], "yaw": 180 },
+    "receptionReturn": { "position": [0, 0.55, -9.3], "yaw": 180 }
+  },
+  "dashboard": {
+    "refreshMs": 15000,
+    "queryActivationRadius": 9.5,
+    "registryLimit": 200,
+    "visiblePlayerRows": 8,
+    "authority": "public-reference-only"
+  },
+  "derbyRamp": {
+    "centerBefore": [7.5, 0.3, 4.65],
+    "centerAfter": [7.5, 0.3, 0],
+    "xEndpoints": [6, 9],
+    "zBounds": [-1.5, 1.5],
+    "railOpeningZ": [-3.15, 3.15]
+  }
+}

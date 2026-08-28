@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   roundToken,
   totalReturn,
+  type CasinoRoundGame,
   type CasinoRoundBet,
 } from '../game/casinoRounds'
 import { useCasinoAudio } from './CasinoAudio'
@@ -64,11 +65,13 @@ export function useCasinoRoundSettlement({
   state,
   choiceCount,
   winReason,
+  fixedPayout,
 }: {
-  game: 'fate' | 'derby'
+  game: CasinoRoundGame
   state: FormalCasinoRoundState
   choiceCount: number
   winReason: string
+  fixedPayout?: number
 }) {
   const { localUser } = useUsers()
   const clock = useServerClock({ require: 'motion' })
@@ -100,20 +103,30 @@ export function useCasinoRoundSettlement({
             // Local preview and guests settle in memory for this session.
           }
 
-          const payout = totalReturn(localBet, state.resultIndex, choiceCount)
+          // Claim before mutating the wallet. A remount can therefore never
+          // replay the same win. Failed wallet writes release the claim.
+          let persistedClaim = false
+          try {
+            await storage.player.set(markerKey, token)
+            persistedClaim = true
+          } catch {
+            // Local preview and guests settle in memory for this session.
+          }
+
+          const payout = fixedPayout ?? totalReturn(localBet, state.resultIndex, choiceCount)
           if (payout > 0) {
             const next = await transact(payout, `${winReason}・払戻`)
-            if (next === null) return
+            if (next === null) {
+              if (persistedClaim) {
+                await storage.player.delete(markerKey).catch(() => undefined)
+              }
+              return
+            }
             play('win')
           } else {
             play('lose')
           }
 
-          try {
-            await storage.player.set(markerKey, token)
-          } catch {
-            // Local preview and guests do not require a persistent marker.
-          }
           settledRef.current.add(token)
         } finally {
           inFlightRef.current.delete(token)
@@ -121,5 +134,5 @@ export function useCasinoRoundSettlement({
       }
       void settle()
     })
-  }, [choiceCount, clock.now, clock.timeJumpCount, game, localUser, play, state, storage, transact, winReason])
+  }, [choiceCount, clock.now, clock.timeJumpCount, fixedPayout, game, localUser, play, state, storage, transact, winReason])
 }

@@ -1,8 +1,8 @@
 {
   "world": {
     "distDir": "./dist",
-    "title": "ブロック遊技村｜ブラックジャック＆麻雀入門",
-    "description": "夕暮れの開放型ブロック遊技公園。BJ／麻雀に加え、最大8人でコインBET・抽選・払戻ができる船長の運命盤と海賊魔獣ダービーを収録。専用BGMと効果音、World Storageコインに対応",
+    "title": "ブロック遊技村｜海賊カジノ＆アニマルじゃらβ",
+    "description": "夕暮れの開放型ブロック遊技公園。BJ／麻雀／船長の運命盤／海賊魔獣ダービーに加え、西港D開発地区で無料のアニマルじゃらβを公開。RIFは現在一方向交換のみ。最大8人BET、同期演出、BGM・効果音、World Storageコインに対応",
     "thumbnailPath": "thumbnail.png",
     "buildCommand": "npm run build",
     "ignore": [
@@ -30,6 +30,14 @@
     "camera": {
       "near": 0.1,
       "far": 80
+    },
+    "permissions": {
+      "allowedDomains": [
+        "rif-coin.com"
+      ],
+      "allowedCodeRules": [
+        "no-network-without-permission"
+      ]
     }
   }
 }

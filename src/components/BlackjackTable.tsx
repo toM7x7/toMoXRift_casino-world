@@ -2,8 +2,10 @@ import { Text } from '@react-three/drei'
 import { RigidBody } from '@react-three/rapier'
 import {
   useInstanceState,
+  useServerClock,
   useTeleport,
   useUsers,
+  useWorldStorage,
 } from '@xrift/world-components'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
@@ -15,6 +17,7 @@ import {
   type BlackjackOutcome,
   type Card,
 } from '../game/blackjack'
+import { CASINO_BALANCE, blackjackTotalReturn } from '../game/casinoBalance'
 import {
   BLACKJACK_SEATS,
   worldSeatPosition,
@@ -35,8 +38,8 @@ import {
   JapanesePanel,
 } from './CasinoPrimitives'
 
-const BET = 2
-const SESSION_KEY = 'casino.blackjack.table.v13'
+const BET = CASINO_BALANCE.blackjack.roundBet
+const SESSION_KEY = 'casino.blackjack.table.v14'
 
 type BlackjackPhase = 'lobby' | 'playing' | 'settled'
 
@@ -45,12 +48,21 @@ interface BlackjackPlayer extends HumanSeat {
   hand: Card[]
   stood: boolean
   outcome: BlackjackOutcome | null
+  wager: number
+  doubled: boolean
+}
+
+interface BlackjackEntry {
+  amount: number
+  paidAt: number
 }
 
 interface BlackjackTableState {
   phase: BlackjackPhase
   roundId: number
+  roundStartedAt: number
   seats: SeatList
+  entries: Record<string, BlackjackEntry>
   players: BlackjackPlayer[]
   deck: Card[]
   dealer: Card[]
@@ -61,19 +73,14 @@ interface BlackjackTableState {
 const EMPTY_SESSION: BlackjackTableState = {
   phase: 'lobby',
   roundId: 0,
+  roundStartedAt: 0,
   seats: createEmptySeats(),
+  entries: {},
   players: [],
   deck: [],
   dealer: [],
   activeSeat: null,
-  message: '椅子を選んでENTRYしてください',
-}
-
-function payoutFor(outcome: BlackjackOutcome | null): number {
-  if (outcome === 'blackjack') return 5
-  if (outcome === 'win') return 4
-  if (outcome === 'push') return 2
-  return 0
+  message: '着席は無料・2枚でラウンド参加',
 }
 
 function outcomeText(outcome: BlackjackOutcome | null): string {
@@ -100,7 +107,7 @@ function settleTable(state: BlackjackTableState): BlackjackTableState {
       stood: true,
       outcome: player.outcome ?? compareHands(player.hand, dealerResult.hand),
     })),
-    message: `精算完了・GM ${handValue(dealerResult.hand)}`,
+    message: `精算完了・ディーラー合計 ${handValue(dealerResult.hand)}`,
   }
 }
 
@@ -193,15 +200,33 @@ function Card3D({
 
 function DealerCards({ state }: { state: BlackjackTableState }) {
   if (state.phase === 'lobby') return null
+  const displayWidth = Math.max(1.75, state.dealer.length * 0.62 + 0.36)
   return (
-    <group>
+    <group position={[0, 3.02, -2.7]}>
+      <mesh position={[0, 0, 0]} castShadow>
+        <boxGeometry args={[displayWidth, 1.16, 0.12]} />
+        <meshStandardMaterial color="#172033" roughness={0.78} />
+      </mesh>
+      <mesh position={[0, 0, 0.065]}>
+        <boxGeometry args={[displayWidth - 0.1, 1.06, 0.035]} />
+        <meshStandardMaterial color="#3f2a3d" emissive="#d96ccb" emissiveIntensity={0.08} roughness={0.72} />
+      </mesh>
+      <Text
+        position={[0, 0.43, 0.095]}
+        fontSize={0.14}
+        color="#fff1b8"
+        anchorX="center"
+        anchorY="middle"
+      >
+        {state.phase === 'settled' ? `ディーラー手札・合計${handValue(state.dealer)}` : 'ディーラー手札・1枚は伏せ札'}
+      </Text>
       {state.dealer.map((card, index) => (
         <Card3D
           key={`dealer-card-${index}`}
           card={card}
           hidden={state.phase === 'playing' && index === 1}
-          position={[-0.28 + index * 0.56, 1.035, -0.32]}
-          rotation={[-Math.PI / 2, 0, 0]}
+          position={[-((state.dealer.length - 1) * 0.26) + index * 0.52, -0.08, 0.105]}
+          scale={0.76}
         />
       ))}
     </group>
@@ -213,8 +238,11 @@ function LocalBlackjackControls({
   localSeat,
   busy,
   onStart,
+  onEnter,
+  onCancelEntry,
   onHit,
   onStand,
+  onDouble,
   onNext,
   onLeave,
 }: {
@@ -222,19 +250,29 @@ function LocalBlackjackControls({
   localSeat: number
   busy: boolean
   onStart: () => void
+  onEnter: () => void
+  onCancelEntry: () => void
   onHit: () => void
   onStand: () => void
+  onDouble: () => void
   onNext: () => void
   onLeave: () => void
 }) {
   const seat = BLACKJACK_SEATS[localSeat]
   const localPlayer = state.players.find((player) => player.seatIndex === localSeat)
   const isHost = state.seats.findIndex(Boolean) === localSeat
+  const localSeatUser = state.seats[localSeat]
+  const localEntry = localSeatUser ? state.entries[localSeatUser.userId] : undefined
+  const enteredCount = Object.keys(state.entries).length
+  const roundStarterSeat = state.seats.findIndex((occupiedSeat) => (
+    Boolean(occupiedSeat && state.entries[occupiedSeat.userId])
+  ))
+  const isRoundStarter = roundStarterSeat === localSeat
   const isMyTurn = state.phase === 'playing' && state.activeSeat === localSeat
   const cards = localPlayer?.hand ?? []
 
   return (
-    <group position={seat.controlPosition} rotation={seat.controlRotation} scale={0.82}>
+    <group position={seat.controlPosition} rotation={seat.controlRotation} scale={0.7}>
       <mesh position={[0, 0.01, -0.075]}>
         <boxGeometry args={[1.92, 0.66, 0.1]} />
         <meshStandardMaterial color="#493526" roughness={0.86} />
@@ -266,37 +304,65 @@ function LocalBlackjackControls({
           position={[-((cards.length - 1) * 0.1) + index * 0.2, 0.07, 0.035]}
         />
       ))}
-      {state.phase === 'lobby' && isHost && (
+      {state.phase === 'lobby' && !localEntry && (
         <CasinoButton
-          id="blackjack-start"
-          label="ゲーム開始"
-          detail={`${connectedHumanCount(state.seats)}人で遊ぶ`}
-          position={[-0.1, -0.15, 0.035]}
+          id="blackjack-enter-round"
+          label="ラウンド参加"
+          detail={`${BET}枚を支払う`}
+          position={[-0.16, -0.15, 0.035]}
           width={1.05}
           height={0.28}
           color="#c58b22"
-          enabled={!busy && connectedHumanCount(state.seats) > 0}
+          enabled={!busy}
+          onPress={onEnter}
+        />
+      )}
+      {state.phase === 'lobby' && localEntry && isRoundStarter && (
+        <CasinoButton
+          id="blackjack-start"
+          label="ゲーム開始"
+          detail={`${enteredCount}人参加・支払済`}
+          position={[-0.28, -0.15, 0.035]}
+          width={0.8}
+          height={0.28}
+          color="#c58b22"
+          enabled={!busy && enteredCount > 0}
           onPress={onStart}
         />
       )}
-      {state.phase === 'lobby' && !isHost && (
+      {state.phase === 'lobby' && localEntry && !isRoundStarter && (
         <JapanesePanel
-          position={[-0.1, -0.15, 0.035]}
-          width={1.05}
+          position={[-0.28, -0.15, 0.035]}
+          width={0.8}
           height={0.28}
-          title="開始待ち"
-          lines={['ホストの開始待ち']}
-          accent={0x69717d}
+          title="参加確定"
+          lines={[`${BET}枚支払済・開始待ち`]}
+          accent={0xc58b22}
+        />
+      )}
+      {state.phase === 'lobby' && localEntry && (
+        <CasinoButton
+          id={`blackjack-cancel-entry-${localSeat}`}
+          label="取消"
+          detail="2枚返却"
+          position={[0.34, -0.16, 0.035]}
+          width={0.35}
+          height={0.28}
+          labelFontSize={0.095}
+          color="#69717d"
+          enabled={!busy}
+          onPress={onCancelEntry}
         />
       )}
       {state.phase === 'playing' && (
         <>
           <CasinoButton
             id={`blackjack-hit-${localSeat}`}
-            label="1枚引く"
-            position={[-0.5, -0.16, 0.035]}
-            width={0.48}
-            height={0.26}
+            label="引く"
+            detail="もう1枚"
+            position={[-0.57, -0.16, 0.035]}
+            width={0.36}
+            height={0.28}
             color="#c955a5"
             enabled={isMyTurn && !busy}
             onPress={onHit}
@@ -304,12 +370,25 @@ function LocalBlackjackControls({
           <CasinoButton
             id={`blackjack-stand-${localSeat}`}
             label="止める"
-            position={[0.04, -0.16, 0.035]}
-            width={0.48}
-            height={0.26}
+            detail="この手で勝負"
+            position={[-0.17, -0.16, 0.035]}
+            width={0.36}
+            height={0.28}
             color="#c58b22"
             enabled={isMyTurn && !busy}
             onPress={onStand}
+          />
+          <CasinoButton
+            id={`blackjack-double-${localSeat}`}
+            label="倍掛け"
+            detail="1枚引いて止める"
+            position={[0.23, -0.16, 0.035]}
+            width={0.36}
+            height={0.28}
+            labelFontSize={0.09}
+            color="#5378c8"
+            enabled={isMyTurn && cards.length === 2 && !localPlayer?.doubled && !busy}
+            onPress={onDouble}
           />
         </>
       )}
@@ -328,11 +407,12 @@ function LocalBlackjackControls({
       )}
       <CasinoButton
         id={`blackjack-leave-${localSeat}`}
-        label="離席 X"
-        position={[0.66, -0.16, 0.035]}
-        width={0.42}
-        height={0.26}
-        color="#5b6575"
+        label="離席する"
+        position={[0.7, -0.16, 0.035]}
+        width={0.38}
+        height={0.28}
+        labelFontSize={0.105}
+        color="#9b3a45"
         enabled
         onPress={onLeave}
       />
@@ -349,11 +429,15 @@ export function BlackjackTable({
 }) {
   const { coins, ready, busy, transact } = useCasinoEconomy()
   const { localUser, remoteUsers } = useUsers()
+  const clock = useServerClock({ require: 'motion' })
+  const storage = useWorldStorage()
   const { teleport } = useTeleport()
   const [state, setState] = useInstanceState<BlackjackTableState>(SESSION_KEY, EMPTY_SESSION)
-  const payoutRoundRef = useRef(-1)
+  const payoutRoundRef = useRef(new Set<string>())
+  const payoutInFlightRef = useRef(new Set<string>())
   const autoStartedRef = useRef(false)
   const leavingRef = useRef(false)
+  const entryInFlightRef = useRef(false)
   const localUserId = localUser?.id ?? 'local-preview-user'
   const localName = localUser?.displayName ?? 'あなた'
   const localSeat = findSeatByUser(state.seats, localUserId)
@@ -381,10 +465,7 @@ export function BlackjackTable({
     if (
       state.phase !== 'lobby'
       || state.seats[seatIndex] !== null
-      || coins < BET
     ) return
-    const paid = await transact(-BET, 'ブラックジャックENTRY')
-    if (paid === null) return
     setState((current) => {
       if (current.phase !== 'lobby' || current.seats[seatIndex] !== null) return current
       const seats = [...current.seats]
@@ -392,34 +473,89 @@ export function BlackjackTable({
       return {
         ...current,
         seats,
-        message: `${localName}さんがENTRY ${seatIndex + 1}へ着席`,
+        message: `${localName}さんが無料着席・参加ボタンを押してください`,
       }
     })
     sitCamera(seatIndex)
-  }, [coins, localName, localUserId, setState, sitCamera, state.phase, state.seats, transact])
+  }, [localName, localUserId, setState, sitCamera, state.phase, state.seats])
+
+  const enterRound = useCallback(async () => {
+    if (
+      localSeat < 0
+      || state.phase !== 'lobby'
+      || state.entries[localUserId]
+      || coins < BET
+      || entryInFlightRef.current
+    ) return
+    entryInFlightRef.current = true
+    try {
+      const paid = await transact(-BET, 'ブラックジャック・ラウンド参加')
+      if (paid === null) return
+      setState((current) => {
+        if (
+          current.phase !== 'lobby'
+          || findSeatByUser(current.seats, localUserId) < 0
+          || current.entries[localUserId]
+        ) return current
+        return {
+          ...current,
+          entries: {
+            ...current.entries,
+            [localUserId]: { amount: BET, paidAt: clock.now() },
+          },
+          message: `${localName}さん参加確定・${BET}枚支払済`,
+        }
+      })
+    } finally {
+      entryInFlightRef.current = false
+    }
+  }, [clock.now, coins, localName, localSeat, localUserId, setState, state.entries, state.phase, transact])
+
+  const cancelEntry = useCallback(async () => {
+    if (
+      localSeat < 0
+      || state.phase !== 'lobby'
+      || !state.entries[localUserId]
+      || entryInFlightRef.current
+    ) return
+    entryInFlightRef.current = true
+    try {
+      setState((current) => {
+        if (current.phase !== 'lobby' || !current.entries[localUserId]) return current
+        const entries = { ...current.entries }
+        delete entries[localUserId]
+        return { ...current, entries, message: `${localName}さん参加取消・${BET}枚返却` }
+      })
+      await transact(BET, 'ブラックジャック・開始前取消')
+    } finally {
+      entryInFlightRef.current = false
+    }
+  }, [localName, localSeat, localUserId, setState, state.entries, state.phase, transact])
 
   const leaveTable = useCallback(async () => {
     if (localSeat < 0 || leavingRef.current) return
     leavingRef.current = true
     releaseSeatLock()
-    const shouldRefund = state.phase === 'lobby'
+    const shouldRefund = state.phase === 'lobby' && Boolean(state.entries[localUserId])
     setState((current) => {
       const seats = [...current.seats]
       seats[localSeat] = null
       const players = current.players.map((player) => (
         player.seatIndex === localSeat ? { ...player, stood: true } : player
       ))
+      const entries = { ...current.entries }
+      delete entries[localUserId]
       if (connectedHumanCount(seats) === 0) {
         return { ...EMPTY_SESSION, roundId: current.roundId }
       }
       if (current.phase === 'playing' && current.activeSeat === localSeat) {
-        return advanceTurn({ ...current, seats, players }, localSeat)
+        return advanceTurn({ ...current, seats, entries, players }, localSeat)
       }
-      return { ...current, seats, players, message: `${localName}さんが離席しました` }
+      return { ...current, seats, entries, players, message: `${localName}さんが離席しました` }
     })
-    if (shouldRefund) await transact(BET, '開始前ENTRY返却')
+    if (shouldRefund) await transact(BET, '開始前ラウンド参加返却')
     teleport({ position: [position[0], position[1], position[2] + 4.35], yaw: 0 })
-  }, [localName, localSeat, position, releaseSeatLock, setState, state.phase, teleport, transact])
+  }, [localName, localSeat, localUserId, position, releaseSeatLock, setState, state.entries, state.phase, teleport, transact])
 
   useEffect(() => {
     if (seated) return
@@ -440,11 +576,19 @@ export function BlackjackTable({
 
   const startRound = useCallback(() => {
     if (localSeat < 0 || state.phase !== 'lobby') return
-    if (state.seats.findIndex(Boolean) !== localSeat) return
+    const starterSeat = state.seats.findIndex((seat) => (
+      Boolean(seat && state.entries[seat.userId])
+    ))
+    if (starterSeat !== localSeat) return
     setState((current) => {
+      const currentStarterSeat = current.seats.findIndex((seat) => (
+        Boolean(seat && current.entries[seat.userId])
+      ))
+      if (currentStarterSeat !== localSeat) return current
       const seatedPlayers = current.seats
         .map((seat, seatIndex) => seat ? { ...seat, seatIndex } : null)
         .filter((seat): seat is HumanSeat & { seatIndex: number } => seat !== null)
+        .filter((seat) => Boolean(current.entries[seat.userId]))
       if (seatedPlayers.length === 0) return current
       const deck = createShuffledDeck()
       const players: BlackjackPlayer[] = seatedPlayers.map((seat) => ({
@@ -452,6 +596,8 @@ export function BlackjackTable({
         hand: [],
         stood: false,
         outcome: null,
+        wager: current.entries[seat.userId]?.amount ?? BET,
+        doubled: false,
       }))
       const dealer: Card[] = []
       for (let deal = 0; deal < 2; deal += 1) {
@@ -470,17 +616,18 @@ export function BlackjackTable({
         ...current,
         phase: 'playing',
         roundId: current.roundId + 1,
+        roundStartedAt: clock.now(),
         players,
         deck,
         dealer,
         activeSeat: firstActive,
         message: firstActive === null
-          ? '全員BLACKJACK・GM精算'
+          ? '全員BLACKJACK・ディーラー判定'
           : `${players.find((player) => player.seatIndex === firstActive)?.displayName}の番です`,
       }
       return firstActive === null ? settleTable(next) : next
     })
-  }, [localSeat, setState, state.phase, state.seats])
+  }, [clock.now, localSeat, setState, state.entries, state.phase, state.seats])
 
   const hit = useCallback(() => {
     if (state.phase !== 'playing' || state.activeSeat !== localSeat) return
@@ -517,6 +664,40 @@ export function BlackjackTable({
     })
   }, [localSeat, setState, state.activeSeat, state.phase])
 
+  const doubleDown = useCallback(async () => {
+    const localPlayer = state.players.find((player) => player.seatIndex === localSeat)
+    if (
+      state.phase !== 'playing'
+      || state.activeSeat !== localSeat
+      || !localPlayer
+      || localPlayer.hand.length !== 2
+      || localPlayer.doubled
+      || coins < localPlayer.wager
+      || entryInFlightRef.current
+    ) return
+    entryInFlightRef.current = true
+    try {
+      const paid = await transact(-localPlayer.wager, 'ブラックジャック・ダブルダウン')
+      if (paid === null) return
+      setState((current) => {
+        if (current.phase !== 'playing' || current.activeSeat !== localSeat) return current
+        const deck = [...current.deck]
+        const players = current.players.map((player) => ({ ...player, hand: [...player.hand] }))
+        const player = players.find((candidate) => candidate.seatIndex === localSeat)
+        const card = deck.pop()
+        if (!player || !card || player.hand.length !== 2 || player.doubled) return current
+        player.hand.push(card)
+        player.wager *= 2
+        player.doubled = true
+        player.stood = true
+        if (handValue(player.hand) > 21) player.outcome = 'bust'
+        return advanceTurn({ ...current, deck, players }, localSeat)
+      })
+    } finally {
+      entryInFlightRef.current = false
+    }
+  }, [coins, localSeat, setState, state.activeSeat, state.phase, state.players, transact])
+
   const prepareNext = useCallback(() => {
     if (localSeat < 0 || state.phase !== 'settled') return
     if (state.seats.findIndex(Boolean) !== localSeat) return
@@ -524,21 +705,63 @@ export function BlackjackTable({
       ...EMPTY_SESSION,
       roundId: current.roundId,
       seats: current.seats,
-      message: 'ENTRYを維持しました。任意のタイミングでゲーム開始',
+      message: '着席を維持しました。次のラウンド参加は2枚です',
     }))
   }, [localSeat, setState, state.phase, state.seats])
 
-  const localResult = useMemo(
-    () => state.players.find((player) => player.userId === localUserId)?.outcome ?? null,
+  const localRoundPlayer = useMemo(
+    () => state.players.find((player) => player.userId === localUserId),
     [localUserId, state.players],
   )
 
   useEffect(() => {
-    if (state.phase !== 'settled' || payoutRoundRef.current === state.roundId) return
-    payoutRoundRef.current = state.roundId
-    const payout = payoutFor(localResult)
-    if (payout > 0) void transact(payout, `ブラックジャック配当・${outcomeText(localResult)}`)
-  }, [localResult, state.phase, state.roundId, transact])
+    if (state.phase !== 'settled' || !localRoundPlayer || state.roundStartedAt <= 0) return
+    const token = `blackjack:${state.roundId}:${state.roundStartedAt}`
+    if (payoutRoundRef.current.has(token) || payoutInFlightRef.current.has(token)) return
+    payoutInFlightRef.current.add(token)
+    const settle = async () => {
+      const markerKey = 'casino.blackjack.settled.v3'
+      try {
+        try {
+          const savedToken = await storage.player.get(markerKey)
+          if (savedToken === token) {
+            payoutRoundRef.current.add(token)
+            return
+          }
+          await storage.player.set(markerKey, token)
+        } catch {
+          // Local preview and guests use the in-memory marker.
+        }
+        const natural = localRoundPlayer.outcome === 'blackjack'
+        const normalizedOutcome = localRoundPlayer.outcome === 'blackjack'
+          ? 'win'
+          : localRoundPlayer.outcome === 'bust'
+            ? 'lose'
+            : localRoundPlayer.outcome
+        const payout = normalizedOutcome
+          ? blackjackTotalReturn({
+            wager: localRoundPlayer.wager,
+            outcome: normalizedOutcome,
+            natural,
+          })
+          : 0
+        if (payout > 0) {
+          const next = await transact(
+            payout,
+            `ブラックジャック配当・${outcomeText(localRoundPlayer.outcome)}`,
+          )
+          if (next === null) {
+            await storage.player.delete(markerKey).catch(() => undefined)
+            return
+          }
+        }
+        payoutRoundRef.current.add(token)
+      } finally {
+        payoutInFlightRef.current.delete(token)
+      }
+    }
+    void settle()
+  }, [localRoundPlayer, state.phase, state.roundId, state.roundStartedAt, storage, transact])
 
   useEffect(() => {
     if (!autoStart || autoStartedRef.current || !ready || busy) return
@@ -550,9 +773,13 @@ export function BlackjackTable({
 
   useEffect(() => {
     if (!autoStart || !seated || state.phase !== 'lobby') return
+    if (!state.entries[localUserId]) {
+      void enterRound()
+      return
+    }
     const timer = window.setTimeout(startRound, 160)
     return () => window.clearTimeout(timer)
-  }, [autoStart, seated, startRound, state.phase])
+  }, [autoStart, enterRound, localUserId, seated, startRound, state.entries, state.phase])
 
   useEffect(() => {
     const currentHostSeat = state.seats.findIndex(Boolean)
@@ -573,14 +800,19 @@ export function BlackjackTable({
         const players = current.players.map((player) => (
           departedSeats.includes(player.seatIndex) ? { ...player, stood: true } : player
         ))
+        const entries = { ...current.entries }
+        departedSeats.forEach((seatIndex) => {
+          const departed = current.seats[seatIndex]
+          if (departed) delete entries[departed.userId]
+        })
         if (
           current.phase === 'playing'
           && current.activeSeat !== null
           && departedSeats.includes(current.activeSeat)
         ) {
-          return advanceTurn({ ...current, seats, players }, current.activeSeat)
+          return advanceTurn({ ...current, seats, entries, players }, current.activeSeat)
         }
-        return { ...current, seats, players, message: '退出プレイヤーのENTRYを解放' }
+        return { ...current, seats, entries, players, message: '退出プレイヤーの席を解放' }
       })
     }, 3000)
     return () => window.clearTimeout(timer)
@@ -607,8 +839,8 @@ export function BlackjackTable({
       <CasinoNpc
         position={[0, 0, -2.85]}
         color="#7c3aed"
-        name="ジャック"
-        role="GM・ディーラー"
+        name="ディーラー・ジャック"
+        role="公式ディーラー"
         accent={0xd96ccb}
         animation={
           state.phase === 'playing'
@@ -624,6 +856,20 @@ export function BlackjackTable({
       <CardShoe />
       <ChipStacks />
       <DealerCards state={state} />
+      <JapanesePanel
+        position={[3.75, 2.25, -1.65]}
+        rotation={[0, -0.28, 0]}
+        width={2.9}
+        height={1.85}
+        title="BJ 基本ルール"
+        lines={[
+          '着席無料・参加2枚',
+          'ディーラーは17以上を目指す',
+          '合計16以下では必ず1枚引く',
+          '通常2倍・BJ2.5倍・倍掛け可',
+        ]}
+        accent={0xd96ccb}
+      />
 
       {BLACKJACK_SEATS.map((seat, index) => (
         <CasinoSeat
@@ -636,7 +882,6 @@ export function BlackjackTable({
             && state.seats[index] === null
             && ready
             && !busy
-            && coins >= BET
           }
           occupied={state.seats[index] !== null}
           onSit={() => void joinTable(index)}
@@ -649,8 +894,11 @@ export function BlackjackTable({
           localSeat={localSeat}
           busy={busy}
           onStart={startRound}
+          onEnter={() => void enterRound()}
+          onCancelEntry={() => void cancelEntry()}
           onHit={hit}
           onStand={stand}
+          onDouble={() => void doubleDown()}
           onNext={prepareNext}
           onLeave={() => void leaveTable()}
         />

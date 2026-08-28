@@ -1,0 +1,33 @@
+version: 29
+status: implemented_local
+problem:
+  spawn_sightline: audit_copy_was_prominent_behind_reception
+  visual_impact: public_landscape_exposed_backoffice_information_architecture
+admin_deck:
+  center_before: [0, 7, -38]
+  center_after: [0, 7, -48]
+  rotation_y_degrees: 180
+  size: [18, 0.6, 11]
+  bounds_after: { x: [-9, 9], z: [-53.5, -42.5] }
+  gap_from_main_island_north_edge_m: 21.5
+  public_face: south
+  admin_face: north
+transit:
+  admin_destination_before: { position: [0, 7.8, -33.5], yaw: 180 }
+  admin_destination_after: { position: [0, 7.8, -52.5], yaw: 0 }
+  reception_return: { position: [0, 0.55, -9.3], yaw: 180 }
+public_facade:
+  title: 北極星 通信塔
+  subtitle: NORTH STAR SIGNAL TOWER
+  distant_size: [7.2, 2.25]
+  full_audit_board_visibility: within_9_5m_only
+  forbidden_copy: [監査, ADMIN, user_balance, coin_totals]
+  role: distant_pirate_village_landmark_and_audit_screen_occluder
+  silhouette: stepped_floating_signal_ship_hull
+qa:
+  required_views: [spawn-review, thumbnail, admin]
+  acceptance:
+    - no_audit_copy_readable_from_spawn
+    - no_dashboard_values_visible_from_spawn
+    - public_facade_reads_as_scenery_not_game_ui
+    - admin_dashboard_and_return_button_visible_after_transit

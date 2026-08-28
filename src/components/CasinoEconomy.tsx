@@ -22,6 +22,35 @@ import {
   receptionGrantFor,
   STARTING_COINS,
 } from '../game/economy'
+import {
+  applyCasinoPlayerEvent,
+  CASINO_PAYOUT_TOTAL_KEY,
+  CASINO_PLAYER_REGISTRY_KEY,
+  CASINO_PLAYER_STATS_KEY,
+  CASINO_REFUND_TOTAL_KEY,
+  CASINO_RELIEF_TOTAL_KEY,
+  CASINO_TRANSACTION_TOTAL_KEY,
+  CASINO_WAGERED_TOTAL_KEY,
+  classifyCasinoTransaction,
+  mergeCasinoPlayerRegistry,
+  parseCasinoPlayerStats,
+  type CasinoLedgerCategory,
+} from '../game/casinoLedger'
+import {
+  createExchangeTransactionId,
+  EXCHANGE_COIN_TOTAL_KEY,
+  EXCHANGE_COUNT_KEY,
+  EXCHANGE_LAST_RECEIPT_KEY,
+  EXCHANGE_PENDING_KEY,
+  EXCHANGE_RIF_TOTAL_KEY,
+  isPendingRifExchange,
+  minimumConvertibleRifAmount,
+  quoteRifExchange,
+  RIF_EXCHANGE_CONFIG,
+  type PendingRifExchange,
+  type RifExchangeReceipt,
+} from '../game/rifExchange'
+import { XRiftCurrency, XRiftCurrencyError } from '../integrations/rifcoin'
 import { getScreenProfile, screenCenter } from '../ui/responsive'
 
 type EconomySource = 'world-storage' | 'local-preview'
@@ -32,11 +61,33 @@ interface CasinoEconomyValue {
   busy: boolean
   notice: string
   source: EconomySource
+  rifBalance: number | null
+  rifReady: boolean
+  exchangeNotice: string
+  pendingExchangeAmount: number | null
   transact: (delta: number, reason: string) => Promise<number | null>
   claimRelief: () => Promise<number | null>
+  refreshRifBalance: () => Promise<number | null>
+  convertRifToCasino: (rifAmount: number) => Promise<number | null>
 }
 
 const CasinoEconomyContext = createContext<CasinoEconomyValue | null>(null)
+
+const rifCurrency = new XRiftCurrency({
+  apiBaseUrl: RIF_EXCHANGE_CONFIG.apiBaseUrl,
+  worldId: RIF_EXCHANGE_CONFIG.worldId,
+})
+const minimumExchangeRif = minimumConvertibleRifAmount() ?? RIF_EXCHANGE_CONFIG.minimumRif
+
+function exchangeErrorMessage(error: unknown): string {
+  if (!(error instanceof XRiftCurrencyError)) {
+    return '通信結果を確認できません。同じ金額で再試行してください'
+  }
+  if (error.code === 'INSUFFICIENT_BALANCE') return 'RIF残高が不足しています'
+  if (error.code === 'WORLD_DISABLED') return '現在このワールドからのRIF交換は停止中です'
+  if (error.code === 'INVALID_RESPONSE') return 'RIFCoinから不正な応答を受信しました'
+  return 'RIFCoinとの通信に失敗しました。同じ金額で再試行してください'
+}
 
 function isStorageUnavailable(error: unknown): boolean {
   if (error instanceof WorldStorageError) {
@@ -63,14 +114,50 @@ export function CasinoEconomyProvider({
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('コイン情報を読み込み中')
   const [source, setSource] = useState<EconomySource>('world-storage')
+  const [rifBalance, setRifBalance] = useState<number | null>(null)
+  const [rifReady, setRifReady] = useState(false)
+  const [exchangeNotice, setExchangeNotice] = useState('RIF残高を確認中')
+  const [pendingExchangeAmount, setPendingExchangeAmount] = useState<number | null>(null)
   const coinsRef = useRef(STARTING_COINS)
   const initializedRef = useRef(false)
   const operationRef = useRef(false)
+  const pendingExchangeRef = useRef<PendingRifExchange | null>(null)
 
   const commitCoins = useCallback((next: number) => {
     coinsRef.current = next
     setCoins(next)
   }, [])
+
+  const recordLedgerEvent = useCallback(async (
+    category: CasinoLedgerCategory,
+    amount: number,
+  ) => {
+    if (!localUser || localUser.isGuest || source !== 'world-storage') return
+    const sharedAmountKey = category === 'wager'
+      ? CASINO_WAGERED_TOTAL_KEY
+      : category === 'payout'
+        ? CASINO_PAYOUT_TOTAL_KEY
+        : category === 'refund'
+          ? CASINO_REFUND_TOTAL_KEY
+          : category === 'relief'
+            ? CASINO_RELIEF_TOTAL_KEY
+            : null
+    try {
+      const current = parseCasinoPlayerStats(await storage.player.get(CASINO_PLAYER_STATS_KEY))
+      const next = applyCasinoPlayerEvent(current, category, amount)
+      const writes: Array<Promise<unknown>> = [
+        storage.player.set(CASINO_PLAYER_STATS_KEY, next),
+        storage.shared.increment(CASINO_TRANSACTION_TOTAL_KEY, 1),
+      ]
+      if (sharedAmountKey) writes.push(storage.shared.increment(sharedAmountKey, Math.abs(amount)))
+      const results = await Promise.allSettled(writes)
+      if (results.some((result) => result.status === 'rejected')) {
+        console.warn('Casino circulation ledger was only partially updated.')
+      }
+    } catch (error) {
+      console.warn('Casino circulation ledger update failed.', error)
+    }
+  }, [localUser, source, storage])
 
   useEffect(() => {
     if (initializedRef.current) return
@@ -115,6 +202,81 @@ export function CasinoEconomyProvider({
     void initialize()
   }, [commitCoins, localUser?.isGuest, previewCoins, storage])
 
+  useEffect(() => {
+    if (!ready || !localUser || localUser.isGuest || source !== 'world-storage') return
+    let active = true
+    const register = async () => {
+      try {
+        const current = await storage.shared.get(CASINO_PLAYER_REGISTRY_KEY)
+        if (!active) return
+        const next = mergeCasinoPlayerRegistry(current, {
+          id: localUser.id,
+          name: localUser.displayName,
+        })
+        await storage.shared.set(CASINO_PLAYER_REGISTRY_KEY, next)
+      } catch (error) {
+        console.warn('Casino player registry update failed.', error)
+      }
+    }
+    void register()
+    const timer = window.setInterval(() => void register(), 60_000)
+    return () => {
+      active = false
+      window.clearInterval(timer)
+    }
+  }, [localUser, ready, source, storage])
+
+  const refreshRifBalance = useCallback(async (): Promise<number | null> => {
+    if (!localUser || localUser.isGuest || previewCoins !== undefined) {
+      setRifBalance(null)
+      setRifReady(true)
+      setExchangeNotice(previewCoins !== undefined
+        ? 'ローカル確認ではRIF交換を実行しません'
+        : 'RIF交換にはXRiftへのログインが必要です')
+      return null
+    }
+    try {
+      const next = await rifCurrency.getBalance(localUser.id)
+      setRifBalance(next)
+      setExchangeNotice('RIF残高を読み込みました')
+      return next
+    } catch (error) {
+      console.warn('RIFCoin balance refresh failed.', error)
+      setRifBalance(null)
+      setExchangeNotice('RIF残高を取得できません。盤面の更新を押してください')
+      return null
+    } finally {
+      setRifReady(true)
+    }
+  }, [localUser, previewCoins])
+
+  useEffect(() => {
+    pendingExchangeRef.current = null
+    setPendingExchangeAmount(null)
+    setRifReady(false)
+    void refreshRifBalance()
+
+    if (!localUser || localUser.isGuest || previewCoins !== undefined) return
+    let active = true
+    const restorePending = async () => {
+      try {
+        const saved = await storage.player.get(EXCHANGE_PENDING_KEY)
+        if (!active || !isPendingRifExchange(saved)) return
+        pendingExchangeRef.current = saved
+        setPendingExchangeAmount(saved.rifAmount)
+        setExchangeNotice(saved.stage === 'rif-paid'
+          ? `RIF決済済みです。${saved.rifAmount} RIFで反映を再試行してください`
+          : `未完了の${saved.rifAmount} RIF交換があります。同額で再試行してください`)
+      } catch (error) {
+        console.warn('Pending RIF exchange restore failed.', error)
+      }
+    }
+    void restorePending()
+    return () => {
+      active = false
+    }
+  }, [localUser, previewCoins, refreshRifBalance, storage])
+
   const transact = useCallback(async (delta: number, reason: string): Promise<number | null> => {
     if (!ready || operationRef.current || delta === 0) return null
     if (delta < 0 && coinsRef.current < Math.abs(delta)) {
@@ -139,6 +301,8 @@ export function CasinoEconomyProvider({
       }
 
       commitCoins(next)
+      const category = classifyCasinoTransaction(delta, reason)
+      if (category) await recordLedgerEvent(category, Math.abs(delta))
       setNotice(next === 0
         ? `${reason}・残高0枚です。GM受付へお越しください`
         : `${reason} ${delta > 0 ? '+' : ''}${delta}枚`)
@@ -151,19 +315,21 @@ export function CasinoEconomyProvider({
       operationRef.current = false
       setBusy(false)
     }
-  }, [commitCoins, ready, source, storage])
+  }, [commitCoins, ready, recordLedgerEvent, source, storage])
 
   const claimRelief = useCallback(async (): Promise<number | null> => {
     if (!ready || operationRef.current) return null
-    if (!canClaimRelief(coinsRef.current)) {
-      setNotice('受付コインは残高0枚のときに受け取れます')
+    if (!canClaimRelief(coinsRef.current, rifBalance, rifReady, minimumExchangeRif)) {
+      setNotice(rifReady && rifBalance !== null && rifBalance > 0
+        ? '先にRIF交換所を利用できます'
+        : '救済コインはゲームもRIF交換もできないときに受け取れます')
       return null
     }
 
     operationRef.current = true
     setBusy(true)
     try {
-      const grant = receptionGrantFor(coinsRef.current)
+      const grant = receptionGrantFor(coinsRef.current, rifBalance, rifReady, minimumExchangeRif)
       let next: number
       if (source === 'local-preview') {
         next = coinsRef.current + grant
@@ -185,6 +351,7 @@ export function CasinoEconomyProvider({
       }
 
       commitCoins(next)
+      await recordLedgerEvent('relief', grant)
       setNotice('GM受付で10枚受け取りました')
       return next
     } catch (error) {
@@ -195,11 +362,173 @@ export function CasinoEconomyProvider({
       operationRef.current = false
       setBusy(false)
     }
-  }, [commitCoins, ready, source, storage])
+  }, [commitCoins, ready, recordLedgerEvent, rifBalance, rifReady, source, storage])
+
+  const convertRifToCasino = useCallback(async (rifAmount: number): Promise<number | null> => {
+    const quote = quoteRifExchange(rifAmount)
+    if (!quote) {
+      setExchangeNotice(`交換額は${RIF_EXCHANGE_CONFIG.minimumRif}〜${RIF_EXCHANGE_CONFIG.maximumRif}の整数で指定してください`)
+      return null
+    }
+    if (!ready || !rifReady || operationRef.current) return null
+    if (!localUser || localUser.isGuest || source !== 'world-storage') {
+      setExchangeNotice('RIF交換はログイン済みの本番ワールドで利用できます')
+      return null
+    }
+    if (rifBalance === null) {
+      setExchangeNotice('先にRIF残高を更新してください')
+      return null
+    }
+    if (rifBalance < quote.rifAmount) {
+      setExchangeNotice(`RIF残高が${quote.rifAmount - rifBalance}不足しています`)
+      return null
+    }
+
+    const savedPending = pendingExchangeRef.current
+    if (savedPending && savedPending.rifAmount !== quote.rifAmount) {
+      setExchangeNotice(`未完了の${savedPending.rifAmount} RIF交換を同じ金額で再試行してください`)
+      return null
+    }
+
+    operationRef.current = true
+    setBusy(true)
+    let pending = savedPending
+    try {
+      if (!pending) {
+        pending = {
+          ...quote,
+          clientTransactionId: createExchangeTransactionId(localUser.id),
+          stage: 'created',
+          createdAt: new Date().toISOString(),
+        }
+        await storage.player.set(EXCHANGE_PENDING_KEY, pending)
+        pendingExchangeRef.current = pending
+        setPendingExchangeAmount(pending.rifAmount)
+      }
+
+      setExchangeNotice(`${quote.rifAmount} RIFを決済しています…`)
+      const result = await rifCurrency.pay({
+        userId: localUser.id,
+        amount: quote.rifAmount,
+        reason: 'casino_coin_exchange_in',
+        clientTransactionId: pending.clientTransactionId,
+        metadata: {
+          schemaVersion: 1,
+          direction: 'RIF_TO_CASINO',
+          rateVersion: quote.rateVersion,
+          rifUnits: RIF_EXCHANGE_CONFIG.rifUnits,
+          casinoCoinUnits: RIF_EXCHANGE_CONFIG.casinoCoinUnits,
+          rifAmount: quote.rifAmount,
+          casinoCoinAmount: quote.casinoCoinAmount,
+        },
+      })
+      if (result.amount !== -quote.rifAmount) {
+        throw new XRiftCurrencyError('INVALID_RESPONSE', 'RIFCoin amount mismatch', 200)
+      }
+
+      pending = {
+        ...pending,
+        stage: 'rif-paid',
+        rifTransactionId: result.transactionId,
+      }
+      await storage.player.set(EXCHANGE_PENDING_KEY, pending)
+      pendingExchangeRef.current = pending
+
+      const previousReceipt = await storage.player.get(EXCHANGE_LAST_RECEIPT_KEY)
+      if (typeof previousReceipt === 'object'
+        && previousReceipt !== null
+        && 'rifTransactionId' in previousReceipt
+        && previousReceipt.rifTransactionId === result.transactionId) {
+        setRifBalance(result.balance)
+        await storage.player.delete(EXCHANGE_PENDING_KEY)
+        pendingExchangeRef.current = null
+        setPendingExchangeAmount(null)
+        setExchangeNotice('この交換はすでにカジノコインへ反映済みです')
+        return coinsRef.current
+      }
+
+      const next = await storage.player.increment(COIN_KEY, quote.casinoCoinAmount)
+      const receipt: RifExchangeReceipt = {
+        ...quote,
+        clientTransactionId: pending.clientTransactionId,
+        rifTransactionId: result.transactionId,
+        completedAt: new Date().toISOString(),
+        rifBalanceAfter: result.balance,
+        casinoBalanceAfter: next,
+      }
+      await storage.player.set(EXCHANGE_LAST_RECEIPT_KEY, receipt)
+      await storage.player.delete(EXCHANGE_PENDING_KEY)
+
+      commitCoins(next)
+      await recordLedgerEvent('rif-exchange', quote.casinoCoinAmount)
+      setRifBalance(result.balance)
+      pendingExchangeRef.current = null
+      setPendingExchangeAmount(null)
+      setNotice(`RIF交換 +${quote.casinoCoinAmount}枚`)
+      setExchangeNotice(`${quote.rifAmount} RIFを${quote.casinoCoinAmount}枚へ交換しました`)
+
+      void Promise.allSettled([
+        storage.shared.increment(EXCHANGE_RIF_TOTAL_KEY, quote.rifAmount),
+        storage.shared.increment(EXCHANGE_COIN_TOTAL_KEY, quote.casinoCoinAmount),
+        storage.shared.increment(EXCHANGE_COUNT_KEY, 1),
+      ]).then((results) => {
+        if (results.some((resultItem) => resultItem.status === 'rejected')) {
+          console.warn('Best-effort casino circulation counters were not fully updated.')
+        }
+      })
+      return next
+    } catch (error) {
+      console.error('RIF to casino coin exchange failed.', error)
+      if (error instanceof XRiftCurrencyError && error.balance !== undefined) {
+        setRifBalance(error.balance)
+      }
+      if (error instanceof XRiftCurrencyError
+        && (error.code === 'INSUFFICIENT_BALANCE' || error.code === 'WORLD_DISABLED')) {
+        await storage.player.delete(EXCHANGE_PENDING_KEY).catch(() => undefined)
+        pendingExchangeRef.current = null
+        setPendingExchangeAmount(null)
+      }
+      setExchangeNotice(pending?.stage === 'rif-paid'
+        ? 'RIF決済は完了しています。同じ金額でカジノコイン反映を再試行してください'
+        : exchangeErrorMessage(error))
+      return null
+    } finally {
+      operationRef.current = false
+      setBusy(false)
+    }
+  }, [commitCoins, localUser, ready, recordLedgerEvent, rifBalance, rifReady, source, storage])
 
   const value = useMemo(
-    () => ({ coins, ready, busy, notice, source, transact, claimRelief }),
-    [busy, claimRelief, coins, notice, ready, source, transact],
+    () => ({
+      coins,
+      ready,
+      busy,
+      notice,
+      source,
+      rifBalance,
+      rifReady,
+      exchangeNotice,
+      pendingExchangeAmount,
+      transact,
+      claimRelief,
+      refreshRifBalance,
+      convertRifToCasino,
+    }),
+    [
+      busy,
+      claimRelief,
+      coins,
+      convertRifToCasino,
+      exchangeNotice,
+      notice,
+      pendingExchangeAmount,
+      ready,
+      refreshRifBalance,
+      rifBalance,
+      rifReady,
+      source,
+      transact,
+    ],
   )
 
   return <CasinoEconomyContext.Provider value={value}>{children}</CasinoEconomyContext.Provider>

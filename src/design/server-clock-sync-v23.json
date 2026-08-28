@@ -1,0 +1,35 @@
+{
+  "version": 23,
+  "status": "implemented-local-verification-complete-live-multiclient-pending",
+  "dependency": {
+    "package": "@xrift/world-components",
+    "version": "0.47.0",
+    "hook": "useServerClock",
+    "require": "motion",
+    "targetUncertaintyMs": 100
+  },
+  "authority": {
+    "roundStateAndResult": "useInstanceState",
+    "animationEpoch": "useServerClock.now",
+    "payout": "shared resultIndex plus player bet",
+    "fairOutcomeByClientClock": false
+  },
+  "fateWheel": {
+    "sessionKey": "casino.fate-wheel.round.v4",
+    "synchronized": ["start epoch", "countdown", "preview phase", "wheel angle", "spin sound", "settlement deadline", "result hold"]
+  },
+  "monsterDerby": {
+    "sessionKey": "casino.pirate-monster-derby.round.v4",
+    "synchronized": ["start epoch", "introductions", "countdown", "race progress", "bob", "tilt", "model animation", "race sound", "live order", "settlement deadline", "result hold"]
+  },
+  "commonCoinBoundary": {
+    "clockMayDrive": ["quote expiry display", "campaign countdown", "shared celebration animation"],
+    "clockMustNotDecide": ["balance", "transaction ordering", "idempotency", "exchange completion", "transfer conflicts"]
+  },
+  "verification": {
+    "typecheck": "pass",
+    "tests": {"status": "pass", "count": 24},
+    "build": "pass",
+    "liveMultiClient": "pending"
+  }
+}

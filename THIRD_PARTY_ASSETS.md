@@ -27,3 +27,25 @@ Selected files:
 
 The source repository uses Git LFS. These local files are verified asset
 contents downloaded from GitHub's LFS media endpoint, not pointer files.
+
+## RIFCoin developer kit
+
+- Source: https://github.com/N-JELLY/RIFCoin-dev
+- Reviewed commit: `86c5bbdeb0e806deaa0fb5e9a020ef45e6a6287e`
+- Local integration: `src/integrations/rifcoin.ts`
+- Purpose: public TypeScript client contract for balance reads and one-way RIFCoin payments
+- Trust boundary: upstream v0.1 is intentionally unauthenticated and trusts client-supplied `userId` and `worldId`
+## Generated animal emblem atlas
+
+- Files: `public/design/animal-emblem-atlas-source-v31.png`, `public/design/animal-emblem-atlas-v31.png`
+- Created: 2026-08-28 with OpenAI built-in image generation for this XRift world
+- Purpose: shared 12-animal pixel-art icon system for the planned dice and Animal Jara facilities
+- Runtime edit: nearest-neighbor resize from 1448x1086 to 768x576; no third-party source artwork used
+
+## M PLUS 1p Japanese UI font
+
+- Source: https://github.com/google/fonts/tree/main/ofl/mplus1p
+- License: SIL Open Font License 1.1
+- Local files: `public/fonts/MPLUS1p-Regular.ttf`, `public/fonts/MPLUS1p-OFL.txt`
+- SHA-256: `2f294ad496432b1608f070d310e3aa2adcf1de4af429f4901df97ec4bd361ed1`
+- Purpose: readable Japanese text for shared 3D panels, buttons, and Animal Jara tiles

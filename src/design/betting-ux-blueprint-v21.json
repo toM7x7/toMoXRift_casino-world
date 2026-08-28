@@ -1,0 +1,85 @@
+{
+  "version": 21,
+  "status": "design-review-before-implementation",
+  "sourceCaptures": [
+    "docs/screenshots/local-v20-expansion-2026-08-15.png",
+    "docs/screenshots/local-v20-fate-wheel-2026-08-15.png",
+    "docs/screenshots/local-v20-derby-vote-2026-08-15.png",
+    "docs/screenshots/local-v20-derby-deck-2026-08-15.png"
+  ],
+  "interactionContract": {
+    "primaryInput": "XRift center ray",
+    "minimumTargetMeters": [1.3, 0.65],
+    "minimumLabelHeightMeters": 0.18,
+    "maximumRequiredDownwardAimDegrees": 38,
+    "statesMustNotRelyOnColorOnly": true,
+    "stateSignals": ["outline", "check mark", "label", "light", "sound"],
+    "oneSurfaceOneRole": true
+  },
+  "fateWheel": {
+    "footprintMeters": [12, 10],
+    "wheel": {
+      "diameterMeters": 6.2,
+      "centerLocal": [0, 3.9, -2.2],
+      "clearSightCorridorMeters": 3.2
+    },
+    "choiceWings": {
+      "count": 2,
+      "centersLocal": [[-4.65, 1.95, -1.2], [4.65, 1.95, -1.2]],
+      "yawDegrees": [18, -18],
+      "choicesPerWing": 4,
+      "targetMeters": [1.55, 0.68],
+      "shows": ["number", "color name", "aggregate coins", "local selection"]
+    },
+    "actionRails": {
+      "left": {"centerLocal": [-2.35, 0.82, 3.85], "sizeMeters": [3.6, 0.88], "actions": [1, 3, 5]},
+      "right": {"centerLocal": [2.55, 0.82, 3.85], "sizeMeters": [3.8, 0.88], "actions": ["confirm", "start"]},
+      "surfaceTiltDegrees": 25,
+      "centerGapMeters": 1.1
+    },
+    "standingLineZ": 4.75,
+    "timingMs": {"lockedPreview": 5000, "spin": 5200, "result": 6500}
+  },
+  "monsterDerby": {
+    "votingFootprintMeters": [12, 10],
+    "miniaturePedestals": {
+      "count": 4,
+      "centersX": [-3.55, -1.18, 1.18, 3.55],
+      "z": -0.55,
+      "baseMeters": [1.9, 1.55],
+      "wholePedestalIsTarget": true
+    },
+    "participantRoster": {
+      "type": "non-interactive board",
+      "centerLocal": [0, 2.35, -4.35],
+      "sizeMeters": [6.2, 1.7],
+      "slots": 8
+    },
+    "actionRails": {
+      "leftActions": [1, 3, 5],
+      "rightActions": ["issue ticket", "start presentation"],
+      "z": 4.05,
+      "surfaceTiltDegrees": 25
+    },
+    "observationDeck": {
+      "footprintMeters": [8, 18],
+      "visibleRailTopMeters": 0.95,
+      "kickRailMeters": 0.25,
+      "statusBoardPosition": "front-left outside race sight corridor",
+      "racerScale": 0.052
+    },
+    "timingMs": {"introductions": 7000, "countdown": 3000, "race": 18000, "result": 8000}
+  },
+  "tts": {
+    "designDecision": "adapter with progressive enhancement",
+    "preferredFirstProbe": "browser SpeechSynthesis API",
+    "fallback": "pre-generated local announcer clips",
+    "externalTts": "optional cached server endpoint",
+    "requirements": ["user gesture unlock", "ja-JP voice detection", "queue cancellation", "duplicate round token guard", "caption always visible"]
+  },
+  "bgm": {
+    "status": "user will source a free track",
+    "currentFileRole": "temporary placeholder",
+    "acceptance": ["commercial-use license recorded", "loop-safe edit", "attribution recorded when required", "voice ducking during announcements"]
+  }
+}

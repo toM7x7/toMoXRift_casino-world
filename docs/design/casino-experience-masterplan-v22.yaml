@@ -1,0 +1,112 @@
+version: 22
+status: design_and_audit_complete_before_runtime_implementation
+
+experience_pillars:
+  - fair_play
+  - visible_progress
+  - shared_world_growth
+  - spectator_fun
+  - no_pay_to_win
+
+fate_wheel:
+  current_audit:
+    eye_height_m: 1.6
+    fov_deg: 75
+    positions: 8
+    unconditional_pass: 0
+    verdicts: [FAIL, FAIL, WARN, CONDITIONAL, FAIL, FAIL, WARN, CONDITIONAL]
+    evidence: docs/screenshots/audit-v22-fate-8-view-contact-sheet.png
+  v22_geometry:
+    deck_m: [14, 14]
+    wheel_center_local: [0, 3.9, -3.0]
+    wheel_diameter_m: 6.2
+    kiosk_radius_m: 7.0
+    kiosk_angles_deg: [-42, -30, -18, -6, 6, 18, 30, 42]
+    kiosk_xz:
+      - [-4.684, 2.202]
+      - [-3.500, 3.062]
+      - [-2.163, 3.657]
+      - [-0.732, 3.962]
+      - [0.732, 3.962]
+      - [2.163, 3.657]
+      - [3.500, 3.062]
+      - [4.684, 2.202]
+    eye_radius_m: 8.2
+    eye_y_m: 1.6
+    kiosk_max_height_m: 0.85
+    support_max_z: -2.55
+    button_size_m: [1.3, 0.65]
+  acceptance:
+    wheel_outline_visible_percent_min: 100
+    safe_margin_deg_min: 6
+    off_normal_deg_max: 45
+    wheel_viewport_height_percent_min: 35
+    pointer_and_hub_visible: true
+    capture_fov_deg: 60
+    player_spacing_m_min: 1.5
+    escape_lane_m_min: 1.5
+    color_only_forbidden: true
+
+economy:
+  layers:
+    external_common_coin: external_server_authority
+    casino_coin: internal_play_and_sinks
+    reputation_and_achievements: non_purchasable_progress
+  initial_exchange:
+    direction: common_coin_to_casino_coin_only
+    reverse_exchange: deferred
+    player_transfer: deferred
+    fee_candidate_percent: [1, 3]
+    formula: floor(common_minor_units * rate) - fee
+    states: [quote, debit_pending, debit_confirmed, credit_pending, completed]
+    required_fields: [user_id, world_id, transaction_id, idempotency_key, rate_version, expires_at]
+  authority_boundary:
+    world_storage: [display_cache, achievements, cosmetic_unlocks, construction_state]
+    external_server: [common_balance, debit_receipts, idempotency, reconciliation]
+    forbidden_in_client: [secret_key, admin_token]
+
+progression:
+  ranks: [見習い, 船員, 航海士, 船長]
+  rank_source: achievement_breadth_not_balance
+  core_systems:
+    - 航海手帳
+    - 柄コレクション
+    - 共同建設
+    - 航海契約
+    - 船長サロン
+  construction_stages: [更地, 基礎, 骨組み, 正式開業]
+  sinks_priority:
+    - 共同建設基金
+    - 花火・応援・ジュークボックス
+    - 柄・旗・勝利演出
+    - 大会参加料
+    - 船長サロン入場料
+    - 交換手数料
+  prohibited_advantages: [win_rate_boost, payout_boost, fee_discount_by_item, paid_reroll]
+
+item_link:
+  first_scope: ownership_gated_cosmetics
+  examples: [seat_flag, bet_ticket_pattern, card_back, tile_back, entrance_effect, trophy_display]
+  deferred: [consumable_item, economic_bonus, external_item_payout]
+
+bgm:
+  direction: bright_pirate_carnival_electro_swing
+  bpm: [116, 124]
+  harmony: [major, mixolydian]
+  instruments: [brass, clarinet, marimba, upright_bass, light_drums, handclaps]
+  loop_seconds: [90, 180]
+  avoid: [vocals, low_drone, ominous_minor, dense_arrangement]
+  tts_ducking_db: -8
+  duck_attack_ms: [100, 150]
+  duck_release_ms: [350, 500]
+  license_checks: [commercial_game_use, edit_and_loop, game_cdn_embedding, attribution, content_id]
+
+release_phases:
+  - sightline_and_audio
+  - voyage_log_and_cosmetics
+  - community_construction
+  - exchange_adapter_and_mock
+  - sandbox_one_way_exchange
+  - captains_salon_and_tournaments
+  - item_ownership_link
+  - legal_and_abuse_review_for_reverse_exchange_and_transfer

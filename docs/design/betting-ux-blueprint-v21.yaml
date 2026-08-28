@@ -1,0 +1,74 @@
+version: 21
+status: design-review-before-implementation
+rule: "観戦対象・選択・確定・進行表示を別の面に分ける"
+
+interaction:
+  input: xrift_center_ray
+  minimum_target_m: [1.3, 0.65]
+  minimum_text_height_m: 0.18
+  max_downward_aim_deg: 38
+  selected_state: [outline, check, label, light, sound]
+  color_only_state: forbidden
+
+fate_wheel:
+  footprint_m: [12, 10]
+  wheel:
+    diameter_m: 6.2
+    center_local: [0, 3.9, -2.2]
+    clear_center_corridor_m: 3.2
+  choice_wings:
+    left_center: [-4.65, 1.95, -1.2]
+    right_center: [4.65, 1.95, -1.2]
+    yaw_deg: [18, -18]
+    buttons_each: 4
+    button_m: [1.55, 0.68]
+  action_rails:
+    left: [coin_1, coin_3, coin_5]
+    right: [confirm, start]
+    z: 3.85
+    height_m: 0.82
+    tilt_deg: 25
+  standing_line_z: 4.75
+  timing_ms: {preview: 5000, spin: 5200, result: 6500}
+
+monster_derby:
+  voting_footprint_m: [12, 10]
+  miniature_pedestals:
+    count: 4
+    x: [-3.55, -1.18, 1.18, 3.55]
+    z: -0.55
+    base_m: [1.9, 1.55]
+    whole_object_is_target: true
+  participant_roster:
+    interaction: none
+    center_local: [0, 2.35, -4.35]
+    size_m: [6.2, 1.7]
+    slots: 8
+  action_rails:
+    left: [coin_1, coin_3, coin_5]
+    right: [issue_ticket, start_presentation]
+    z: 4.05
+    tilt_deg: 25
+  deck:
+    rail_top_m: 0.95
+    kick_rail_m: 0.25
+    status_board: front_left_outside_sight_corridor
+    racer_scale: 0.052
+  timing_ms: {introductions: 7000, countdown: 3000, race: 18000, result: 8000}
+
+tts:
+  architecture: progressive_adapter
+  first_probe: browser_speech_synthesis
+  fallback: local_prerecorded_clips
+  external_option: cached_server_tts
+  mandatory:
+    - user_gesture_unlock
+    - ja_JP_voice_detection
+    - cancel_old_queue
+    - prevent_duplicate_round_readout
+    - captions_always_visible
+
+bgm:
+  current: temporary_placeholder
+  next: user_supplied_free_track
+  checks: [license, attribution, seamless_loop, announcement_ducking]

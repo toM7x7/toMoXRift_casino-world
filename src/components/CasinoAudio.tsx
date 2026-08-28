@@ -13,7 +13,7 @@ import {
 import type { PositionalAudio as ThreePositionalAudio } from 'three'
 import { CasinoButton } from './CasinoPrimitives'
 
-export type CasinoSound = 'select' | 'bet' | 'wheel' | 'race' | 'win' | 'lose'
+export type CasinoSound = 'select' | 'bet' | 'countdown' | 'wheel' | 'race' | 'win' | 'lose'
 
 interface CasinoAudioValue {
   musicEnabled: boolean
@@ -40,6 +40,7 @@ export function CasinoAudioProvider({ children }: { children: ReactNode }) {
   const musicRef = useRef<ThreePositionalAudio>(null)
   const selectRef = useRef<ThreePositionalAudio>(null)
   const betRef = useRef<ThreePositionalAudio>(null)
+  const countdownRef = useRef<ThreePositionalAudio>(null)
   const wheelRef = useRef<ThreePositionalAudio>(null)
   const raceRef = useRef<ThreePositionalAudio>(null)
   const winRef = useRef<ThreePositionalAudio>(null)
@@ -58,6 +59,7 @@ export function CasinoAudioProvider({ children }: { children: ReactNode }) {
     const refs: Record<CasinoSound, React.RefObject<ThreePositionalAudio | null>> = {
       select: selectRef,
       bet: betRef,
+      countdown: countdownRef,
       wheel: wheelRef,
       race: raceRef,
       win: winRef,
@@ -94,6 +96,7 @@ export function CasinoAudioProvider({ children }: { children: ReactNode }) {
           <PositionalAudio ref={(audio) => { musicRef.current = audio; audio?.setVolume(0.12) }} url={`${baseUrl}casino-bgm.wav`} distance={150} loop />
           <PositionalAudio ref={(audio) => { selectRef.current = audio; audio?.setVolume(0.28) }} url={`${baseUrl}sfx-select.wav`} distance={150} loop={false} />
           <PositionalAudio ref={(audio) => { betRef.current = audio; audio?.setVolume(0.34) }} url={`${baseUrl}sfx-bet.wav`} distance={150} loop={false} />
+          <PositionalAudio ref={(audio) => { countdownRef.current = audio; audio?.setVolume(0.38) }} url={`${baseUrl}sfx-countdown.wav`} distance={150} loop={false} />
           <PositionalAudio ref={(audio) => { wheelRef.current = audio; audio?.setVolume(0.34) }} url={`${baseUrl}sfx-wheel-spin.wav`} distance={150} loop={false} />
           <PositionalAudio ref={(audio) => { raceRef.current = audio; audio?.setVolume(0.36) }} url={`${baseUrl}sfx-race-start.wav`} distance={150} loop={false} />
           <PositionalAudio ref={(audio) => { winRef.current = audio; audio?.setVolume(0.38) }} url={`${baseUrl}sfx-win.wav`} distance={150} loop={false} />

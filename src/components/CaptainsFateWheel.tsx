@@ -1,3 +1,4 @@
+import { Text } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { RigidBody } from '@react-three/rapier'
 import { useInstanceState, useServerClock, useUsers } from '@xrift/world-components'
@@ -7,18 +8,19 @@ import {
   canJoinRound,
   CASINO_BET_OPTIONS,
   choiceBetTotals,
+  countdownSeconds,
   seededResult,
   synchronizedWheelAngle,
   type CasinoRoundBet,
 } from '../game/casinoRounds'
+import { balancedExactChoiceReturn } from '../game/casinoBalance'
 import { useCasinoAudio } from './CasinoAudio'
 import {
-  BettingConsole,
-  BetReceipt,
-  BetTargetPad,
-  ChipStakePile,
-  TableActionPad,
-} from './BettingTablePrimitives'
+  GroundActionPad,
+  GroundChoicePad,
+  GroundStakePad,
+} from './GroundBettingPrimitives'
+import { JapanesePanel } from './CasinoPrimitives'
 import { useCasinoEconomy } from './CasinoEconomy'
 import {
   roundIsComplete,
@@ -32,8 +34,12 @@ type Vec3 = [number, number, number]
 
 interface FateWheelState extends FormalCasinoRoundState {}
 
-const SESSION_KEY = 'casino.fate-wheel.round.v3'
-const SYNCHRONIZED_START_DELAY_MS = 1500
+const SESSION_KEY = 'casino.fate-wheel.round.v4'
+const COUNTDOWN_MS = 5000
+const RESULT_HOLD_MS = 6500
+const WHEEL_GROUND_Z = -2.2
+const FATE_KIOSK_RADIUS = 5.8
+const FATE_KIOSK_ANGLES = [-42, -30, -18, -6, 6, 18, 30, 42].map((degrees) => degrees * Math.PI / 180)
 const EMPTY_STATE: FateWheelState = {
   roundId: 1,
   phase: 'betting',
@@ -54,7 +60,17 @@ const SECTORS = [
   { color: '#d7ad42', label: '金' },
 ]
 
-function FateWheelFace({ state, serverNow }: { state: FateWheelState; serverNow: () => number }) {
+function FateWheelFace({
+  state,
+  now,
+  complete,
+  serverNow,
+}: {
+  state: FateWheelState
+  now: number
+  complete: boolean
+  serverNow: () => number
+}) {
   const wheelRef = useRef<Group>(null)
 
   useFrame(() => {
@@ -71,12 +87,18 @@ function FateWheelFace({ state, serverNow }: { state: FateWheelState; serverNow:
 
   return (
     <group ref={wheelRef}>
-      {SECTORS.map((sector, index) => (
+      {SECTORS.map((sector, index) => {
+        const previewIndex = state.phase === 'running' && now < state.startedAt
+          ? Math.floor(now / 240) % SECTORS.length
+          : -1
+        const highlighted = previewIndex === index || (complete && state.resultIndex === index)
+        return (
         <mesh key={sector.label} position={[0, 0, index * 0.001]} castShadow>
           <ringGeometry args={[0.24, 3.1, 4, 1, index * (Math.PI / 4), Math.PI / 4]} />
-          <meshStandardMaterial color={sector.color} roughness={0.7} metalness={0.04} />
+          <meshStandardMaterial color={sector.color} emissive={sector.color} emissiveIntensity={highlighted ? 0.62 : 0.04} roughness={0.7} metalness={0.04} />
         </mesh>
-      ))}
+        )
+      })}
       {SECTORS.map((sector, index) => (
         <group key={`spoke-${sector.label}`} rotation={[0, 0, index * (Math.PI / 4)]}>
           <mesh position={[1.55, 0, 0.08]}>
@@ -110,25 +132,58 @@ export function CaptainsFateWheel({ position }: { position: Vec3 }) {
   const playerCount = Object.keys(state.bets).length
   const betTotals = choiceBetTotals(state.bets, SECTORS.length)
   const localBet = localUser ? state.bets[localUser.id] : undefined
-  const heardRoundRef = useRef('')
+  const audioPlayedRef = useRef(new Set<string>())
+  const countdown = state.phase === 'running' ? countdownSeconds(state.startedAt, now) : 0
+  const selectedReturn = balancedExactChoiceReturn(
+    'fate',
+    localBet?.amount ?? betAmount,
+    localBet?.choice ?? selectedColor,
+    localBet?.choice ?? selectedColor,
+  )
 
   useCasinoRoundSettlement({
     game: 'fate',
     state,
     choiceCount: SECTORS.length,
     winReason: '運命盤的中',
+    fixedPayout: localBet
+      ? balancedExactChoiceReturn('fate', localBet.amount, localBet.choice, state.resultIndex)
+      : 0,
   })
 
   useEffect(() => {
     if (state.phase !== 'running' || state.startedAt <= 0) return
     const token = `${state.roundId}:${state.startedAt}`
-    if (heardRoundRef.current === token) return
-    return scheduleAtServerTime(state.startedAt, clock.now, () => {
-      if (heardRoundRef.current === token) return
-      heardRoundRef.current = token
-      play('wheel')
-    })
+    const cancel: Array<() => void> = []
+    const countdownAt = state.startedAt - 3000
+    const countdownToken = `${token}:countdown`
+    if (clock.now() <= countdownAt + 250 && !audioPlayedRef.current.has(countdownToken)) {
+      cancel.push(scheduleAtServerTime(countdownAt, clock.now, () => {
+        if (audioPlayedRef.current.has(countdownToken)) return
+        audioPlayedRef.current.add(countdownToken)
+        play('countdown')
+      }))
+    }
+    const wheelToken = `${token}:wheel`
+    if (clock.now() <= state.startedAt + 250 && !audioPlayedRef.current.has(wheelToken)) {
+      cancel.push(scheduleAtServerTime(state.startedAt, clock.now, () => {
+        if (audioPlayedRef.current.has(wheelToken)) return
+        audioPlayedRef.current.add(wheelToken)
+        play('wheel')
+      }))
+    }
+    return () => cancel.forEach((stop) => stop())
   }, [clock.now, clock.timeJumpCount, play, state.phase, state.roundId, state.startedAt])
+
+  useEffect(() => {
+    if (state.phase !== 'running' || state.startedAt <= 0) return
+    const roundId = state.roundId
+    return scheduleAtServerTime(state.startedAt + state.durationMs + RESULT_HOLD_MS, clock.now, () => {
+      setState((previous) => previous.roundId === roundId && roundIsComplete(previous, clock.now())
+        ? { ...EMPTY_STATE, roundId: roundId + 1 }
+        : previous)
+    })
+  }, [clock.now, clock.timeJumpCount, setState, state.durationMs, state.phase, state.roundId, state.startedAt])
 
   const selectColor = (index: number) => {
     if (state.phase !== 'betting' || localBet) return
@@ -163,7 +218,7 @@ export function CaptainsFateWheel({ position }: { position: Vec3 }) {
       return
     }
     if (state.phase !== 'betting' || playerCount === 0) return
-    const startedAt = clock.now() + SYNCHRONIZED_START_DELAY_MS
+    const startedAt = clock.now() + COUNTDOWN_MS
     setState({
       ...state,
       phase: 'running',
@@ -175,27 +230,31 @@ export function CaptainsFateWheel({ position }: { position: Vec3 }) {
   const receiptMain = complete
     ? `結果 ${SECTORS[state.resultIndex].label}`
     : localBet
-      ? `${SECTORS[localBet.choice].label}に ${localBet.amount}枚`
-      : `${SECTORS[selectedColor].label}に ${betAmount}枚（仮置き）`
-  const receiptDetail = localBet
-    ? `BET確定済み・第${state.roundId}回・参加${playerCount}/8人`
-    : `色枠とチップ山を触って選択・的中時×8`
+      ? `${SECTORS[localBet.choice].label}に ${localBet.amount}枚・的中${selectedReturn}枚`
+      : `${SECTORS[selectedColor].label}に ${betAmount}枚（的中${selectedReturn}枚）`
+  const statusLines = complete
+    ? [`結果：${SECTORS[state.resultIndex].label}　払戻確認中`, `${Math.ceil(RESULT_HOLD_MS / 1000)}秒後に受付へ自動復帰`]
+    : countdown > 0
+      ? [`注目！ 抽選まで ${countdown}`, 'BET締切・円盤のライト演出中']
+      : state.phase === 'running'
+        ? ['正式抽選中', '白い針が止まった色が当たり']
+        : [`受付中 ${playerCount}/8人・色 → 枚数 → BET確定`, receiptMain]
 
   return (
     <group position={position}>
       <RigidBody type="fixed" colliders="cuboid" restitution={0} friction={0.92}>
         <mesh position={[0, 0.05, 0]} receiveShadow>
-          <boxGeometry args={[12, 0.1, 10]} />
+          <boxGeometry args={[12, 0.1, 13]} />
           <meshStandardMaterial color="#3c3025" roughness={0.96} />
         </mesh>
         <mesh position={[0, 0.11, 0]} receiveShadow>
-          <boxGeometry args={[11.5, 0.04, 9.5]} />
+          <boxGeometry args={[11.5, 0.04, 12.5]} />
           <meshStandardMaterial color="#74455d" roughness={0.9} />
         </mesh>
       </RigidBody>
 
-      <group position={[0, 3.9, -2.2]}>
-        <FateWheelFace state={state} serverNow={clock.now} />
+      <group position={[0, 3.9, WHEEL_GROUND_Z]}>
+        <FateWheelFace state={state} now={now} complete={complete} serverNow={clock.now} />
         <mesh position={[-3.65, -1.25, -0.22]} castShadow>
           <boxGeometry args={[0.46, 5.8, 0.7]} />
           <meshStandardMaterial color="#493526" roughness={0.88} />
@@ -213,73 +272,67 @@ export function CaptainsFateWheel({ position }: { position: Vec3 }) {
           <meshStandardMaterial color="#fff7e6" emissive="#f6c453" emissiveIntensity={0.32} />
         </mesh>
       </group>
+      <JapanesePanel position={[0, 8.05, -2.25]} width={6.8} height={1.28} title="船長の運命盤" lines={statusLines} accent={0xf6c453} background={0x172033} />
 
-      <BettingConsole
-        position={[0, 1.8, 3.25]}
-        width={7.2}
-        height={4.5}
-        accent="#f6c453"
-        title="船長の運命盤 BET卓　色別の合計チップ"
-      >
-        {SECTORS.map((sector, index) => {
-          const column = index % 4
-          const row = Math.floor(index / 4)
-          return (
-            <BetTargetPad
-              key={sector.label}
-              id={`fate-color-${index}`}
-              position={[-2.45 + column * 1.63, 0.82 - row * 0.72, 0.22]}
-              label={`${index + 1} ${sector.label}`}
-              total={betTotals[index]}
-              color={sector.color}
-              textColor={index === 1 || index === 7 ? '#172033' : '#fff7e6'}
-              selected={selectedColor === index || localBet?.choice === index}
-              enabled={state.phase === 'betting' && !localBet}
-              width={1.42}
-              onSelect={() => selectColor(index)}
-            />
-          )
-        })}
-        {CASINO_BET_OPTIONS.map((amount, index) => (
-          <ChipStakePile
-            key={`fate-bet-${amount}`}
-            id={`fate-bet-amount-${amount}`}
-            position={[-1.2 + index * 1.2, -0.82, 0.22]}
-            amount={amount}
-            selected={betAmount === amount}
+      {SECTORS.map((sector, index) => {
+        const angle = FATE_KIOSK_ANGLES[index]
+        return (
+          <GroundChoicePad
+            key={sector.label}
+            id={`fate-color-${index}`}
+            position={[
+              Math.sin(angle) * FATE_KIOSK_RADIUS,
+              0.08,
+              WHEEL_GROUND_Z + Math.cos(angle) * FATE_KIOSK_RADIUS,
+            ]}
+            label={`${index + 1} ${sector.label}`}
+            detail={`合計 ${betTotals[index]}枚`}
+            color={sector.color}
+            textColor={index === 1 || index === 7 ? '#172033' : '#fff7e6'}
+            selected={selectedColor === index || localBet?.choice === index}
             enabled={state.phase === 'betting' && !localBet}
-            onSelect={() => {
-              setBetAmount(amount)
-              play('select')
-            }}
+            width={1.05}
+            depth={0.95}
+            onSelect={() => selectColor(index)}
           />
-        ))}
-        <BetReceipt
-          position={[-1.7, -1.62, 0.22]}
-          title="あなたのBET札"
-          main={receiptMain}
-          detail={receiptDetail}
-          accent={localBet ? SECTORS[localBet.choice].color : SECTORS[selectedColor].color}
+        )
+      })}
+
+      <Text position={[0, 0.2, 4.12]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.2} color="#fff1b8" anchorX="center">
+        STEP 2　掛け金を選ぶ
+      </Text>
+      {CASINO_BET_OPTIONS.map((amount, index) => (
+        <GroundStakePad
+          key={`fate-bet-${amount}`}
+          id={`fate-bet-amount-${amount}`}
+          position={[-4 + index * 1.25, 0.08, 4.8]}
+          amount={amount}
+          selected={betAmount === amount}
+          enabled={state.phase === 'betting' && !localBet}
+          onSelect={() => {
+            setBetAmount(amount)
+            play('select')
+          }}
         />
-        <TableActionPad
-          id="fate-confirm-bet"
-          label={localBet ? 'BET済み' : 'チップを置く'}
-          detail={localBet ? `${localBet.amount}枚 確定` : `${SECTORS[selectedColor].label}・${betAmount}枚`}
-          position={[0.72, -1.62, 0.22]}
-          color="#9a4d7b"
-          enabled={ready && !busy && state.phase === 'betting' && !localBet && coins >= betAmount && playerCount < 8}
-          onPress={() => void placeBet()}
-        />
-        <TableActionPad
-          id="fate-round-control"
-          label={complete ? '次の受付' : state.phase === 'running' ? '抽選中' : '抽選レバー'}
-          detail={state.phase === 'betting' ? `${playerCount}/8人 BET中` : complete ? '払戻を確認' : '回転中'}
-          position={[2.62, -1.62, 0.22]}
-          color="#a3632d"
-          enabled={(complete || (state.phase === 'betting' && playerCount > 0)) && !busy}
-          onPress={advanceRound}
-        />
-      </BettingConsole>
+      ))}
+      <GroundActionPad
+        id="fate-confirm-bet"
+        label={localBet ? 'BET済み' : 'BET確定'}
+        detail={localBet ? `${localBet.amount}枚・的中${selectedReturn}枚` : `${SECTORS[selectedColor].label}・的中${selectedReturn}枚`}
+        position={[0.25, 0.08, 4.8]}
+        color="#9a4d7b"
+        enabled={ready && !busy && state.phase === 'betting' && !localBet && coins >= betAmount && playerCount < 8}
+        onPress={() => void placeBet()}
+      />
+      <GroundActionPad
+        id="fate-round-control"
+        label={complete ? '受付へ戻す' : countdown > 0 ? `${countdown}秒` : state.phase === 'running' ? '抽選中' : '抽選開始'}
+        detail={state.phase === 'betting' ? `${playerCount}/8人・押すと5秒後に回転` : complete ? '自動復帰もします' : 'BET締切'}
+        position={[2.85, 0.08, 4.8]}
+        color="#a3632d"
+        enabled={(complete || (state.phase === 'betting' && playerCount > 0)) && !busy}
+        onPress={advanceRound}
+      />
       <pointLight position={[0, 5.5, -0.8]} intensity={5.2} distance={13} color="#ffd98a" />
     </group>
   )

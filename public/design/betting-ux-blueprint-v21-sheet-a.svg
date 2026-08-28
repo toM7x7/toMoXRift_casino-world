@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <pattern id="gridA" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#153b59" stroke-width="1"/></pattern>
+    <marker id="arrowA" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M8 4L0 0V8Z" fill="#7dd3fc"/></marker>
+    <style>
+      .t{font-family:'Yu Gothic','Noto Sans JP',sans-serif;fill:#d9f5ff}.h{font-size:30px;font-weight:700}.s{font-size:17px}.xs{font-size:14px}.line{stroke:#7dd3fc;stroke-width:2;fill:none}.dim{stroke:#7dd3fc;stroke-width:1.4;fill:none;marker-start:url(#arrowA);marker-end:url(#arrowA)}.object{fill:#0d2e46;stroke:#d9f5ff;stroke-width:2}.accent{fill:#164e63;stroke:#67e8f9;stroke-width:2}.action{fill:#3b225d;stroke:#c084fc;stroke-width:2}.safe{fill:#0e7490;fill-opacity:.2;stroke:#22d3ee;stroke-dasharray:8 6;stroke-width:2}.note{fill:#08243a;stroke:#2e749f;stroke-width:1.5}
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="#061827"/><rect width="1600" height="1000" fill="url(#gridA)"/>
+  <text class="t h" x="60" y="54">船長の運命盤 UIUX 設計図 V21</text>
+  <text class="t s" x="60" y="84">SHEET A / 平面図・正面図・側面操作断面　単位: m　正本: betting-ux-blueprint-v21.json</text>
+  <rect x="55" y="104" width="1490" height="3" fill="#67e8f9"/>
+
+  <text class="t h" x="70" y="145">A1 平面図 1:50</text>
+  <g transform="translate(80 170)">
+    <rect class="object" x="0" y="0" width="600" height="500"/>
+    <rect class="safe" x="220" y="0" width="160" height="430"/><text class="t xs" x="236" y="22">中央視界廊下 3.2m</text>
+    <line class="line" x1="145" y1="140" x2="455" y2="140" stroke-width="12"/><circle class="accent" cx="300" cy="140" r="20"/>
+    <text class="t s" x="220" y="122">縦置き円盤 φ6.2</text>
+    <g transform="translate(67 145) rotate(-18 45 80)"><rect class="accent" width="90" height="160" rx="8"/><line class="line" x1="0" y1="40" x2="90" y2="40"/><line class="line" x1="0" y1="80" x2="90" y2="80"/><line class="line" x1="0" y1="120" x2="90" y2="120"/><text class="t xs" x="12" y="23">色 1–4</text></g>
+    <g transform="translate(443 145) rotate(18 45 80)"><rect class="accent" width="90" height="160" rx="8"/><line class="line" x1="0" y1="40" x2="90" y2="40"/><line class="line" x1="0" y1="80" x2="90" y2="80"/><line class="line" x1="0" y1="120" x2="90" y2="120"/><text class="t xs" x="12" y="23">色 5–8</text></g>
+    <rect class="action" x="92" y="410" width="180" height="44" rx="6"/><text class="t xs" x="119" y="437">1枚　3枚　5枚</text>
+    <rect class="action" x="338" y="410" width="190" height="44" rx="6"/><text class="t xs" x="367" y="437">BET確定　抽選開始</text>
+    <line class="line" x1="45" y1="475" x2="555" y2="475" stroke-dasharray="8 6"/><text class="t xs" x="224" y="494">立ち位置 Z=4.75</text>
+    <line class="dim" x1="0" y1="-22" x2="600" y2="-22"/><text class="t s" x="280" y="-30">12.0</text>
+    <line class="dim" x1="-22" y1="0" x2="-22" y2="500"/><text class="t s" transform="translate(-34 270) rotate(-90)">10.0</text>
+    <text class="t xs" x="8" y="522">左右翼は中央を塞がず、面をプレイヤーへ18°内振り</text>
+  </g>
+
+  <text class="t h" x="760" y="145">A2 正面図 1:50</text>
+  <g transform="translate(780 170)">
+    <line class="line" x1="0" y1="500" x2="720" y2="500"/>
+    <circle class="object" cx="360" cy="250" r="171"/><circle class="accent" cx="360" cy="250" r="18"/>
+    <line class="line" x1="360" y1="79" x2="360" y2="421"/><line class="line" x1="189" y1="250" x2="531" y2="250"/>
+    <rect class="accent" x="64" y="208" width="86" height="224" rx="8"/><rect class="accent" x="570" y="208" width="86" height="224" rx="8"/>
+    <g class="line"><line x1="64" y1="264" x2="150" y2="264"/><line x1="64" y1="320" x2="150" y2="320"/><line x1="64" y1="376" x2="150" y2="376"/><line x1="570" y1="264" x2="656" y2="264"/><line x1="570" y1="320" x2="656" y2="320"/><line x1="570" y1="376" x2="656" y2="376"/></g>
+    <rect class="action" x="118" y="442" width="198" height="48" rx="6"/><rect class="action" x="404" y="442" width="210" height="48" rx="6"/>
+    <rect class="safe" x="272" y="50" width="176" height="390"/><text class="t xs" x="293" y="70">視界廊下</text>
+    <line class="dim" x1="548" y1="79" x2="548" y2="421"/><text class="t s" transform="translate(568 300) rotate(-90)">φ6.2</text>
+    <line class="dim" x1="64" y1="520" x2="656" y2="520"/><text class="t s" x="335" y="545">10.75</text>
+    <text class="t s" x="83" y="195">4択サイド翼</text><text class="t s" x="569" y="195">4択サイド翼</text>
+    <text class="t xs" x="150" y="472">掛け金</text><text class="t xs" x="449" y="472">確定 / 開始</text>
+  </g>
+
+  <text class="t h" x="760" y="720">A3 側面操作断面 1:25</text>
+  <g transform="translate(790 750)">
+    <line class="line" x1="0" y1="170" x2="690" y2="170"/>
+    <line class="line" x1="90" y1="26" x2="90" y2="170" stroke-width="8"/><circle class="accent" cx="90" cy="26" r="12"/><text class="t xs" x="34" y="14">円盤面 Z=-2.2</text>
+    <g transform="translate(400 112) rotate(-25)"><rect class="action" width="150" height="42" rx="5"/><text class="t xs" x="30" y="27">操作レール</text></g>
+    <circle class="object" cx="630" cy="79" r="12"/><line class="line" x1="630" y1="91" x2="630" y2="170"/><text class="t xs" x="594" y="63">視点 Y=1.6</text>
+    <line class="line" x1="618" y1="79" x2="475" y2="127" stroke-dasharray="7 5"/><text class="t xs" x="500" y="86">中央Ray 約35°</text>
+    <line class="dim" x1="400" y1="190" x2="630" y2="190"/><text class="t xs" x="494" y="214">操作距離 1.0–1.4</text>
+  </g>
+
+  <g transform="translate(70 720)"><rect class="note" width="620" height="215" rx="10"/>
+    <text class="t h" x="24" y="42">UX判定基準</text>
+    <text class="t s" x="24" y="78">01　選択面と観戦対象を重ねない</text><text class="t s" x="24" y="108">02　押下領域 1.3×0.65m以上 / 文字高0.18m以上</text>
+    <text class="t s" x="24" y="138">03　色だけでなく番号・名称・✓・発光で状態表示</text><text class="t s" x="24" y="168">04　BET後は操作をロックし、自分の投票券を固定表示</text>
+    <text class="t s" x="24" y="198">05　開始後5秒は円盤へ視線誘導、操作UIは減光</text>
+  </g>
+  <text class="t xs" x="1250" y="976">NEON CASINO / DESIGN REVIEW / 2026-08-15</text>
+</svg>
