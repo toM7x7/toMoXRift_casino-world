@@ -328,7 +328,7 @@ function ClosedConstructionPlot({
 }
 
 function AnimalEmblemPreviewBoard() {
-  const texture = useTexture(useWorldAssetUrl('design/animal-emblem-atlas-v31.png'))
+  const texture = useTexture(useWorldAssetUrl('animal-emblem-atlas-v31.png'))
   texture.magFilter = NearestFilter
   texture.minFilter = NearestFilter
   texture.colorSpace = SRGBColorSpace

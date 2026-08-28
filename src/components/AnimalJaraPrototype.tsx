@@ -183,7 +183,7 @@ export function AnimalJaraPrototype({
   rotation?: Vec3
   autoStart?: boolean
 }) {
-  const atlas = useTexture(useWorldAssetUrl('design/animal-emblem-atlas-v31.png'))
+  const atlas = useTexture(useWorldAssetUrl('animal-emblem-atlas-v31.png'))
   const japaneseFontUrl = useJapaneseFontUrl()
   atlas.magFilter = NearestFilter
   atlas.minFilter = NearestFilter

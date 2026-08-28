@@ -1,12 +1,30 @@
 import react from '@vitejs/plugin-react'
+import { copyFileSync } from 'node:fs'
 import path from 'path'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import federation from '@originjs/vite-plugin-federation'
 
+function copyWorldRuntimeAssets() {
+  const assets = [
+    ['public/design/animal-emblem-atlas-v31.png', 'dist/animal-emblem-atlas-v31.png'],
+    ['public/fonts/MPLUS1p-Regular.ttf', 'dist/MPLUS1p-Regular.ttf'],
+  ] as const
+
+  return {
+    name: 'copy-world-runtime-assets',
+    closeBundle() {
+      for (const [source, target] of assets) {
+        copyFileSync(path.resolve(__dirname, source), path.resolve(__dirname, target))
+      }
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
     react(),
+    copyWorldRuntimeAssets(),
     dts({
       insertTypesEntry: true,
     }),

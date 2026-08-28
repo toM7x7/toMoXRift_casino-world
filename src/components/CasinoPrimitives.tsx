@@ -5,7 +5,7 @@ import { AnimatedPirateModel } from './PirateNationAssets'
 import { useWorldAssetUrl } from './useWorldAssetUrl'
 
 const PIRATE_FORWARD_OFFSET = -Math.PI / 2
-export const JAPANESE_FONT_PATH = 'fonts/MPLUS1p-Regular.ttf'
+export const JAPANESE_FONT_PATH = 'MPLUS1p-Regular.ttf'
 
 export function useJapaneseFontUrl() {
   return useWorldAssetUrl(JAPANESE_FONT_PATH)
