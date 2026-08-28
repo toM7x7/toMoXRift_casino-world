@@ -75,7 +75,7 @@ import {
 import { XRiftCurrency, XRiftCurrencyError } from '../integrations/rifcoin'
 import { getScreenProfile, screenCenter } from '../ui/responsive'
 
-type EconomySource = 'world-storage' | 'local-preview'
+export type EconomySource = 'world-storage' | 'local-preview'
 
 interface CasinoEconomyValue {
   coins: number
@@ -119,7 +119,7 @@ function exchangeErrorMessage(error: unknown): string {
   return 'RIFCoinとの通信に失敗しました。同じ金額で再試行してください'
 }
 
-function isStorageUnavailable(error: unknown): boolean {
+export function isStorageUnavailable(error: unknown): boolean {
   if (error instanceof WorldStorageError) {
     return error.code === 'UNAUTHORIZED' || error.code === 'NOT_IN_WORLD'
   }
@@ -128,6 +128,20 @@ function isStorageUnavailable(error: unknown): boolean {
     return code === 'UNAUTHORIZED' || code === 'NOT_IN_WORLD'
   }
   return false
+}
+
+export async function resolveWalletPersistenceSource(
+  source: EconomySource,
+  write: () => Promise<void>,
+): Promise<EconomySource> {
+  if (source !== 'world-storage') return source
+  try {
+    await write()
+    return source
+  } catch (error) {
+    if (isStorageUnavailable(error)) return 'local-preview'
+    throw error
+  }
 }
 
 export function CasinoEconomyProvider({
@@ -154,6 +168,7 @@ export function CasinoEconomyProvider({
   const [exchangeDay, setExchangeDay] = useState(() => jstExchangeDay(serverClock.now()))
   const coinsRef = useRef(STARTING_COINS)
   const walletRef = useRef(wallet)
+  const sourceRef = useRef<EconomySource>('world-storage')
   const initializedForRef = useRef<string | null>(null)
   const operationRef = useRef(false)
   const pendingExchangeRef = useRef<PendingRifExchange | null>(null)
@@ -173,19 +188,32 @@ export function CasinoEconomyProvider({
     setCoins(total)
   }, [])
 
+  const updateSource = useCallback((next: EconomySource) => {
+    sourceRef.current = next
+    setSource(next)
+  }, [])
+
   const persistWallet = useCallback(async (next: CasinoWallet) => {
-    if (source === 'world-storage') {
-      await storage.player.set(CASINO_WALLET_KEY, next)
+    if (sourceRef.current === 'world-storage') {
+      const nextSource = await resolveWalletPersistenceSource(
+        sourceRef.current,
+        () => storage.player.set(CASINO_WALLET_KEY, next),
+      )
+      if (nextSource === 'local-preview') {
+        console.warn('World Storage write unavailable; continuing with a session-only casino wallet.')
+        updateSource('local-preview')
+        setExchangeNotice('World Storage認証なし・RIF交換停止中')
+      }
     }
     commitWallet(next)
     return totalCasinoCoins(next)
-  }, [commitWallet, source, storage])
+  }, [commitWallet, storage, updateSource])
 
   const recordLedgerEvent = useCallback(async (
     category: CasinoLedgerCategory,
     amount: number,
   ) => {
-    if (!localUser || localUser.isGuest || source !== 'world-storage') return
+    if (!localUser || localUser.isGuest || sourceRef.current !== 'world-storage') return
     const sharedAmountKey = category === 'wager'
       ? CASINO_WAGERED_TOTAL_KEY
       : category === 'payout'
@@ -210,7 +238,7 @@ export function CasinoEconomyProvider({
     } catch (error) {
       console.warn('Casino circulation ledger update failed.', error)
     }
-  }, [localUser, source, storage])
+  }, [localUser, storage])
 
   useEffect(() => {
     const initializationKey = previewCoins !== undefined
@@ -224,27 +252,28 @@ export function CasinoEconomyProvider({
 
     const initialize = async () => {
       if (previewCoins !== undefined) {
-        setSource('local-preview')
+        updateSource('local-preview')
         commitWallet(createCasinoWallet(Math.max(0, Math.floor(previewCoins))))
         setNotice('ローカル遊技レビュー用コイン')
         setReady(true)
         return
       }
       if (!localUser) {
-        setSource('local-preview')
+        updateSource('local-preview')
         commitWallet(createCasinoWallet(STARTING_COINS))
         setNotice('ローカル確認用コイン')
         setReady(true)
         return
       }
       if (localUser.isGuest) {
-        setSource('local-preview')
+        updateSource('local-preview')
         commitWallet(createCasinoWallet(STARTING_COINS))
         setNotice('ゲスト: このセッションのみ保存')
         setReady(true)
         return
       }
-      setSource('world-storage')
+      updateSource('world-storage')
+      let loadedWallet = createCasinoWallet(STARTING_COINS)
       try {
         const [storedWallet, storedLegacy] = await Promise.all([
           storage.player.get(CASINO_WALLET_KEY),
@@ -254,10 +283,11 @@ export function CasinoEconomyProvider({
           ? Math.max(0, Math.floor(storedLegacy))
           : 0
         const next = parseCasinoWallet(storedWallet, legacyCoins)
+        loadedWallet = next
         commitWallet(next)
-        if (storedWallet === undefined) {
-          await storage.player.set(CASINO_WALLET_KEY, next)
-        }
+        // Reads are public, so a successful read does not prove that the host
+        // supplied a write token. A no-op write checks persistence before play.
+        await storage.player.set(CASINO_WALLET_KEY, next)
         setNotice(totalCasinoCoins(next) === 0
           ? '残高0枚です。GM受付で10枚受け取れます'
           : next.redeemable > 0
@@ -267,16 +297,19 @@ export function CasinoEconomyProvider({
         if (!isStorageUnavailable(error)) {
           console.warn('World Storage initialization failed; using local preview wallet.', error)
         }
-        setSource('local-preview')
-        commitWallet(createCasinoWallet(STARTING_COINS))
-        setNotice(localUser?.isGuest ? 'ゲスト: このセッションのみ保存' : 'ローカル確認用コイン')
+        updateSource('local-preview')
+        commitWallet(loadedWallet)
+        setNotice(isStorageUnavailable(error)
+          ? '保存認証なし・このセッションではゲームのみ利用できます'
+          : '保存接続なし・このセッションのみ利用できます')
+        setExchangeNotice('World Storageを利用できないためRIF交換は停止中')
       } finally {
         setReady(true)
       }
     }
 
     void initialize()
-  }, [commitWallet, localUser, previewCoins, storage])
+  }, [commitWallet, localUser, previewCoins, storage, updateSource])
 
   useEffect(() => {
     if (!ready || !localUser || localUser.isGuest || source !== 'world-storage') return
@@ -880,7 +913,7 @@ export function CasinoHud() {
     >
       <div style={{
         position: 'absolute',
-        top: screen.narrow ? screen.topSafe + 48 : screen.topSafe,
+        top: screen.topSafe,
         left: screen.sideSafe,
         color: '#fff7e6',
         width: screen.narrow
@@ -952,60 +985,6 @@ export function CasinoHud() {
         )}
       </div>
 
-      <div style={{
-        ...frame,
-        position: 'absolute',
-        top: screen.topSafe,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: screen.narrow ? `calc(100vw - ${screen.sideSafe * 2}px)` : 'auto',
-        boxSizing: 'border-box',
-        padding: screen.narrow ? '8px 10px' : '8px 18px',
-        color: '#fff7e6',
-        fontSize: screen.narrow ? 11 : 12,
-        fontWeight: 800,
-        whiteSpace: 'nowrap',
-        textAlign: 'center',
-      }}>
-        <span style={{ color: '#c955a5' }}>{screen.narrow ? '← BJ' : '← カード酒場'}</span>
-        <span style={{ color: '#f6c453', margin: screen.narrow ? '0 14px' : '0 20px' }}>
-          {screen.narrow ? '受付' : '交換所'}
-        </span>
-        <span style={{ color: '#3dbfbc' }}>{screen.narrow ? 'MJ β →' : '無料麻雀β →'}</span>
-      </div>
-
-      <div style={{
-        position: 'absolute',
-        bottom: 18,
-        left: 18,
-        display: screen.compact ? 'none' : 'flex',
-        gap: 5,
-        padding: 6,
-        background: 'rgba(17,24,39,.94)',
-        border: '3px solid #69717d',
-      }}>
-        {[
-          ['◆', 'コイン'],
-          ['?', '遊び方'],
-          ['人', '参加者'],
-          ['10', '交換所'],
-        ].map(([icon, label], index) => (
-          <div key={label} style={{
-            width: 54,
-            height: 48,
-            border: index === 0 ? '3px solid #f6c453' : '2px solid #fff7e6',
-            background: '#243247',
-            display: 'grid',
-            placeItems: 'center',
-            color: index === 0 ? '#f6c453' : '#fff7e6',
-            fontSize: 16,
-            fontWeight: 900,
-          }}>
-            <span>{icon}</span>
-            <span style={{ fontSize: 7, marginTop: -8 }}>{label}</span>
-          </div>
-        ))}
-      </div>
     </Html>
   )
 }

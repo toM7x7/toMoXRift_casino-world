@@ -496,6 +496,7 @@ function CoinExchange() {
     coins,
     bonusCoins,
     redeemableCoins,
+    source,
     ready,
     busy,
     claimRelief,
@@ -514,7 +515,8 @@ function CoinExchange() {
   const [exchangeAmount, setExchangeAmount] = useState(1)
   const minimumExchangeRif = minimumConvertibleRifAmount() ?? RIF_EXCHANGE_CONFIG.minimumRif
   const dailyRifTotal = dailyRifIn + dailyRifOut
-  const effectiveMinimumRif = dailyRifTotal >= RIF_EXCHANGE_CONFIG.dailyLimitRif
+  const storageAvailable = source === 'world-storage'
+  const effectiveMinimumRif = !storageAvailable || dailyRifTotal >= RIF_EXCHANGE_CONFIG.dailyLimitRif
     ? Number.POSITIVE_INFINITY
     : minimumExchangeRif
   const eligible = canClaimRelief(coins, rifBalance, rifReady, effectiveMinimumRif)
@@ -524,6 +526,7 @@ function CoinExchange() {
     ? quoteRifExchange(exchangeAmount)
     : quoteCasinoWithdrawal(exchangeAmount * RIF_EXCHANGE_CONFIG.casinoCoinUnits)
   const canExchange = ready
+    && storageAvailable
     && rifReady
     && !busy
     && quote !== null
@@ -587,7 +590,7 @@ function CoinExchange() {
           `1 RIF = 両替可能カジノコイン50枚（入出金とも同率）`,
           `RIF ${rifBalance ?? '—'}　合計${coins}枚（両替可能${redeemableCoins} / 遊技用${bonusCoins}）`,
           `本日 交換${dailyRifTotal}/5 RIF（入${dailyRifIn} / 出${dailyRifOut}）`,
-          exchangeNotice,
+          storageAvailable ? exchangeNotice : '保存認証なし：ゲーム可 / RIF交換停止中',
         ]}
         accent={0xf6c453}
         background={0x172033}

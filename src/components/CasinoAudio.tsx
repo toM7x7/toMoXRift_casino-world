@@ -5,6 +5,7 @@ import {
   Suspense,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -83,6 +84,20 @@ export function CasinoAudioProvider({ children }: { children: ReactNode }) {
     })
   }, [musicEnabled, musicStarted])
 
+  useEffect(() => {
+    const startOnFirstGesture = () => {
+      void startMusic()
+      window.removeEventListener('pointerdown', startOnFirstGesture, true)
+      window.removeEventListener('keydown', startOnFirstGesture, true)
+    }
+    window.addEventListener('pointerdown', startOnFirstGesture, true)
+    window.addEventListener('keydown', startOnFirstGesture, true)
+    return () => {
+      window.removeEventListener('pointerdown', startOnFirstGesture, true)
+      window.removeEventListener('keydown', startOnFirstGesture, true)
+    }
+  }, [startMusic])
+
   const value = useMemo(
     () => ({ musicEnabled, musicStarted, play, toggleMusic }),
     [musicEnabled, musicStarted, play, toggleMusic],
@@ -93,7 +108,7 @@ export function CasinoAudioProvider({ children }: { children: ReactNode }) {
       {children}
       <Suspense fallback={null}>
         <group position={[0, 2, 0]}>
-          <PositionalAudio ref={(audio) => { musicRef.current = audio; audio?.setVolume(0.12) }} url={`${baseUrl}casino-bgm.wav`} distance={150} loop />
+          <PositionalAudio ref={(audio) => { musicRef.current = audio; audio?.setVolume(0.045) }} url={`${baseUrl}casino-bgm-acoustic09.mp3`} distance={150} loop />
           <PositionalAudio ref={(audio) => { selectRef.current = audio; audio?.setVolume(0.28) }} url={`${baseUrl}sfx-select.wav`} distance={150} loop={false} />
           <PositionalAudio ref={(audio) => { betRef.current = audio; audio?.setVolume(0.34) }} url={`${baseUrl}sfx-bet.wav`} distance={150} loop={false} />
           <PositionalAudio ref={(audio) => { countdownRef.current = audio; audio?.setVolume(0.38) }} url={`${baseUrl}sfx-countdown.wav`} distance={150} loop={false} />
@@ -116,19 +131,20 @@ export function useCasinoAudio() {
 export function CasinoAudioControl({ position }: { position: [number, number, number] }) {
   const { musicEnabled, musicStarted, toggleMusic } = useCasinoAudio()
   const label = musicEnabled && musicStarted
-    ? '♪ BGM：ON'
+    ? 'BGM ON'
     : musicEnabled
-      ? '♪ BGMを開始'
-      : '♪ BGM：OFF'
+      ? 'BGM 再生'
+      : 'BGM OFF'
   return (
     <CasinoButton
       id="casino-bgm-toggle"
       label={label}
-      detail="クリックで切替"
+      detail="押してON / OFF"
       position={position}
-      width={1.8}
-      height={0.52}
-      color="#6d4aa8"
+      width={2.05}
+      height={0.62}
+      labelFontSize={0.2}
+      color={musicEnabled ? '#2c7a7b' : '#52657e'}
       onPress={toggleMusic}
     />
   )
