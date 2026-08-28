@@ -12,7 +12,8 @@ import {
   isWinningAnimalJaraHand,
   suggestAnimalJaraDiscard,
 } from '../game/animalJara'
-import { CasinoButton, JAPANESE_FONT_URL, JapanesePanel } from './CasinoPrimitives'
+import { CasinoButton, JapanesePanel, useJapaneseFontUrl } from './CasinoPrimitives'
+import { useWorldAssetUrl } from './useWorldAssetUrl'
 
 type Vec3 = [number, number, number]
 type AnimalJaraPhase = 'lobby' | 'player-turn' | 'ron-window' | 'finished' | 'draw'
@@ -70,6 +71,7 @@ function TileBody({
   scale?: number
   selected?: boolean
 }) {
+  const japaneseFontUrl = useJapaneseFontUrl()
   const emblem = getAnimalJaraEmblem(tileId)
   const habitat = emblem?.habitat ?? 'land'
   return (
@@ -87,7 +89,7 @@ function TileBody({
         <meshStandardMaterial color={HABITAT_COLOR[habitat]} roughness={0.8} />
       </mesh>
       <Text
-        font={JAPANESE_FONT_URL}
+        font={japaneseFontUrl}
         position={[0, selected ? 0.22 : 0.14, 0.43]}
         rotation={[-Math.PI / 2, 0, 0]}
         fontSize={0.12}
@@ -181,7 +183,8 @@ export function AnimalJaraPrototype({
   rotation?: Vec3
   autoStart?: boolean
 }) {
-  const atlas = useTexture('/design/animal-emblem-atlas-v31.png')
+  const atlas = useTexture(useWorldAssetUrl('design/animal-emblem-atlas-v31.png'))
+  const japaneseFontUrl = useJapaneseFontUrl()
   atlas.magFilter = NearestFilter
   atlas.minFilter = NearestFilter
   atlas.colorSpace = SRGBColorSpace
@@ -275,7 +278,7 @@ export function AnimalJaraPrototype({
   return (
     <group position={position} rotation={rotation}>
       <PrototypeTable>
-        <Text font={JAPANESE_FONT_URL} position={[0, 1.02, -2.85]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.2} color="#fff1b8" anchorX="center">
+        <Text font={japaneseFontUrl} position={[0, 1.02, -2.85]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.2} color="#fff1b8" anchorX="center">
           NPC3人は自動進行・ポン/チーなし・ロン/ツモのみ
         </Text>
         {state.hands[0].map((tileId, index) => (
@@ -304,7 +307,7 @@ export function AnimalJaraPrototype({
               <boxGeometry args={[2.15, 0.16, 0.72]} />
               <meshStandardMaterial color="#263449" roughness={0.8} />
             </mesh>
-            <Text font={JAPANESE_FONT_URL} position={[0, 1.33, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.15} color="#dbeafe" anchorX="center">
+            <Text font={japaneseFontUrl} position={[0, 1.33, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.15} color="#dbeafe" anchorX="center">
               {`${SEAT_NAMES[seat]}　${state.hands[seat].length}枚`}
             </Text>
           </group>

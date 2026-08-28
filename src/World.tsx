@@ -14,9 +14,10 @@ import {
 import {
   CasinoButton,
   CasinoNpc,
-  JAPANESE_FONT_URL,
   JapanesePanel,
+  useJapaneseFontUrl,
 } from './components/CasinoPrimitives'
+import { useWorldAssetUrl } from './components/useWorldAssetUrl'
 import { CaptainsFateWheel } from './components/CaptainsFateWheel'
 import { CasinoAdminObservatory } from './components/CasinoAdminObservatory'
 import { CasinoAdminTransit } from './components/CasinoAdminTransit'
@@ -327,7 +328,7 @@ function ClosedConstructionPlot({
 }
 
 function AnimalEmblemPreviewBoard() {
-  const texture = useTexture('/design/animal-emblem-atlas-v31.png')
+  const texture = useTexture(useWorldAssetUrl('design/animal-emblem-atlas-v31.png'))
   texture.magFilter = NearestFilter
   texture.minFilter = NearestFilter
   texture.colorSpace = SRGBColorSpace
@@ -651,7 +652,7 @@ function CoinExchange() {
         label={exchangeDirection === 'RIF_TO_CASINO'
           ? `${exchangeAmount} RIF → ${quote?.casinoCoinAmount ?? '—'}枚`
           : `${quote?.casinoCoinAmount ?? '—'}枚 → ${exchangeAmount} RIF`}
-        detail="1日各5 RIFまで・手数料なし"
+        detail="入出金合計1日5 RIF・手数料なし"
         position={[0.35, 0.48, 1.15]}
         width={3.8}
         height={0.5}
@@ -687,6 +688,7 @@ function CoinExchange() {
 }
 
 function SpawnMapBoard() {
+  const japaneseFontUrl = useJapaneseFontUrl()
   return (
     <group position={[4.2, 0, 9.5]} rotation={[0, -0.46, 0]} scale={0.82}>
       <Block position={[-2.2, 1.08, -0.12]} size={[0.24, 2.16, 0.24]} color={palette.wood} />
@@ -743,7 +745,7 @@ function SpawnMapBoard() {
       <Text position={[0, 1.69, 0.32]} fontSize={0.13} color="#172033" anchorX="center">交換所</Text>
       <Text position={[-1.55, 1.7, 0.32]} fontSize={0.11} color="#fff1b8" anchorX="center">A 運命盤</Text>
       <Text position={[1.55, 1.7, 0.32]} fontSize={0.11} color="#fff1b8" anchorX="center">B ダービー</Text>
-      <Text font={JAPANESE_FONT_URL} position={[-2.02, 2.18, 0.33]} rotation={[0, 0, Math.PI / 2]} fontSize={0.085} color="#fff7e6" anchorX="center">C予定 / Dβ公開</Text>
+      <Text font={japaneseFontUrl} position={[-2.02, 2.18, 0.33]} rotation={[0, 0, Math.PI / 2]} fontSize={0.085} color="#fff7e6" anchorX="center">C予定 / Dβ公開</Text>
 
       <mesh position={[0, 2.92, 0.3]}>
         <circleGeometry args={[0.12, 8]} />
